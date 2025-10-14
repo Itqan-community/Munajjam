@@ -7,7 +7,7 @@ This project is designed to automatically synchronizes Quranic verses (ayahs) wi
 - [Documentation](#documentation)
 - [Requirements](#requirements)
 - [Demo](#demo)
-- [## Debugging-Video](https://drive.google.com/drive/u/0/folders/1wZovcbTBYoa9aPCJb6ZQLSmpMc4c46No) ⭐️
+- [Debugging-Video](https://drive.google.com/drive/u/0/folders/1wZovcbTBYoa9aPCJb6ZQLSmpMc4c46No) ⭐️
 
 ## Folder Structure
 
