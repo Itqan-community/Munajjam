@@ -1,0 +1,7 @@
+sura_id,ayah_index,ayah_text,model_text,start_time,end_time,similarity_score,status,notes,overlap_status
+114,1,قُلۡ أَعُوذُ بِرَبِّ ٱلنَّاسِ,قُلْ أَعُوذُ بِرَبِّ النَّاسِ,5.66,9.42,0.9411764705882353,Success,Last word matched,No Overlap
+114,2,مَلِكِ ٱلنَّاسِ,مَلِكِ النَّاسِ,10.32,13.19,0.8888888888888888,Success,Last word matched,No Overlap
+114,3,إِلَٰهِ ٱلنَّاسِ,إِلَهِ النَّاسِ,14.06,17.29,0.8888888888888888,Success,Last word matched,No Overlap
+114,4,مِن شَرِّ ٱلۡوَسۡوَاسِ ٱلۡخَنَّاسِ,مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ,18.24,23.27,0.9,Success,Last word matched,No Overlap
+114,5,ٱلَّذِي يُوَسۡوِسُ فِي صُدُورِ ٱلنَّاسِ,الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ,24.43,29.77,0.9166666666666666,Success,Last word matched,No Overlap
+114,6,مِنَ ٱلۡجِنَّةِ وَٱلنَّاسِ,مِنَ الْجِنَّةِ وَالنَّاسِ,30.65,34.92,0.8666666666666667,Success,Last word matched,No Overlap

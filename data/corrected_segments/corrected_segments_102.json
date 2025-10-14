@@ -1,0 +1,98 @@
+[
+    {
+        "id": 1,
+        "sura_id": 102,
+        "ayah_index": 0,
+        "start": 5.78,
+        "end": 7.98,
+        "transcribed_text": "أَلْهَاكُمُ التَّكَاثُرُ",
+        "corrected_text": "أَلۡهَىٰكُمُ ٱلتَّكَاثُرُ",
+        "start_id": 2,
+        "end_id": 2,
+        "uuid": "1a6ba054-ba5b-4235-b805-dffd47938f10"
+    },
+    {
+        "id": 2,
+        "sura_id": 102,
+        "ayah_index": 1,
+        "start": 8.89,
+        "end": 11.52,
+        "transcribed_text": "حَتَّى زُرْتُمُ الْمَقَابِرَ",
+        "corrected_text": "حَتَّىٰ زُرۡتُمُ ٱلۡمَقَابِرَ",
+        "start_id": 3,
+        "end_id": 3,
+        "uuid": "1a6ba054-ba5b-4235-b805-dffd47938f10"
+    },
+    {
+        "id": 3,
+        "sura_id": 102,
+        "ayah_index": 2,
+        "start": 12.54,
+        "end": 15.68,
+        "transcribed_text": "كَلَّا سَوْفَ تَعْلَمُونَ",
+        "corrected_text": "كـَلَّا سَوۡفَ تَعۡلَمُونَ",
+        "start_id": 4,
+        "end_id": 4,
+        "uuid": "1a6ba054-ba5b-4235-b805-dffd47938f10"
+    },
+    {
+        "id": 4,
+        "sura_id": 102,
+        "ayah_index": 3,
+        "start": 16.46,
+        "end": 20.55,
+        "transcribed_text": "ثُمَّ كَلَّا سَوْفَ تَعْلَمُونَ",
+        "corrected_text": "ثُمَّ كـَلَّا سَوۡفَ تَعۡلَمُونَ",
+        "start_id": 5,
+        "end_id": 5,
+        "uuid": "1a6ba054-ba5b-4235-b805-dffd47938f10"
+    },
+    {
+        "id": 5,
+        "sura_id": 102,
+        "ayah_index": 4,
+        "start": 21.67,
+        "end": 26.07,
+        "transcribed_text": "كَلَّا لَوْ تَعْلَمُونَ عِلْمَ الْيَقِينِ",
+        "corrected_text": "كـَلَّا لَوۡ تَعۡلَمُونَ عِلۡمَ ٱلۡيَقِينِ",
+        "start_id": 6,
+        "end_id": 6,
+        "uuid": "1a6ba054-ba5b-4235-b805-dffd47938f10"
+    },
+    {
+        "id": 6,
+        "sura_id": 102,
+        "ayah_index": 5,
+        "start": 27.04,
+        "end": 30.53,
+        "transcribed_text": "لَتَرَوُنَّ الْجَحِيمَ",
+        "corrected_text": "لَتَرَوُنَّ ٱلۡجَحِيمَ",
+        "start_id": 7,
+        "end_id": 7,
+        "uuid": "1a6ba054-ba5b-4235-b805-dffd47938f10"
+    },
+    {
+        "id": 7,
+        "sura_id": 102,
+        "ayah_index": 6,
+        "start": 31.37,
+        "end": 36.65,
+        "transcribed_text": "ثُمَّ لَتَرَوُنَّهَا عَيْنَ الْيَقِينِ",
+        "corrected_text": "ثُمَّ لَتَرَوُنَّهَا عَيۡنَ ٱلۡيَقِينِ",
+        "start_id": 8,
+        "end_id": 8,
+        "uuid": "1a6ba054-ba5b-4235-b805-dffd47938f10"
+    },
+    {
+        "id": 8,
+        "sura_id": 102,
+        "ayah_index": 7,
+        "start": 37.57,
+        "end": 44.2,
+        "transcribed_text": "ثُمَّ لَتُسْأَلُنَّ يَوْمَئِذٍ عَنِ النَّعِيمِ",
+        "corrected_text": "ثُمَّ لَتُسۡـَٔلُنَّ يَوۡمَئِذٍ عَنِ ٱلنَّعِيمِ",
+        "start_id": 9,
+        "end_id": 9,
+        "uuid": "1a6ba054-ba5b-4235-b805-dffd47938f10"
+    }
+]

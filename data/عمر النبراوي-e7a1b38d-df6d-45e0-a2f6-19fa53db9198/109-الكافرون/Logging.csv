@@ -1,0 +1,7 @@
+sura_id,ayah_index,ayah_text,model_text,start_time,end_time,similarity_score,status,notes,overlap_status
+109,1,قُلۡ يَٰٓأَيُّهَا ٱلۡكَٰفِرُونَ,قُلْ يَا أَيُّهَا الْكَافِرُونَ,6.2,11.2,0.8571428571428571,Success,Last word matched,No Overlap
+109,2,لَآ أَعۡبُدُ مَا تَعۡبُدُونَ,لَا أَعْبُدُ مَا تَعْبُدُونَ,12.29,16.86,1.0,Success,Last word matched,No Overlap
+109,3,وَلَآ أَنتُمۡ عَٰبِدُونَ مَآ أَعۡبُدُ,وَلَا أَنْتُمْ عَابِدُونَ مَا أَعْبُدُ,17.9,24.43,0.9777777777777777,Success,Last word matched,No Overlap
+109,4,وَلَآ أَنَا۠ عَابِدٞ مَّا عَبَدتُّمۡ,وَلَا أَنَا عَابِدٌ مَا عَبَدْتُمْ,25.39,30.32,1.0,Success,Last word matched,No Overlap
+109,5,وَلَآ أَنتُمۡ عَٰبِدُونَ مَآ أَعۡبُدُ,وَلَا أَنْتُمْ عَابِدُونَ مَا أَعْبُدُ,31.42,37.93,0.9777777777777777,Success,Last word matched,No Overlap
+109,6,لَكُمۡ دِينُكُمۡ وَلِيَ دِينِ,لَكُمْ دِينُكُمْ وَلِيَ دِينِ,38.88,42.7,1.0,Success,Last word matched,No Overlap

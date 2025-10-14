@@ -1,0 +1,9 @@
+sura_id,ayah_index,ayah_text,model_text,start_time,end_time,similarity_score,status,notes,overlap_status
+94,1,أَلَمۡ نَشۡرَحۡ لَكَ صَدۡرَكَ,أَلَمْ نَشْرَحْ لَكَ صَدْرَكَ,5.7,7.96,1.0,Success,Last word matched,No Overlap
+94,2,وَوَضَعۡنَا عَنكَ وِزۡرَكَ,وَوَضَعْنَا عَنْكَ وِزْرَكَ,9.06,11.85,1.0,Success,Last word matched,No Overlap
+94,3,ٱلَّذِيٓ أَنقَضَ ظَهۡرَكَ,الَّذِي أَنْقَضَ ظَهْرَيْنِ,12.84,16.82,0.8275862068965517,Success,Last word matched,No Overlap
+94,4,وَرَفَعۡنَا لَكَ ذِكۡرَكَ,وَرَفَعْنَا لَكَ ذِكْرًا,17.94,20.14,0.9285714285714286,Success,Last word matched,No Overlap
+94,5,فَإِنَّ مَعَ ٱلۡعُسۡرِ يُسۡرًا,فَإِنَّ مَعَ الْعُسْرِ يُسْرًا,21.32,24.31,0.9411764705882353,Success,Last word matched,No Overlap
+94,6,إِنَّ مَعَ ٱلۡعُسۡرِ يُسۡرٗا,إِنَّ مَعَ الْعُسْرِ يُسْرًا,25.31,28.27,0.9375,Success,Last word matched,No Overlap
+94,7,فَإِذَا فَرَغۡتَ فَٱنصَبۡ,فَإِذَا فَرَغْتَ فَانْصَبْ,29.34,32.55,0.9333333333333333,Success,Last word matched,No Overlap
+94,8,وَإِلَىٰ رَبِّكَ فَٱرۡغَب,وَإِلَى رَبِّكَ فَارْغَبْ,33.39,35.86,0.9285714285714286,Success,Last word matched,No Overlap

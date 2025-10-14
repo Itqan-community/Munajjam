@@ -1,0 +1,66 @@
+[
+  {
+    "id": 2,
+    "sura_id": 99,
+    "recitation_uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92",
+    "start": 5.65,
+    "end": 9.51,
+    "text": "إِذَا زُلْزِلَتِ الْأَرْضُ زِلْزَالَهَا"
+  },
+  {
+    "id": 3,
+    "sura_id": 99,
+    "recitation_uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92",
+    "start": 10.41,
+    "end": 13.75,
+    "text": "وَأَخْرَجَتِ الْأَرْضُ أَثْقَالَهَا"
+  },
+  {
+    "id": 4,
+    "sura_id": 99,
+    "recitation_uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92",
+    "start": 14.74,
+    "end": 18.49,
+    "text": "وَقَالَ الْإِنْسَانُ مَا لَهَا"
+  },
+  {
+    "id": 5,
+    "sura_id": 99,
+    "recitation_uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92",
+    "start": 19.4,
+    "end": 23.76,
+    "text": "يَوْمَئِذٍ تُحَدِّثُ أَخْبَارَهَا"
+  },
+  {
+    "id": 6,
+    "sura_id": 99,
+    "recitation_uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92",
+    "start": 24.72,
+    "end": 28.01,
+    "text": "بِأَنَّ رَبَّكَ أَوْحَى لَهَا"
+  },
+  {
+    "id": 7,
+    "sura_id": 99,
+    "recitation_uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92",
+    "start": 29.3,
+    "end": 35.8,
+    "text": "يَوْمَئِذٍ يَصْدُرُ النَّاسُ أَشْتَاتًا لِيُرَوْا أَعْمَالَهُمْ"
+  },
+  {
+    "id": 8,
+    "sura_id": 99,
+    "recitation_uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92",
+    "start": 36.69,
+    "end": 42.4,
+    "text": "فَمَنْ يَعْمَلْ مِثْقَالَ ذَرَّةٍ خَيْرًا يَرَهُ"
+  },
+  {
+    "id": 9,
+    "sura_id": 99,
+    "recitation_uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92",
+    "start": 43.38,
+    "end": 49.45,
+    "text": "وَمَنْ يَعْمَلْ مِثْقَالَ ذَرَّةٍ شَرًّا يَرَهُ"
+  }
+]

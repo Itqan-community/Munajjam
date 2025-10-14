@@ -1,0 +1,50 @@
+[
+  {
+    "id": 2,
+    "sura_id": 109,
+    "recitation_uuid": "e7a1b38d-df6d-45e0-a2f6-19fa53db9198",
+    "start": 6.2,
+    "end": 11.2,
+    "text": "قُلْ يَا أَيُّهَا الْكَافِرُونَ"
+  },
+  {
+    "id": 3,
+    "sura_id": 109,
+    "recitation_uuid": "e7a1b38d-df6d-45e0-a2f6-19fa53db9198",
+    "start": 12.29,
+    "end": 16.86,
+    "text": "لَا أَعْبُدُ مَا تَعْبُدُونَ"
+  },
+  {
+    "id": 4,
+    "sura_id": 109,
+    "recitation_uuid": "e7a1b38d-df6d-45e0-a2f6-19fa53db9198",
+    "start": 17.9,
+    "end": 24.43,
+    "text": "وَلَا أَنْتُمْ عَابِدُونَ مَا أَعْبُدُ"
+  },
+  {
+    "id": 5,
+    "sura_id": 109,
+    "recitation_uuid": "e7a1b38d-df6d-45e0-a2f6-19fa53db9198",
+    "start": 25.39,
+    "end": 30.32,
+    "text": "وَلَا أَنَا عَابِدٌ مَا عَبَدْتُمْ"
+  },
+  {
+    "id": 6,
+    "sura_id": 109,
+    "recitation_uuid": "e7a1b38d-df6d-45e0-a2f6-19fa53db9198",
+    "start": 31.42,
+    "end": 37.93,
+    "text": "وَلَا أَنْتُمْ عَابِدُونَ مَا أَعْبُدُ"
+  },
+  {
+    "id": 7,
+    "sura_id": 109,
+    "recitation_uuid": "e7a1b38d-df6d-45e0-a2f6-19fa53db9198",
+    "start": 38.88,
+    "end": 42.7,
+    "text": "لَكُمْ دِينُكُمْ وَلِيَ دِينِ"
+  }
+]
