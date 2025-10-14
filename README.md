@@ -39,6 +39,8 @@ E:\Quran\
 The project's pseudocode can be found in the `docs.md` file.
 [View Pseudocode](/PSEUDO%20CODE.md)
 
+Munajjam Workflow of 1st Edittion: [View Munajjam V0.1 Workflow](https://www.figma.com/board/FfUTlgvQ31r0qRp6KpjotF/Munajam?node-id=18-331&t=HjM9OTIhxMVK8mWg-4)
+
 Short PRD
 [View Full Requirements](/docs/Requirements.md)
 
