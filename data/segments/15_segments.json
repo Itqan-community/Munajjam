@@ -1,0 +1,890 @@
+[
+  {
+    "id": 2,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 5.81,
+    "end": 9.18,
+    "text": "الم"
+  },
+  {
+    "id": 3,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 10.32,
+    "end": 16.2,
+    "text": "تِلْكَ آيَاتُ الْكِتَابِ وَقُرْآنٍ مُبِينٍ"
+  },
+  {
+    "id": 4,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 17.15,
+    "end": 23.31,
+    "text": "قُبَمَا يَوَدُّ الَّذِينَ كَفَرُوا لَوْ كَانُوا مُسْلِمِينَ"
+  },
+  {
+    "id": 5,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 24.51,
+    "end": 29.34,
+    "text": "ذَرْهُمْ يَأْكُلُوا وَيَتَمَتَّعُوا وَيُلْهِهِمُ الْأَمَلُ"
+  },
+  {
+    "id": 6,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 30.3,
+    "end": 32.97,
+    "text": "فَسَوْفَ يَعْلَمُونَ"
+  },
+  {
+    "id": 7,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 33.86,
+    "end": 43.24,
+    "text": "وَمَا أَهْلَكْنَا مِنْ قَرْيَةٍ إِلَّا وَلَهَا كِتَابٌ مَعْلُومٌ"
+  },
+  {
+    "id": 8,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 44.34,
+    "end": 51.19,
+    "text": "مَا تَسْبِقُ مِنْ أُمَّةٍ أَجَلَهَا وَمَا يَسْتَأْخِرُونَ"
+  },
+  {
+    "id": 9,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 52.57,
+    "end": 61.22,
+    "text": "وَقَالُوا يَا أَيُّهَا الَّذِي نُزِّلَ عَلَيْهِ الذِّكْرُ إِنَّكَ لَمَجْنُونٌ"
+  },
+  {
+    "id": 10,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 62.32,
+    "end": 71.93,
+    "text": "لَوْ مَا تَأْتِينَا بِالْمَلَائِكَةِ إِنْ كُنْتَ مِنَ الصَّادِقِينَ"
+  },
+  {
+    "id": 11,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 73.13,
+    "end": 84.55,
+    "text": "مَا نُنَزِّلُ الْمَلَائِكَةَ إِلَّا بِالْحَقِّ وَمَا كَانُوا إِذًا مُنْظَرِينَ"
+  },
+  {
+    "id": 12,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 85.48,
+    "end": 93.0,
+    "text": "إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ"
+  },
+  {
+    "id": 13,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 94.19,
+    "end": 100.64,
+    "text": "وَلَقَدْ أَرْسَلْنَا مِنْ قَبْلِكَ فِي شِيَعِ الْأَوَّلِينَ"
+  },
+  {
+    "id": 14,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 101.53,
+    "end": 109.21,
+    "text": "وَمَا يَأْتِيهِمْ مِنْ رَسُولٍ إِلَّا كَانُوا بِهِ يَسْتَهْزِئُونَ"
+  },
+  {
+    "id": 15,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 110.11,
+    "end": 115.32,
+    "text": "كَذَلِكَ نَسْلُكُهُ فِي قُلُوبِ الْمُجْرِمِينَ"
+  },
+  {
+    "id": 16,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 116.2,
+    "end": 122.99,
+    "text": "لَا يُؤْمِنُونَ بِهِ وَقَدْ خَلَتْ سُنَّةُ الْأَوَّلِينَ"
+  },
+  {
+    "id": 17,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 124.18,
+    "end": 133.4,
+    "text": "وَلَوْ فَتَحْنَا عَلَيْهِمْ بَابًا مِنَ السَّمَاءِ فَظَلُّوا فِيهِ يَعْرُجُونَ"
+  },
+  {
+    "id": 18,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 134.41,
+    "end": 144.06,
+    "text": "لَقَالُوا إِنَّمَا سُكِّرَتْ أَبْصَارُنَا بَلْ نَحْنُ قَوْمٌ مَسْحُورُونَ"
+  },
+  {
+    "id": 19,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 145.28,
+    "end": 154.65,
+    "text": "وَلَقَدْ جَعَلْنَا فِي السَّمَاءِ بُرُوجًا وَزَيَّنَّاهَا لِلنَّاظِرِينَ"
+  },
+  {
+    "id": 20,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 155.54,
+    "end": 161.4,
+    "text": "وَحَفِظْنَاهَا مِنْ كُلِّ شَيْطَانٍ رَجِيمٍ"
+  },
+  {
+    "id": 21,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 162.37,
+    "end": 169.65,
+    "text": "إِلَّا مَنِ اسْتَرَقَ السَّمْعَ فَأَتْبَعَهُ شِهَابٌ مُبِينٌ"
+  },
+  {
+    "id": 22,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 170.92,
+    "end": 183.69,
+    "text": "وَالْأَرْضَ مَدَدْنَاهَا وَأَلْقَيْنَا فِيهَا رَوَاسِيَ وَأَنْبَتْنَا فِيهَا مِنْ كُلِّ شَيْءٍ مَوْزُونٍ"
+  },
+  {
+    "id": 23,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 184.93,
+    "end": 192.65,
+    "text": "وَجَعَلْنَا لَكُمْ فِيهَا مَعَايِشَ وَمَنْ لَسْتُمْ لَهُ بِرَازِقِينَ"
+  },
+  {
+    "id": 24,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 194.02,
+    "end": 207.75,
+    "text": "وَإِنْ مِنْ شَيْءٍ إِلَّا عِنْدَنَا خَزَائِنُهُ وَمَا نُنَزِّلُهُ إِلَّا بِقَدَرٍ مَعْلُومٍ"
+  },
+  {
+    "id": 25,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 208.85,
+    "end": 218.05,
+    "text": "وَأَرْسَلْنَا الرِّيَاحَ لَوَاقِحَ فَأَنْزَلْنَا مِنَ السَّمَاءِ مَاءً"
+  },
+  {
+    "id": 26,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 219.45,
+    "end": 233.48,
+    "text": "فَأَنْزَلْنَا مِنَ السَّمَاءِ مَاءً فَأَسْقَيْنَاكُمُوهُ وَمَا أَنْتُمْ لَهُ بِخَازِنِينَ"
+  },
+  {
+    "id": 27,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 234.89,
+    "end": 241.5,
+    "text": "وَإِنَّا لَنَحْنُ نُحْيِي وَنُمِيتُ وَنَحْنُ الْوَارِثُونَ"
+  },
+  {
+    "id": 28,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 242.56,
+    "end": 251.18,
+    "text": "وَلَقَدْ عَلِمْنَا الْمُسْتَقْدِمِينَ مِنْكُمْ وَلَقَدْ عَلِمْنَا الْمُسْتَأْخِرِينَ"
+  },
+  {
+    "id": 29,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 252.14,
+    "end": 255.61,
+    "text": "وَإِنَّ رَبَّكَ هُوَ يَحْشُرُهُمْ"
+  },
+  {
+    "id": 30,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 256.59,
+    "end": 260.95,
+    "text": "إِنَّهُ حَكِيمٌ عَلِيمٌ"
+  },
+  {
+    "id": 31,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 262.07,
+    "end": 270.86,
+    "text": "وَلَقَدْ خَلَقْنَا الْإِنْسَانَ مِنْ صَلْصَالٍ مِنْ حَمَإٍ مَسْنُونٍ"
+  },
+  {
+    "id": 32,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 271.83,
+    "end": 280.75,
+    "text": "وَالْجَانَّ خَلَقْنَاهُ مِنْ قَبْلُ مِنْ نَارِ السَّمُومِ"
+  },
+  {
+    "id": 33,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 282.1,
+    "end": 295.71,
+    "text": "وَإِذْ قَالَ رَبُّكَ لِلْمَلَائِكَةِ إِنِّي خَالِقٌ بَشَرًا مِنْ صَلْصَالٍ مِنْ حَمَإٍ مَسْنُونٍ"
+  },
+  {
+    "id": 34,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 296.8,
+    "end": 304.89,
+    "text": "فَإِذَا سَوَّيْتُهُ وَنَفَخْتُ فِيهِ مِنْ رُوحِي فَقَعُوا لَهُ سَاجِدِينَ"
+  },
+  {
+    "id": 35,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 306.16,
+    "end": 311.9,
+    "text": "فَسَجَدَ الْمَلَائِكَةُ كُلُّهُمْ أَجْمَعُونَ"
+  },
+  {
+    "id": 36,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 312.77,
+    "end": 321.12,
+    "text": "إِلَّا إِبْلِيسَ أَبَى أَنْ يَكُونَ مَعَ السَّاجِدِينَ"
+  },
+  {
+    "id": 37,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 322.5,
+    "end": 329.61,
+    "text": "قَالَ يَا إِبْلِيسُ مَا لَكَ أَلَّا تَكُونَ مَعَ السَّاجِدِينَ"
+  },
+  {
+    "id": 38,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 330.74,
+    "end": 340.89,
+    "text": "قَالَ لَمْ أَكُنْ لِأَسْجُدَ لِبَشَرٍ خَلَقْتَهُ مِنْ صَلْصَالٍ مِنْ حَمَإٍ مَسْنُونٍ"
+  },
+  {
+    "id": 39,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 342.11,
+    "end": 346.94,
+    "text": "قَالَ فَاخْرُجْ مِنْهَا فَإِنَّكَ رَجِيمٌ"
+  },
+  {
+    "id": 40,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 348.38,
+    "end": 353.8,
+    "text": "وَإِنَّ عَلَيْكَ اللَّعْنَةَ إِلَى يَوْمِ الدِّينِ"
+  },
+  {
+    "id": 41,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 354.69,
+    "end": 361.36,
+    "text": "قَالَ رَبِّ فَأَنْظِرْنِي إِلَى يَوْمِ يُبْعَثُونَ"
+  },
+  {
+    "id": 42,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 362.24,
+    "end": 367.04,
+    "text": "قَالَ فَإِنَّكَ مِنَ الْمُنْظَرِينَ"
+  },
+  {
+    "id": 43,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 367.81,
+    "end": 371.79,
+    "text": "إِلَى يَوْمٍ وَقَتِ الْمَعْلُومِ"
+  },
+  {
+    "id": 44,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 372.94,
+    "end": 384.14,
+    "text": "قَالَ رَبِّ بِمَا أَغْوَيْتَنِي لَأُزَيِّنَنَّ لَهُمْ فِي الْأَرْضِ وَلَأُغْوِيَنَّهُمْ أَجْمَعِينَ"
+  },
+  {
+    "id": 45,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 385.01,
+    "end": 390.01,
+    "text": "إِلَّا عِبَادَكَ مِنْهُمُ الْمُخْلَصِينَ"
+  },
+  {
+    "id": 46,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 390.88,
+    "end": 395.99,
+    "text": "قَالَ هَذَا صِرَاطٌ عَلَيَّ مُسْتَقِيمٌ"
+  },
+  {
+    "id": 47,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 396.81,
+    "end": 406.4,
+    "text": "إِنَّ عِبَادِي لَيْسَ لَكَ عَلَيْهِمْ سُلْطَانٌ إِلَّا مَنِ اتَّبَعَكَ مِنَ الْغَاوِينَ"
+  },
+  {
+    "id": 48,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 407.75,
+    "end": 413.1,
+    "text": "وَإِنَّ جَهَنَّمَ لَمَوْعِدُهُمْ أَجْمَعِينَ"
+  },
+  {
+    "id": 49,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 414.06,
+    "end": 422.76,
+    "text": "جَهَى سَبْعَةُ أَبْوَابٍ لِكُلِّ بَابٍ مِنْهُمْ جُزْءٌ مَقْسُومٌ"
+  },
+  {
+    "id": 50,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 423.83,
+    "end": 430.49,
+    "text": "إِنَّ الْمُتَّقِينَ فِي جَنَّاتٍ وَعُيُونٍ"
+  },
+  {
+    "id": 51,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 431.36,
+    "end": 435.56,
+    "text": "ادْخُلُوهَا بِسَلَامٍ آمِنِينَ"
+  },
+  {
+    "id": 52,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 436.8,
+    "end": 446.63,
+    "text": "وَنَزَعْنَا مَا فِي صُدُورِهِمْ مِنْ غِلٍّ إِخْوَانًا عَلَى سُرُرٍ مُتَقَابِلِينَ"
+  },
+  {
+    "id": 53,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 447.64,
+    "end": 455.41,
+    "text": "لَا يَمَسُّهُمْ فِيهَا نَصَبٌ وَمَا هُمْ مِنْهَا بِمُخْرَجِينَ"
+  },
+  {
+    "id": 54,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 456.57,
+    "end": 464.31,
+    "text": "نَبِّئْ عِبَادِي أَنِّي أَنَا الْغَفُورُ الرَّحِيمُ"
+  },
+  {
+    "id": 55,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 465.14,
+    "end": 470.22,
+    "text": "وَأَنَّ عَذَابِي هُوَ الْعَذَابُ الْأَلِيمُ"
+  },
+  {
+    "id": 56,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 471.49,
+    "end": 475.88,
+    "text": "وَنَبِّئْهُمْ عَنْ ضَيْفِ إِبْرَاهِيمَ"
+  },
+  {
+    "id": 57,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 476.71,
+    "end": 485.89,
+    "text": "إِذْ دَخَلُوا عَلَيْهِ فَقَالُوا سَلَامًا قَالَ إِنَّا مِنْكُمْ وَجِلُونَ"
+  },
+  {
+    "id": 58,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 486.84,
+    "end": 493.72,
+    "text": "قَالُوا لَا تَوْجَلْ إِنَّا نُبَشِّرُكَ بِغُلَامٍ عَلِيمٍ"
+  },
+  {
+    "id": 59,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 495.27,
+    "end": 504.22,
+    "text": "قَالَ أَبَشَّرْتُمُونِي عَلَى أَنْ مَسَّنِيَ الْكِبَرُ فَبِمَ تُبَشِّرُونَ"
+  },
+  {
+    "id": 60,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 505.22,
+    "end": 512.38,
+    "text": "قَالُوا بَشَّرْنَاكَ بِالْحَقِّ فَلَا تَكُنْ مِنَ الْقَانِطِينَ"
+  },
+  {
+    "id": 61,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 513.27,
+    "end": 519.11,
+    "text": "قَالَ وَمَنْ يَقْنَطُ مِنْ رَحْمَةِ رَبِّهِ"
+  },
+  {
+    "id": 62,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 519.45,
+    "end": 523.67,
+    "text": "طسم"
+  },
+  {
+    "id": 63,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 525.11,
+    "end": 529.91,
+    "text": "قَالَ فَمَا خَطْبُكُمْ أَيُّهَا الْمُرْسَلُونَ"
+  },
+  {
+    "id": 64,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 530.88,
+    "end": 539.73,
+    "text": "قَالُوا إِنَّا أُرْسِلْنَا إِلَى قَوْمٍ مُجْرِمِينَ"
+  },
+  {
+    "id": 65,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 540.53,
+    "end": 547.49,
+    "text": "إِلَّا آلَ لُوطٍ إِنَّا لَمُنَجُّوهُمْ أَجْمَعِينَ"
+  },
+  {
+    "id": 66,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 548.49,
+    "end": 556.14,
+    "text": "إِلَّا امْرَأَتَهُ قَدَّرْنَا إِنَّهَا لَمِنَ الْغَابِرِينَ"
+  },
+  {
+    "id": 67,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 557.4,
+    "end": 562.97,
+    "text": "فَلَمَّا جَاءَ آلَ لُوطٍ الْمُرْسَلُونَ"
+  },
+  {
+    "id": 68,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 563.81,
+    "end": 569.47,
+    "text": "قَالَ إِنَّكُمْ قَوْمٌ مُنْكَرُونَ"
+  },
+  {
+    "id": 69,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 570.26,
+    "end": 576.33,
+    "text": "قَالُوا بَلْ جِئْنَاكَ بِمَا كَانُوا فِيهِ يَمْتَرُونَ"
+  },
+  {
+    "id": 70,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 577.27,
+    "end": 582.92,
+    "text": "وَأَتَيْنَاكَ بِالْحَقِّ وَإِنَّا لَصَادِقُونَ"
+  },
+  {
+    "id": 71,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 584.24,
+    "end": 598.27,
+    "text": "فَأَسْرِ بِأَهْلِكَ بِقِطْعٍ مِنَ اللَّيْلِ وَاتَّبِعْ أَدْبَارَهُمْ وَلَا يَلْتَفِتْ مِنْكُمْ أَحَدٌ وَامْضُوا حَيْثُ تُؤْمَرُونَ"
+  },
+  {
+    "id": 72,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 599.69,
+    "end": 611.94,
+    "text": "وَقَضَيْنَا إِلَيْهِ ذَلِكَ الْأَمْرَ أَنَّ دَابِرَ هَؤُلَاءِ مَقْطُوعٌ مُصْبِحِينَ"
+  },
+  {
+    "id": 73,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 612.91,
+    "end": 618.32,
+    "text": "وَجَاءَ أَهْلُ الْمَدِينَةِ يَسْتَبْشِرُونَ"
+  },
+  {
+    "id": 74,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 619.38,
+    "end": 626.48,
+    "text": "قَالَ إِنَّ هَؤُلَاءِ ضَيْفِي فَلَا تَفْضَحُونِ"
+  },
+  {
+    "id": 75,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 627.4,
+    "end": 631.39,
+    "text": "وَاتَّقُوا اللَّهَ وَلَا تُخْزُونِ"
+  },
+  {
+    "id": 76,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 632.36,
+    "end": 637.83,
+    "text": "قَالُوا أَوَلَمْ نَنْهَكَ عَنِ الْعَالَمِينَ"
+  },
+  {
+    "id": 77,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 638.78,
+    "end": 648.73,
+    "text": "قَالَ هَؤُلَاءِ بَنَاتِي إِنْ كُنْتُمْ فَاعِلِينَ"
+  },
+  {
+    "id": 78,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 650.07,
+    "end": 656.01,
+    "text": "لَعَمْرُكَ إِنَّهُمْ لَفِي سَكْرَتِهِمْ يَعْمَهُونَ"
+  },
+  {
+    "id": 79,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 657.13,
+    "end": 661.6,
+    "text": "فَأَخَذَتْهُمُ الصَّيْحَةُ مُشْرِقِينَ"
+  },
+  {
+    "id": 80,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 662.97,
+    "end": 673.04,
+    "text": "فَجَعَلْنَا عَالِيَهَا سَافِلَهَا وَأَمْطَرْنَا عَلَيْهَا حِجَارَةً مِنْ سِجِّيلٍ"
+  },
+  {
+    "id": 81,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 674.11,
+    "end": 680.42,
+    "text": "إِنَّ فِي ذَلِكَ لَآيَاتٍ لِلْمُتَوَسِّمِينَ"
+  },
+  {
+    "id": 82,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 681.47,
+    "end": 686.27,
+    "text": "وَإِنَّهَا لَبِسَبِيلٍ مُقِيمٍ"
+  },
+  {
+    "id": 83,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 687.37,
+    "end": 693.06,
+    "text": "إِنَّ فِي ذَلِكَ لَآيَةً لِلْمُؤْمِنِينَ"
+  },
+  {
+    "id": 84,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 694.1,
+    "end": 699.75,
+    "text": "وَإِنْ كَانَ أَصْحَابُ الْأَيْكَةِ لَظَالِمِينَ"
+  },
+  {
+    "id": 85,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 700.73,
+    "end": 707.97,
+    "text": "وَأَنْتَقَمْنَا مِنْهُمْ وَإِنَّهُمَا لَبِإِمَامٍ مُبِينٍ"
+  },
+  {
+    "id": 86,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 709.22,
+    "end": 714.42,
+    "text": "وَلَقَدْ كَذَّبَ أَصْحَابُ الْحِجْرِ الْمُرْسَلِينَ"
+  },
+  {
+    "id": 87,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 715.35,
+    "end": 722.04,
+    "text": "وَآتَيْنَاهُمْ آيَاتِنَا فَكَانُوا عَنْهَا مُعْرِضِينَ"
+  },
+  {
+    "id": 88,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 723.13,
+    "end": 729.36,
+    "text": "وَكَانُوا يَنْحِتُونَ مِنَ الْجِبَالِ بُيُوتًا آمِنِينَ"
+  },
+  {
+    "id": 89,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 730.28,
+    "end": 734.25,
+    "text": "فَأَخَذَتْهُمُ الصَّيْحَةُ مُصْبِحِينَ"
+  },
+  {
+    "id": 90,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 735.09,
+    "end": 741.89,
+    "text": "فَمَا أَغْنَى عَنْهُمْ مَا كَانُوا يَكْسِبُونَ"
+  },
+  {
+    "id": 91,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 743.54,
+    "end": 751.24,
+    "text": "وَمَا خَلَقْنَا السَّمَاوَاتِ وَالْأَرْضَ وَمَا بَيْنَهُمَا إِلَّا بِالْحَمَيمِ"
+  },
+  {
+    "id": 92,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 751.66,
+    "end": 751.72,
+    "text": "وَالْمُؤْمِنِينَ"
+  },
+  {
+    "id": 93,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 752.69,
+    "end": 755.67,
+    "text": "وَإِنَّ السَّاعَةَ لَآتِيَةٌ"
+  },
+  {
+    "id": 94,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 756.56,
+    "end": 757.56,
+    "text": "وَاصْفَحِ الصَّفْحِ"
+  },
+  {
+    "id": 95,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 757.94,
+    "end": 759.91,
+    "text": "مَا الْجَمِيلُ"
+  },
+  {
+    "id": 96,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 760.78,
+    "end": 765.84,
+    "text": "إِنَّ رَبَّكَ هُوَ الْخَلَّاقُ الْعَلِيمُ"
+  },
+  {
+    "id": 97,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 766.97,
+    "end": 774.85,
+    "text": "وَلَقَدْ آتَيْنَاكَ سَبْعًا مِنَ الْمَثَانِي وَالْقُرْآنَ الْعَظِيمَ"
+  },
+  {
+    "id": 98,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 776.03,
+    "end": 786.53,
+    "text": "لَا تَمُدَّنَّ عَيْنَيْكَ إِلَى مَا مَتَّعْنَا بِهِ أَزْوَاجًا مِنْهُمْ وَلَا تَحْزَنْ عَلَيْهِمْ"
+  },
+  {
+    "id": 99,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 786.88,
+    "end": 786.96,
+    "text": "وَالْمُؤْمِنِينَ"
+  },
+  {
+    "id": 100,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 787.29,
+    "end": 790.53,
+    "text": "جَنَاحَكَ لِلْمُؤْمِنِينَ"
+  },
+  {
+    "id": 101,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 791.75,
+    "end": 797.76,
+    "text": "وَقُلْ إِنِّي أَنَا النَّذِيرُ الْمُبِينُ"
+  },
+  {
+    "id": 102,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 798.7,
+    "end": 804.48,
+    "text": "كَمَا أَنْزَلْنَا عَلَى الْمُقْتَسِمِينَ"
+  },
+  {
+    "id": 103,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 805.5,
+    "end": 809.75,
+    "text": "الَّذِينَ جَعَلُوا الْقُرْآنَ عِضِينَ"
+  },
+  {
+    "id": 104,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 810.51,
+    "end": 815.54,
+    "text": "وَرَبِّكَ لَنَسْأَلَنَّهُمْ أَجْمِعِينَ"
+  },
+  {
+    "id": 105,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 816.27,
+    "end": 820.16,
+    "text": "عَمَّا كَانُوا يَعْمَلُونَ"
+  },
+  {
+    "id": 106,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 821.29,
+    "end": 827.12,
+    "text": "فَاصْدَعْ بِمَا تُؤْمَرُ وَأَعْرِضْ عَنِ الْمُشْرِكِينَ"
+  },
+  {
+    "id": 107,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 828.11,
+    "end": 833.43,
+    "text": "إِنَّا كَفَيْنَاكَ الْمُسْتَهْزِئِينَ"
+  },
+  {
+    "id": 108,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 834.46,
+    "end": 839.37,
+    "text": "الَّذِينَ يَجْعَلُونَ مَعَ اللَّهِ إِلَهًا آخَرَ"
+  },
+  {
+    "id": 109,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 840.34,
+    "end": 843.27,
+    "text": "فَسَوْفَ يَعْلَمُونَ"
+  },
+  {
+    "id": 110,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 844.03,
+    "end": 850.89,
+    "text": "وَلَقَدْ نَعْلَمُ أَنَّكَ يَضِيقُ صَدْرُكَ بِمَا يَقُولُونَ"
+  },
+  {
+    "id": 111,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 851.95,
+    "end": 858.31,
+    "text": "فَسَبِّحْ بِحَمْدِ رَبِّكَ وَكُنْ مِنَ السَّاجِدِينَ"
+  },
+  {
+    "id": 112,
+    "sura_id": 15,
+    "recitation_uuid": "ef8ccb86-ce4f-47aa-add9-aa30ae8e49f9",
+    "start": 859.12,
+    "end": 864.82,
+    "text": "وَاعْبُدْ رَبَّكَ حَتَّى يَأْتِيَكَ الْيَقِينُ"
+  }
+]

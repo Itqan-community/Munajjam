@@ -1,0 +1,98 @@
+[
+    {
+        "id": 1,
+        "sura_id": 94,
+        "ayah_index": 0,
+        "start": 5.7,
+        "end": 7.96,
+        "transcribed_text": "أَلَمْ نَشْرَحْ لَكَ صَدْرَكَ",
+        "corrected_text": "أَلَمۡ نَشۡرَحۡ لَكَ صَدۡرَكَ",
+        "start_id": 2,
+        "end_id": 2,
+        "uuid": "ab5db5ae-beb7-45f1-95cb-1346c0933d3f"
+    },
+    {
+        "id": 2,
+        "sura_id": 94,
+        "ayah_index": 1,
+        "start": 9.06,
+        "end": 11.85,
+        "transcribed_text": "وَوَضَعْنَا عَنْكَ وِزْرَكَ",
+        "corrected_text": "وَوَضَعۡنَا عَنكَ وِزۡرَكَ",
+        "start_id": 3,
+        "end_id": 3,
+        "uuid": "ab5db5ae-beb7-45f1-95cb-1346c0933d3f"
+    },
+    {
+        "id": 3,
+        "sura_id": 94,
+        "ayah_index": 2,
+        "start": 12.84,
+        "end": 16.82,
+        "transcribed_text": "الَّذِي أَنْقَضَ ظَهْرَيْنِ",
+        "corrected_text": "ٱلَّذِيٓ أَنقَضَ ظَهۡرَكَ",
+        "start_id": 4,
+        "end_id": 4,
+        "uuid": "ab5db5ae-beb7-45f1-95cb-1346c0933d3f"
+    },
+    {
+        "id": 4,
+        "sura_id": 94,
+        "ayah_index": 3,
+        "start": 17.94,
+        "end": 20.14,
+        "transcribed_text": "وَرَفَعْنَا لَكَ ذِكْرًا",
+        "corrected_text": "وَرَفَعۡنَا لَكَ ذِكۡرَكَ",
+        "start_id": 5,
+        "end_id": 5,
+        "uuid": "ab5db5ae-beb7-45f1-95cb-1346c0933d3f"
+    },
+    {
+        "id": 5,
+        "sura_id": 94,
+        "ayah_index": 4,
+        "start": 21.32,
+        "end": 24.31,
+        "transcribed_text": "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا",
+        "corrected_text": "فَإِنَّ مَعَ ٱلۡعُسۡرِ يُسۡرًا",
+        "start_id": 6,
+        "end_id": 6,
+        "uuid": "ab5db5ae-beb7-45f1-95cb-1346c0933d3f"
+    },
+    {
+        "id": 6,
+        "sura_id": 94,
+        "ayah_index": 5,
+        "start": 25.31,
+        "end": 28.27,
+        "transcribed_text": "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
+        "corrected_text": "إِنَّ مَعَ ٱلۡعُسۡرِ يُسۡرٗا",
+        "start_id": 7,
+        "end_id": 7,
+        "uuid": "ab5db5ae-beb7-45f1-95cb-1346c0933d3f"
+    },
+    {
+        "id": 7,
+        "sura_id": 94,
+        "ayah_index": 6,
+        "start": 29.34,
+        "end": 32.55,
+        "transcribed_text": "فَإِذَا فَرَغْتَ فَانْصَبْ",
+        "corrected_text": "فَإِذَا فَرَغۡتَ فَٱنصَبۡ",
+        "start_id": 8,
+        "end_id": 8,
+        "uuid": "ab5db5ae-beb7-45f1-95cb-1346c0933d3f"
+    },
+    {
+        "id": 8,
+        "sura_id": 94,
+        "ayah_index": 7,
+        "start": 33.39,
+        "end": 35.86,
+        "transcribed_text": "وَإِلَى رَبِّكَ فَارْغَبْ",
+        "corrected_text": "وَإِلَىٰ رَبِّكَ فَٱرۡغَب",
+        "start_id": 9,
+        "end_id": 9,
+        "uuid": "ab5db5ae-beb7-45f1-95cb-1346c0933d3f"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "id": 1,
+        "sura_id": 108,
+        "ayah_index": 0,
+        "start": 5.63,
+        "end": 9.69,
+        "transcribed_text": "إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ",
+        "corrected_text": "إِنَّآ أَعۡطَيۡنَٰكَ ٱلۡكَوۡثَرَ",
+        "start_id": 2,
+        "end_id": 2,
+        "uuid": "fc0a8e7f-0bf8-4db5-8849-8d9aaf318467"
+    },
+    {
+        "id": 2,
+        "sura_id": 108,
+        "ayah_index": 1,
+        "start": 10.8,
+        "end": 13.18,
+        "transcribed_text": "فَصَلِّ لِرَبِّكَ وَانْحَرْ",
+        "corrected_text": "فَصَلِّ لِرَبِّكَ وَٱنۡحَرۡ",
+        "start_id": 3,
+        "end_id": 3,
+        "uuid": "fc0a8e7f-0bf8-4db5-8849-8d9aaf318467"
+    },
+    {
+        "id": 3,
+        "sura_id": 108,
+        "ayah_index": 2,
+        "start": 14.18,
+        "end": 17.53,
+        "transcribed_text": "إِنَّ شَانِئَكَ هُوَ الْأَبْتَرُ",
+        "corrected_text": "إِنَّ شَانِئَكَ هُوَ ٱلۡأَبۡتَرُ",
+        "start_id": 4,
+        "end_id": 4,
+        "uuid": "fc0a8e7f-0bf8-4db5-8849-8d9aaf318467"
+    }
+]

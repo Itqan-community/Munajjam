@@ -1,0 +1,4 @@
+sura_id,ayah_index,ayah_text,model_text,start_time,end_time,similarity_score,status,notes,overlap_status
+80,1,عَبَسَ وَتَوَلَّىٰٓ,عَبَسَ وَتَوَلَّى,5.45,7.33,1.0,Success,Last word matched,No Overlap
+80,2,أَن جَآءَهُ ٱلۡأَعۡمَىٰ,أَنْ جَاءَهُ الْأَعْمَى,8.19,11.52,0.9285714285714286,Success,Last word matched,No Overlap
+80,3,وَمَا يُدۡرِيكَ لَعَلَّهُۥ يَزَّكَّىٰٓ,وَمَا يُدْرِيكَ لَعَلَّهُ يَا لَوْ يَذَّكَّرُ فَتَنْفَعَهُ الذِّكْرَى أَمَّا مَنِ اسْتَغْنَى فَأَنْتَ لَهُ تَصَدَّى عَلَيْكَ أَلَّا يَزَّى,12.4,32.19,0.36363636363636365,Success,Last word matched,Overlap Removed

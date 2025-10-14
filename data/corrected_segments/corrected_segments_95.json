@@ -1,0 +1,98 @@
+[
+    {
+        "id": 1,
+        "sura_id": 95,
+        "ayah_index": 0,
+        "start": 5.59,
+        "end": 8.72,
+        "transcribed_text": "وَالتِّينِ وَالزَّيْتُونِ",
+        "corrected_text": "وَٱلتِّينِ وَٱلزَّيۡتُونِ",
+        "start_id": 2,
+        "end_id": 2,
+        "uuid": "9987eb61-74a4-447c-b0ee-fd9db0d26edd"
+    },
+    {
+        "id": 2,
+        "sura_id": 95,
+        "ayah_index": 1,
+        "start": 9.59,
+        "end": 12.64,
+        "transcribed_text": "وَطُورِ سِينِينَ",
+        "corrected_text": "وَطُورِ سِينِينَ",
+        "start_id": 3,
+        "end_id": 3,
+        "uuid": "9987eb61-74a4-447c-b0ee-fd9db0d26edd"
+    },
+    {
+        "id": 3,
+        "sura_id": 95,
+        "ayah_index": 2,
+        "start": 13.27,
+        "end": 16.68,
+        "transcribed_text": "وَهَذَا الْبَلَدِ الْأَمِينِ",
+        "corrected_text": "وَهَٰذَا ٱلۡبَلَدِ ٱلۡأَمِينِ",
+        "start_id": 4,
+        "end_id": 4,
+        "uuid": "9987eb61-74a4-447c-b0ee-fd9db0d26edd"
+    },
+    {
+        "id": 4,
+        "sura_id": 95,
+        "ayah_index": 3,
+        "start": 17.76,
+        "end": 24.26,
+        "transcribed_text": "لَقَدْ خَلَقْنَا الْإِنْسَانَ فِي أَحْسَنِ تَقْوِيمٍ",
+        "corrected_text": "لَقَدۡ خَلَقۡنَا ٱلۡإِنسَٰنَ فِيٓ أَحۡسَنِ تَقۡوِيمٖ",
+        "start_id": 5,
+        "end_id": 5,
+        "uuid": "9987eb61-74a4-447c-b0ee-fd9db0d26edd"
+    },
+    {
+        "id": 5,
+        "sura_id": 95,
+        "ayah_index": 4,
+        "start": 25.09,
+        "end": 29.8,
+        "transcribed_text": "ثُمَّ رَدَدْنَاهُ أَسْفَلَ سَافِلِينَ",
+        "corrected_text": "ثُمَّ رَدَدۡنَٰهُ أَسۡفَلَ سَٰفِلِينَ",
+        "start_id": 6,
+        "end_id": 6,
+        "uuid": "9987eb61-74a4-447c-b0ee-fd9db0d26edd"
+    },
+    {
+        "id": 6,
+        "sura_id": 95,
+        "ayah_index": 5,
+        "start": 31.28,
+        "end": 39.58,
+        "transcribed_text": "إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ فَلَهُمْ أَجْرٌ غَيْرُ مَمْنُونٍ",
+        "corrected_text": "إِلَّا ٱلَّذِينَ ءَامَنُواْ وَعَمِلُواْ ٱلصَّٰلِحَٰتِ فَلَهُمۡ أَجۡرٌ غَيۡرُ مَمۡنُونٖ",
+        "start_id": 7,
+        "end_id": 7,
+        "uuid": "9987eb61-74a4-447c-b0ee-fd9db0d26edd"
+    },
+    {
+        "id": 7,
+        "sura_id": 95,
+        "ayah_index": 6,
+        "start": 40.54,
+        "end": 44.86,
+        "transcribed_text": "فَمَا يُكَذِّبُكَ بَعْدُ بِالدِّينِ",
+        "corrected_text": "فَمَا يُكَذِّبُكَ بَعۡدُ بِٱلدِّينِ",
+        "start_id": 8,
+        "end_id": 8,
+        "uuid": "9987eb61-74a4-447c-b0ee-fd9db0d26edd"
+    },
+    {
+        "id": 8,
+        "sura_id": 95,
+        "ayah_index": 7,
+        "start": 45.72,
+        "end": 50.62,
+        "transcribed_text": "أَلَيْسَ اللَّهُ مِنْ حَاكِمِينَ",
+        "corrected_text": "أَلَيۡسَ ٱللَّهُ بِأَحۡكَمِ ٱلۡحَٰكِمِينَ",
+        "start_id": 10,
+        "end_id": 10,
+        "uuid": "9987eb61-74a4-447c-b0ee-fd9db0d26edd"
+    }
+]

@@ -1,0 +1,98 @@
+[
+    {
+        "id": 1,
+        "sura_id": 99,
+        "ayah_index": 0,
+        "start": 5.65,
+        "end": 9.51,
+        "transcribed_text": "إِذَا زُلْزِلَتِ الْأَرْضُ زِلْزَالَهَا",
+        "corrected_text": "إِذَا زُلۡزِلَتِ ٱلۡأَرۡضُ زِلۡزَالَهَا",
+        "start_id": 2,
+        "end_id": 2,
+        "uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92"
+    },
+    {
+        "id": 2,
+        "sura_id": 99,
+        "ayah_index": 1,
+        "start": 10.41,
+        "end": 13.75,
+        "transcribed_text": "وَأَخْرَجَتِ الْأَرْضُ أَثْقَالَهَا",
+        "corrected_text": "وَأَخۡرَجَتِ ٱلۡأَرۡضُ أَثۡقَالَهَا",
+        "start_id": 3,
+        "end_id": 3,
+        "uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92"
+    },
+    {
+        "id": 3,
+        "sura_id": 99,
+        "ayah_index": 2,
+        "start": 14.74,
+        "end": 18.49,
+        "transcribed_text": "وَقَالَ الْإِنْسَانُ مَا لَهَا",
+        "corrected_text": "وَقَالَ ٱلۡإِنسَٰنُ مَا لَهَا",
+        "start_id": 4,
+        "end_id": 4,
+        "uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92"
+    },
+    {
+        "id": 4,
+        "sura_id": 99,
+        "ayah_index": 3,
+        "start": 19.4,
+        "end": 23.76,
+        "transcribed_text": "يَوْمَئِذٍ تُحَدِّثُ أَخْبَارَهَا",
+        "corrected_text": "يَوۡمَئِذٖ تُحَدِّثُ أَخۡبَارَهَا",
+        "start_id": 5,
+        "end_id": 5,
+        "uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92"
+    },
+    {
+        "id": 5,
+        "sura_id": 99,
+        "ayah_index": 4,
+        "start": 24.72,
+        "end": 28.01,
+        "transcribed_text": "بِأَنَّ رَبَّكَ أَوْحَى لَهَا",
+        "corrected_text": "بِأَنَّ رَبَّكَ أَوۡحَىٰ لَهَا",
+        "start_id": 6,
+        "end_id": 6,
+        "uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92"
+    },
+    {
+        "id": 6,
+        "sura_id": 99,
+        "ayah_index": 5,
+        "start": 29.3,
+        "end": 35.8,
+        "transcribed_text": "يَوْمَئِذٍ يَصْدُرُ النَّاسُ أَشْتَاتًا لِيُرَوْا أَعْمَالَهُمْ",
+        "corrected_text": "يَوۡمَئِذٖ يَصۡدُرُ ٱلنَّاسُ أَشۡتَاتٗا لِّيُرَوۡاْ أَعۡمَٰلَهُمۡ",
+        "start_id": 7,
+        "end_id": 7,
+        "uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92"
+    },
+    {
+        "id": 7,
+        "sura_id": 99,
+        "ayah_index": 6,
+        "start": 36.69,
+        "end": 42.4,
+        "transcribed_text": "فَمَنْ يَعْمَلْ مِثْقَالَ ذَرَّةٍ خَيْرًا يَرَهُ",
+        "corrected_text": "فَمَن يَعۡمَلۡ مِثۡقَالَ ذَرَّةٍ خَيۡرٗا يَرَهُۥ",
+        "start_id": 8,
+        "end_id": 8,
+        "uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92"
+    },
+    {
+        "id": 8,
+        "sura_id": 99,
+        "ayah_index": 7,
+        "start": 43.38,
+        "end": 49.45,
+        "transcribed_text": "وَمَنْ يَعْمَلْ مِثْقَالَ ذَرَّةٍ شَرًّا يَرَهُ",
+        "corrected_text": "وَمَن يَعۡمَلۡ مِثۡقَالَ ذَرَّةٖ شَرّٗا يَرَهُۥ",
+        "start_id": 9,
+        "end_id": 9,
+        "uuid": "c776910b-a28d-4cce-8e4b-77f25eceeb92"
+    }
+]
