@@ -124,110 +124,247 @@
 
     1. Load UUID and reciter name from config.json
     2. Load transcribed segments from segments.json
-    3. Load reference ayahs from "Quran Ayas List.csv" (filter by sura_id)
-    4. Connect to SQLite database (quran.db)
+    3. Load silences from silences.json (for buffer calculation)
+    4. Load reference ayahs from "Quran Ayas List.csv" (filter by sura_id)
+    5. Connect to SQLite database (quran.db)
 
-    5. Initialize:
-    - i = 0 (segment index)
-    - ayah_index = 0
-    - cleaned_segments = empty list
+    6. Initialize:
+        - i = 0 (segment index)
+        - ayah_index = 0
+        - cleaned_segments = empty list
+        - next_ayah_id = 1 (separate counter for ayahs)
+        - prev_ayah_end = None (track previous ayah for buffer overlap prevention)
+    
+    7. Pre-process special segments:
+        FOR EACH segment in segments:
+            IF segment.id == 0 OR segment.type in ["isti3aza", "basmala"]:
+                Add to cleaned_segments with:
+                    - id = 0
+                    - ayah_index = -1 (special marker)
+                    - type = detected type
+                Print "Added [type] segment: [start]s -> [end]s"
+        END FOR
+    
+    8. Convert silences to seconds and sort by start time
 
     WHILE i < total_segments AND ayah_index < total_ayahs:
         
-        6. start_time = segments[i].start
-        7. merged_text = segments[i].text
-        8. end_time = segments[i].end
+        // Skip special segments during alignment
+        9. IF current segment is special (id=0 or type in special types):
+                i = i + 1
+                Continue to next iteration
+        
+        10. start_time = segments[i].start
+        11. merged_text = segments[i].text
+        12. end_time = segments[i].end
         
         LOOP FOREVER (until break):
             
             // --- CALCULATE SIMILARITIES ---
-            9. Calculate full_similarity between merged_text and current ayah
+            13. Calculate full_similarity between merged_text and current ayah
             
-            10. Determine N_CHECK:
-                IF next ayah has 3+ words: N = 3
-                ELSE IF next ayah has 2 words: N = 2
+            14. Determine N_CHECK based on current ayah word count:
+                IF ayah has 3+ words: N = 3
+                ELSE IF ayah has 2 words: N = 2
                 ELSE: N = 1
             
-            11. Get last N words from merged_text
-            12. Get last N words from current ayah
-            13. Calculate last_words_similarity
+            15. Get last N words from merged_text
+            16. Get last N words from current ayah
+            17. Calculate last_words_similarity
             
-            14. Print comparison info
+            18. Print comparison info
             
-            // --- CHECK 1: Last words match? ---
-            15. IF last_words_similarity >= 0.7:
-                    Finalize current ayah:
-                        - Save to database
-                        - Add to cleaned_segments list
-                    ayah_index = ayah_index + 1
-                    BREAK (exit inner loop)
+            // --- REQUIRED TOKENS GUARD ---
+            19. IF current ayah has required tokens (e.g., ayah 2 needs ["ارجع", "فطور"]):
+                    IF any required token is missing from merged_text:
+                        Force merge next segment
+                        Continue loop
+            
+            // --- CHECK 1: Last words match + coverage check ---
+            20. IF last_words_similarity >= 0.6:
+                    Calculate coverage_ratio = len(merged_words) / len(ayah_words)
+                    
+                    IF coverage_ratio >= 0.7 OR no more segments:
+                        // Apply smart buffer system
+                        Determine next_ayah_start (if next segment exists)
+                        
+                        Call APPLY_BUFFERS(start_time, end_time, silences, 
+                                          prev_ayah_end, next_ayah_start, buffer=0.3)
+                        Get buffered_start, buffered_end
+                        
+                        Finalize current ayah:
+                            - Save to database with buffered timestamps
+                            - Add to cleaned_segments list with id=next_ayah_id
+                        
+                        next_ayah_id = next_ayah_id + 1
+                        prev_ayah_end = buffered_end
+                        ayah_index = ayah_index + 1
+                        BREAK (exit inner loop)
+                    ELSE:
+                        Print "Coverage too low, continue merging"
+                        // Fall through to merging logic
             
             // --- CHECK 2: Next segment starts next ayah? ---
-            16. IF next segment exists AND next ayah exists:
+            21. IF next segment exists AND next ayah exists:
                     
-                    17. Get first N words from next segment
-                    18. Get first N words from next ayah
-                    19. Calculate first_words_similarity
+                    // Calculate N_CHECK for next ayah
+                    22. Determine N_CHECK based on next ayah word count
                     
-                    20. IF first_words_similarity > 0.8:
-                            Print "Stop! Next segment starts next ayah"
-                            Finalize current ayah WITHOUT merging
+                    23. Get first N words from next segment
+                    24. Get first N words from next ayah
+                    25. Calculate first_words_similarity
+                    
+                    26. IF first_words_similarity > 0.6:
+                            Print "Next segment starts next ayah"
+                            
+                            // Apply smart buffer system
+                            next_ayah_start = next_segment.start
+                            Call APPLY_BUFFERS(start_time, end_time, silences,
+                                              prev_ayah_end, next_ayah_start, buffer=0.3)
+                            Get buffered_start, buffered_end
+                            
+                            Finalize current ayah with buffered timestamps
+                            next_ayah_id = next_ayah_id + 1
+                            prev_ayah_end = buffered_end
                             ayah_index = ayah_index + 1
                             BREAK (exit inner loop)
                     
-                    21. ELSE:
-                            Merge next segment text into merged_text
-                            Remove overlapping words
-                            Update end_time to next segment's end
-                            i = i + 1
-                            Continue loop (go back to step 9)
+                    // --- CHECK 3: Silence gap detection ---
+                    27. Call FIND_SILENCE_GAP(end_time, next_segment.start, silences, min_gap=0.18)
+                    
+                    28. IF silence gap found:
+                            // Verify with textual check
+                            IF next segment likely starts next ayah (similarity > 0.6):
+                                Print "Silence gap + textual cues = ayah boundary"
+                                
+                                // Constrain end buffer to gap start
+                                Call APPLY_BUFFERS with next_start = gap_start
+                                
+                                Finalize current ayah with buffered timestamps
+                                next_ayah_id = next_ayah_id + 1
+                                prev_ayah_end = buffered_end
+                                ayah_index = ayah_index + 1
+                                BREAK (exit inner loop)
+                    
+                    // --- No boundary detected, merge segments ---
+                    29. Merge next segment text into merged_text
+                        Call REMOVE_OVERLAP to clean duplicate words
+                        Update end_time to next segment's end
+                        i = i + 1
+                        Continue loop (go back to step 13)
             
-            // --- CHECK 3: No more segments? ---
-            22. ELSE (no next segment):
+            // --- CHECK 4: No more segments? ---
+            30. ELSE (no next segment):
                     Print "End of segments reached"
-                    Force finalize current ayah
+                    
+                    // Apply buffer without next constraint
+                    Call APPLY_BUFFERS(start_time, end_time, silences,
+                                      prev_ayah_end, None, buffer=0.3)
+                    
+                    Force finalize current ayah with buffered timestamps
+                    next_ayah_id = next_ayah_id + 1
+                    prev_ayah_end = buffered_end
                     ayah_index = ayah_index + 1
                     BREAK (exit inner loop)
         
         END LOOP
         
-        23. i = i + 1
+        31. i = i + 1
 
     END WHILE
 
-    24. Close database connection
-    25. Save cleaned_segments to corrected_segments_sura_id.json
-    26. Print completion message
+    32. Sort cleaned_segments by start time (ensures special segments first, then ayahs)
+    33. Close database connection
+    34. Save cleaned_segments to corrected_segments_sura_id.json
+    35. Print completion message
 
     RETURN
 
 
 # KEY HELPER FUNCTIONS
+
     NORMALIZE_ARABIC(text)
-    1. Replace أ, إ, آ with ا
-    2. Replace ى with ي
-    3. Replace ة with ه
-    4. Remove all punctuation and diacritics
-    5. Remove extra whitespace
-    RETURN normalized_text
+        1. Replace أ, إ, آ with ا
+        2. Replace ى with ي
+        3. Replace ة with ه
+        4. Remove all punctuation and diacritics
+        5. Remove extra whitespace
+        RETURN normalized_text
+    
+    DETECT_SPECIAL_TYPE(segment)
+        1. Check if segment.type in ["isti3aza", "basmala", "basmalah"]
+        2. If yes, normalize spelling and return canonical type
+        3. Otherwise, check text patterns:
+           - IF matches "اعوذ بالله من الشيطان الرجيم": return "isti3aza"
+           - IF matches "(?:ب\s*س?م?\s*)?الله\s*الرحمن\s*الرحيم": return "basmala"
+        4. Return None if not special
+    
+    APPLY_BUFFERS(start_time, end_time, silences, prev_end, next_start, buffer=0.3)
+        INPUT: Original timestamps, silence periods, constraints, buffer duration
+        OUTPUT: Buffered timestamps
         
+        1. Convert silences from milliseconds to seconds and sort
+        2. new_start = start_time, new_end = end_time
+        
+        // Extend start backward into preceding silence
+        3. Find best silence period that ends before/at start_time
+        4. IF found:
+               Calculate available_buffer = start_time - silence_start
+               buffer_to_apply = min(buffer, available_buffer)
+               buffer_start = start_time - buffer_to_apply
+               
+               IF prev_end is None OR buffer_start >= prev_end:
+                   new_start = buffer_start
+               ELSE IF prev_end < start_time:
+                   new_start = max(buffer_start, prev_end)
+        
+        // Extend end forward into following silence
+        5. Find best silence period that starts at/after end_time
+        6. IF found:
+               Calculate available_buffer = silence_end - end_time
+               buffer_to_apply = min(buffer, available_buffer)
+               buffer_end = end_time + buffer_to_apply
+               
+               IF next_start is None OR buffer_end <= next_start:
+                   new_end = buffer_end
+               ELSE IF next_start > end_time:
+                   new_end = min(buffer_end, next_start)
+        
+        RETURN new_start, new_end
+    
+    FIND_SILENCE_GAP(current_end, next_start, silences_sec, min_gap=0.18)
+        INPUT: End of current segment, start of next segment, silence periods
+        OUTPUT: (gap_start, gap_end) or None
+        
+        1. FOR EACH silence in silences_sec:
+               IF silence ends before current_end: skip
+               IF silence starts after next_start: break
+               
+               IF silence is fully between current_end and next_start:
+                   IF (silence_end - silence_start) >= min_gap:
+                       RETURN (silence_start, silence_end)
+        
+        2. RETURN None
+    
     CALCULATE_SIMILARITY(text1, text2)
-    1. Normalize both texts
-    2. Use SequenceMatcher to compare
-    3. Return ratio (0.0 to 1.0)
+        1. Normalize both texts
+        2. Use SequenceMatcher to compare
+        3. Return ratio (0.0 to 1.0)
+    
     GET_FIRST_LAST_WORDS(text, n)
-    1. Normalize text
-    2. Split into words
-    3. Extract first n words
-    4. Extract last n words
-    RETURN first_words, last_words
+        1. Normalize text
+        2. Split into words
+        3. Extract first n words
+        4. Extract last n words
+        RETURN first_words, last_words
+    
     REMOVE_OVERLAP(text1, text2)
-    1. Split text1 into words, count occurrences
-    2. Split text2 into words
-    3. For each word in text2:
-    IF word exists in text1:
-        Skip it (already present)
-    ELSE:
-        Keep it
-    4. Append remaining words to text1
-    RETURN merged_text
+        1. Split text1 into words, count occurrences
+        2. Split text2 into words
+        3. For each word in text2:
+           IF word exists in text1:
+               Decrement counter and skip (already present)
+           ELSE:
+               Keep it
+        4. Append remaining words to text1
+        RETURN merged_text, overlap_found
