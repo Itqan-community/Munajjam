@@ -1,0 +1,19 @@
+# Core ML/Audio Processing
+torch>=2.0.0
+transformers>=4.35.0
+librosa>=0.10.0
+
+# Audio manipulation
+pydub>=0.25.1
+# Note: pydub.playback may require simpleaudio or pygame for audio playback
+# Install with: pip install simpleaudio (or pygame)
+
+# Data processing
+pandas>=2.0.0
+
+# Text similarity
+rapidfuzz>=3.0.0
+
+# HTTP requests (for download.py)
+requests>=2.31.0
+

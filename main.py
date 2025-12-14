@@ -10,7 +10,7 @@ from src import config  # Import configuration module
 from src.align_segments import clean_and_merge_segments
 
 # Path to folder containing Quran audio files
-AUDIO_FOLDER = r"E:\Quran\data\quran_wav"
+AUDIO_FOLDER = r"Quran/audio"
 
 # CSV file containing list of Quran ayahs
 QURAN_AYAS_CSV = r"data/Quran Ayas List.csv"
@@ -25,16 +25,22 @@ def get_total_ayas(sura_id):
 
 def main():
     # Load transcription model, processor, and device (CPU/GPU)
-    processor, model, device = load_model()
+    # Handle both faster-whisper (returns model, device) and transformers (returns processor, model, device)
+    result = load_model()
+    if len(result) == 2:
+        model, device = result
+        processor = None  # faster-whisper doesn't use processor
+    else:
+        processor, model, device = result
 
     # Get list of all .wav files in AUDIO_FOLDER and sort them
     all_files = sorted([f for f in os.listdir(AUDIO_FOLDER) if f.endswith(".wav")])
 
-    # Specify target sura files to process (from 75 down to 71)
-    target_files = [f"{i}.wav" for i in range(1, 0, -1)]
+    # Specify target sura files to process (currently only 67.wav available)
+    target_files = ["067.wav"]
 #
     # Name of the reciter
-    reciter_name = "عمر النبراوي"
+    reciter_name = "badr al-turki"
 
     # Process each target audio file
     for wav_file in target_files:
@@ -89,14 +95,18 @@ def main():
                 with open(corrected_file, encoding="utf-8") as f:
                     current_segments = json.load(f)
 
+                # Count only ayahs (exclude Isti'aza/Basmala segments with id 0 or ayah_index -1)
+                ayah_segments = [seg for seg in current_segments 
+                                if seg.get('id') != 0 and seg.get('ayah_index', -1) >= 0]
+
                 # If all ayahs are aligned, mark success
-                if len(current_segments) == total_ayas:
+                if len(ayah_segments) == total_ayas:
                     success = True
                     print(f"✅ All {total_ayas} ayat aligned successfully for Sura {sura_id} (uuid={surah_uuid})")
                     # time.sleep(30)  # Wait before next sura
                 else:
                     # If segments are incomplete, retry
-                    print(f"⚠️ Only {len(current_segments)} segments found, expected {total_ayas}. Retrying...")
+                    print(f"⚠️ Only {len(ayah_segments)} ayah segments found, expected {total_ayas}. Retrying...")
                     attempt += 1
                     time.sleep(1)
             else:

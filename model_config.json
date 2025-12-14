@@ -1,0 +1,33 @@
+{
+  "selected_model": "whisper-base-ar-quran",
+  "models": {
+    "whisper-base-ar-quran": {
+      "model_id": "tarteel-ai/whisper-base-ar-quran",
+      "type": "transformers",
+      "description": "Tarteel Whisper Base model - Balanced accuracy and speed. WER: 5.75%. Uses standard Transformers/Hugging Face implementation.",
+      "speed": "medium",
+      "accuracy": "high",
+      "memory_usage": "medium",
+      "recommended_for": "General use, good balance of accuracy and speed"
+    },
+    "faster-whisper-base-ar-quran": {
+      "model_id": "OdyAsh/faster-whisper-base-ar-quran",
+      "type": "faster-whisper",
+      "description": "Faster Whisper version of Tarteel Base model - Up to 4x faster than standard Transformers. Uses CTranslate2 engine. Same accuracy as whisper-base-ar-quran but significantly faster.",
+      "speed": "very_fast",
+      "accuracy": "high",
+      "memory_usage": "low",
+      "recommended_for": "Production use, fastest option for macOS",
+      "note": "Requires 'faster-whisper' package: pip install faster-whisper"
+    },
+    "whisper-tiny-ar-quran": {
+      "model_id": "tarteel-ai/whisper-tiny-ar-quran",
+      "type": "transformers",
+      "description": "Tarteel Whisper Tiny model - Fastest but lower accuracy. WER: 7.05%. Lightweight model suitable for resource-limited environments.",
+      "speed": "fast",
+      "accuracy": "medium",
+      "memory_usage": "low",
+      "recommended_for": "Quick testing, low-resource devices"
+    }
+  }
+}
