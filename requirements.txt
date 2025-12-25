@@ -17,3 +17,8 @@ rapidfuzz>=3.0.0
 # HTTP requests (for download.py)
 requests>=2.31.0
 
+# Faster Whisper (CTranslate2-based, 4x faster than standard transformers)
+faster-whisper>=1.0.0
+
+# Audio file I/O (required for faster-whisper segment processing)
+soundfile>=0.12.0
