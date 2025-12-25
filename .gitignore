@@ -161,3 +161,19 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+
+# Audio files and output
+Quran/
+output/
+
+# Data directory (local dev/testing only - munajjam has bundled data)
+data/
+
+# Utility scripts (local dev only)
+article.md
+batch_process.py
+check_missing.py
+process_surah.py
+reprocess_failed.py
+scripts/download.py
+scripts/to_wav.py
