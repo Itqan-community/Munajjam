@@ -1,0 +1,38 @@
+{
+  "surah_id": 112,
+  "surah_name": "الإخلاص",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 4,
+  "aligned_ayahs": 4,
+  "avg_similarity": 0.994,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.52,
+      "end": 11.81,
+      "text": "قُلۡ هُوَ ٱللَّهُ أَحَدٌ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 12.35,
+      "end": 14.12,
+      "text": "ٱللَّهُ ٱلصَّمَدُ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 3,
+      "start": 14.55,
+      "end": 17.12,
+      "text": "لَمۡ يَلِدۡ وَلَمۡ يُولَدۡ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 17.54,
+      "end": 21.3,
+      "text": "وَلَمۡ يَكُن لَّهُۥ كُفُوًا أَحَدُۢ",
+      "similarity": 0.974
+    }
+  ]
+}

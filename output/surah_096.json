@@ -1,0 +1,143 @@
+{
+  "surah_id": 96,
+  "surah_name": "العلق",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 19,
+  "aligned_ayahs": 19,
+  "avg_similarity": 0.978,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.66,
+      "end": 13.46,
+      "text": "ٱقۡرَأۡ بِٱسۡمِ رَبِّكَ ٱلَّذِي خَلَقَ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 14.02,
+      "end": 17.68,
+      "text": "خَلَقَ ٱلۡإِنسَٰنَ مِنۡ عَلَقٍ",
+      "similarity": 0.971
+    },
+    {
+      "ayah_number": 3,
+      "start": 18.18,
+      "end": 21.07,
+      "text": "ٱقۡرَأۡ وَرَبُّكَ ٱلۡأَكۡرَمُ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 21.5,
+      "end": 24.44,
+      "text": "ٱلَّذِي عَلَّمَ بِٱلۡقَلَمِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 5,
+      "start": 24.88,
+      "end": 29.52,
+      "text": "عَلَّمَ ٱلۡإِنسَٰنَ مَا لَمۡ يَعۡلَمۡ",
+      "similarity": 0.977
+    },
+    {
+      "ayah_number": 6,
+      "start": 30.05,
+      "end": 37.15,
+      "text": "كـَلَّآ إِنَّ ٱلۡإِنسَٰنَ لَيَطۡغَىٰٓ",
+      "similarity": 0.95
+    },
+    {
+      "ayah_number": 7,
+      "start": 37.71,
+      "end": 40.1,
+      "text": "أَن رَّءَاهُ ٱسۡتَغۡنَىٰٓ",
+      "similarity": 0.963
+    },
+    {
+      "ayah_number": 8,
+      "start": 40.59,
+      "end": 44.56,
+      "text": "إِنَّ إِلَىٰ رَبِّكَ ٱلرُّجۡعَىٰٓ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 9,
+      "start": 45.09,
+      "end": 47.96,
+      "text": "أَرَءَيۡتَ ٱلَّذِي يَنۡهَىٰ",
+      "similarity": 0.933
+    },
+    {
+      "ayah_number": 10,
+      "start": 48.38,
+      "end": 51.03,
+      "text": "عَبۡدًا إِذَا صَلَّىٰٓ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 11,
+      "start": 51.59,
+      "end": 55.84,
+      "text": "أَرَءَيۡتَ إِن كَانَ عَلَى ٱلۡهُدَىٰٓ",
+      "similarity": 0.955
+    },
+    {
+      "ayah_number": 12,
+      "start": 56.34,
+      "end": 58.8,
+      "text": "أَوۡ أَمَرَ بِٱلتَّقۡوَىٰٓ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 13,
+      "start": 59.26,
+      "end": 63.54,
+      "text": "أَرَءَيۡتَ إِن كَذَّبَ وَتَوَلَّىٰٓ",
+      "similarity": 0.944
+    },
+    {
+      "ayah_number": 14,
+      "start": 64.07,
+      "end": 69.98,
+      "text": "أَلَمۡ يَعۡلَم بِأَنَّ ٱللَّهَ يَرَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 15,
+      "start": 70.69,
+      "end": 78.69,
+      "text": "كـَلَّا لَئِن لَّمۡ يَنتَهِ لَنَسۡفَعَۢا بِٱلنَّاصِيَةِ",
+      "similarity": 0.984
+    },
+    {
+      "ayah_number": 16,
+      "start": 79.31,
+      "end": 83.97,
+      "text": "نَاصِيَةٖ كَٰذِبَةٍ خَاطِئَةٖ",
+      "similarity": 0.97
+    },
+    {
+      "ayah_number": 17,
+      "start": 84.56,
+      "end": 86.86,
+      "text": "فَلۡيَدۡعُ نَادِيَهُۥ",
+      "similarity": 0.957
+    },
+    {
+      "ayah_number": 18,
+      "start": 87.3,
+      "end": 89.89,
+      "text": "سَنَدۡعُ ٱلزَّبَانِيَةَ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 19,
+      "start": 90.45,
+      "end": 95.36,
+      "text": "كـَلَّا لَا تُطِعۡهُ وَٱسۡجُدۡۤ وَٱقۡتَرِب۩",
+      "similarity": 0.98
+    }
+  ]
+}

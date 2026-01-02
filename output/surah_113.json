@@ -1,0 +1,45 @@
+{
+  "surah_id": 113,
+  "surah_name": "الفلق",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 5,
+  "aligned_ayahs": 5,
+  "avg_similarity": 0.991,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.22,
+      "end": 11.86,
+      "text": "قُلۡ أَعُوذُ بِرَبِّ ٱلۡفَلَقِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 12.29,
+      "end": 15.31,
+      "text": "مِن شَرِّ مَا خَلَقَ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 3,
+      "start": 15.79,
+      "end": 19.86,
+      "text": "وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 20.36,
+      "end": 25.34,
+      "text": "وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِي ٱلۡعُقَدِ",
+      "similarity": 0.957
+    },
+    {
+      "ayah_number": 5,
+      "start": 25.8,
+      "end": 30.61,
+      "text": "وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+      "similarity": 1.0
+    }
+  ]
+}

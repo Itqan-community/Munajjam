@@ -1,0 +1,52 @@
+{
+  "surah_id": 114,
+  "surah_name": "الناس",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 6,
+  "aligned_ayahs": 6,
+  "avg_similarity": 1.0,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.4,
+      "end": 13.63,
+      "text": "قُلۡ أَعُوذُ بِرَبِّ ٱلنَّاسِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 14.13,
+      "end": 17.36,
+      "text": "مَلِكِ ٱلنَّاسِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 3,
+      "start": 17.89,
+      "end": 21.11,
+      "text": "إِلَٰهِ ٱلنَّاسِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 21.62,
+      "end": 26.91,
+      "text": "مِن شَرِّ ٱلۡوَسۡوَاسِ ٱلۡخَنَّاسِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 5,
+      "start": 27.45,
+      "end": 32.95,
+      "text": "ٱلَّذِي يُوَسۡوِسُ فِي صُدُورِ ٱلنَّاسِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 6,
+      "start": 33.59,
+      "end": 39.3,
+      "text": "مِنَ ٱلۡجِنَّةِ وَٱلنَّاسِ",
+      "similarity": 1.0
+    }
+  ]
+}

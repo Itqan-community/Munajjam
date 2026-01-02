@@ -1,6 +1,0 @@
-sura_id,ayah_index,ayah_text,model_text,start_time,end_time,similarity_score,status,notes,overlap_status
-113,1,قُلۡ أَعُوذُ بِرَبِّ ٱلۡفَلَقِ,قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ,5.32,7.96,0.9411764705882353,Success,Last word matched,No Overlap
-113,2,مِن شَرِّ مَا خَلَقَ,مِنْ شَرِّ مَا خَلَقَ,8.98,11.62,1.0,Success,Last word matched,No Overlap
-113,3,وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ,وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ,12.7,16.65,1.0,Success,Last word matched,No Overlap
-113,4,وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِي ٱلۡعُقَدِ,وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ,17.71,22.34,0.8695652173913043,Success,Last word matched,No Overlap
-113,5,وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ,وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ,23.39,27.42,1.0,Success,Last word matched,No Overlap

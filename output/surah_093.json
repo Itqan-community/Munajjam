@@ -1,0 +1,87 @@
+{
+  "surah_id": 93,
+  "surah_name": "الضحى",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 11,
+  "aligned_ayahs": 11,
+  "avg_similarity": 0.994,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.49,
+      "end": 10.75,
+      "text": "وَٱلضُّحَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 11.13,
+      "end": 13.75,
+      "text": "وَٱلَّيۡلِ إِذَا سَجَىٰ",
+      "similarity": 0.963
+    },
+    {
+      "ayah_number": 3,
+      "start": 14.14,
+      "end": 17.84,
+      "text": "مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 18.23,
+      "end": 22.78,
+      "text": "وَلَلۡأٓخِرَةُ خَيۡرٞ لَّكَ مِنَ ٱلۡأُولَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 5,
+      "start": 23.2,
+      "end": 27.42,
+      "text": "وَلَسَوۡفَ يُعۡطِيكَ رَبُّكَ فَتَرۡضَىٰٓ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 6,
+      "start": 27.84,
+      "end": 32.46,
+      "text": "أَلَمۡ يَجِدۡكَ يَتِيمٗا فَـَٔاوَىٰ",
+      "similarity": 0.974
+    },
+    {
+      "ayah_number": 7,
+      "start": 32.91,
+      "end": 38.92,
+      "text": "وَوَجَدَكَ ضَآلّٗا فَهَدَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 8,
+      "start": 39.35,
+      "end": 44.8,
+      "text": "وَوَجَدَكَ عَآئِلٗا فَأَغۡنَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 9,
+      "start": 45.3,
+      "end": 49.39,
+      "text": "فَأَمَّا ٱلۡيَتِيمَ فَلَا تَقۡهَرۡ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 10,
+      "start": 49.85,
+      "end": 56.1,
+      "text": "وَأَمَّا ٱلسَّآئِلَ فَلَا تَنۡهَرۡ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 11,
+      "start": 56.63,
+      "end": 61.73,
+      "text": "وَأَمَّا بِنِعۡمَةِ رَبِّكَ فَحَدِّثۡ",
+      "similarity": 1.0
+    }
+  ]
+}

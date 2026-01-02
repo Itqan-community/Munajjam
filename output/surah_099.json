@@ -1,0 +1,66 @@
+{
+  "surah_id": 99,
+  "surah_name": "الزلزلة",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 8,
+  "aligned_ayahs": 8,
+  "avg_similarity": 0.99,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.64,
+      "end": 13.35,
+      "text": "إِذَا زُلۡزِلَتِ ٱلۡأَرۡضُ زِلۡزَالَهَا",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 13.88,
+      "end": 17.25,
+      "text": "وَأَخۡرَجَتِ ٱلۡأَرۡضُ أَثۡقَالَهَا",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 3,
+      "start": 17.72,
+      "end": 21.41,
+      "text": "وَقَالَ ٱلۡإِنسَٰنُ مَا لَهَا",
+      "similarity": 0.973
+    },
+    {
+      "ayah_number": 4,
+      "start": 21.95,
+      "end": 26.5,
+      "text": "يَوۡمَئِذٖ تُحَدِّثُ أَخۡبَارَهَا",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 5,
+      "start": 27.0,
+      "end": 30.91,
+      "text": "بِأَنَّ رَبَّكَ أَوۡحَىٰ لَهَا",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 6,
+      "start": 31.47,
+      "end": 38.83,
+      "text": "يَوۡمَئِذٖ يَصۡدُرُ ٱلنَّاسُ أَشۡتَاتٗا لِّيُرَوۡاْ أَعۡمَٰلَهُمۡ",
+      "similarity": 0.986
+    },
+    {
+      "ayah_number": 7,
+      "start": 39.41,
+      "end": 45.35,
+      "text": "فَمَن يَعۡمَلۡ مِثۡقَالَ ذَرَّةٍ خَيۡرٗا يَرَهُۥ",
+      "similarity": 0.982
+    },
+    {
+      "ayah_number": 8,
+      "start": 45.9,
+      "end": 53.95,
+      "text": "وَمَن يَعۡمَلۡ مِثۡقَالَ ذَرَّةٖ شَرّٗا يَرَهُۥ",
+      "similarity": 0.981
+    }
+  ]
+}

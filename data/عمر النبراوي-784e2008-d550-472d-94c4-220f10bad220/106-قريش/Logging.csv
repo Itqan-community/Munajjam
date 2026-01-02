@@ -1,5 +1,0 @@
-sura_id,ayah_index,ayah_text,model_text,start_time,end_time,similarity_score,status,notes,overlap_status
-106,1,لِإِيلَٰفِ قُرَيۡشٍ,إِيلَافِ قُرَيْشٍ,6.24,9.28,0.9,Success,Last word matched,No Overlap
-106,2,إِۦلَٰفِهِمۡ رِحۡلَةَ ٱلشِّتَآءِ وَٱلصَّيۡفِ,إِيلَافِهِمْ رِحْلَةَ الشِّتَاءِ وَالصَّيْفِ,10.23,15.92,0.8627450980392157,Success,Last word matched,No Overlap
-106,3,فَلۡيَعۡبُدُواْ رَبَّ هَٰذَا ٱلۡبَيۡتِ,فَلْيَعْبُدُوا رَبَّ هَذَا الْبَيْتِ,16.84,20.64,0.9523809523809523,Success,Last word matched,No Overlap
-106,4,ٱلَّذِيٓ أَطۡعَمَهُم مِّن جُوعٖ وَءَامَنَهُم مِّنۡ خَوۡفِۭ,الَّذِي أَطْعَمَهُمْ مِنْ جُوعٍ وَآمَنَهُمْ مِنْ خَوْفٍ,21.57,31.04,0.9538461538461539,Success,Last word matched,No Overlap

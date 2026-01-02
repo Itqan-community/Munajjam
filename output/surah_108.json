@@ -1,0 +1,31 @@
+{
+  "surah_id": 108,
+  "surah_name": "الكوثر",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 3,
+  "aligned_ayahs": 3,
+  "avg_similarity": 0.99,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.59,
+      "end": 14.36,
+      "text": "إِنَّآ أَعۡطَيۡنَٰكَ ٱلۡكَوۡثَرَ",
+      "similarity": 0.971
+    },
+    {
+      "ayah_number": 2,
+      "start": 14.79,
+      "end": 17.39,
+      "text": "فَصَلِّ لِرَبِّكَ وَٱنۡحَرۡ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 3,
+      "start": 17.86,
+      "end": 21.82,
+      "text": "إِنَّ شَانِئَكَ هُوَ ٱلۡأَبۡتَرُ",
+      "similarity": 1.0
+    }
+  ]
+}
