@@ -1,0 +1,66 @@
+{
+  "surah_id": 95,
+  "surah_name": "التين",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 8,
+  "aligned_ayahs": 8,
+  "avg_similarity": 0.985,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.38,
+      "end": 12.6,
+      "text": "وَٱلتِّينِ وَٱلزَّيۡتُونِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 12.98,
+      "end": 15.7,
+      "text": "وَطُورِ سِينِينَ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 3,
+      "start": 16.18,
+      "end": 19.43,
+      "text": "وَهَٰذَا ٱلۡبَلَدِ ٱلۡأَمِينِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 19.93,
+      "end": 27.68,
+      "text": "لَقَدۡ خَلَقۡنَا ٱلۡإِنسَٰنَ فِيٓ أَحۡسَنِ تَقۡوِيمٖ",
+      "similarity": 0.984
+    },
+    {
+      "ayah_number": 5,
+      "start": 28.32,
+      "end": 33.88,
+      "text": "ثُمَّ رَدَدۡنَٰهُ أَسۡفَلَ سَٰفِلِينَ",
+      "similarity": 0.95
+    },
+    {
+      "ayah_number": 6,
+      "start": 34.64,
+      "end": 43.27,
+      "text": "إِلَّا ٱلَّذِينَ ءَامَنُواْ وَعَمِلُواْ ٱلصَّٰلِحَٰتِ فَلَهُمۡ أَجۡرٌ غَيۡرُ مَمۡنُونٖ",
+      "similarity": 0.97
+    },
+    {
+      "ayah_number": 7,
+      "start": 43.95,
+      "end": 48.76,
+      "text": "فَمَا يُكَذِّبُكَ بَعۡدُ بِٱلدِّينِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 8,
+      "start": 49.33,
+      "end": 55.0,
+      "text": "أَلَيۡسَ ٱللَّهُ بِأَحۡكَمِ ٱلۡحَٰكِمِينَ",
+      "similarity": 0.979
+    }
+  ]
+}

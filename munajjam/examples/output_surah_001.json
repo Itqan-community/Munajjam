@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "sura_id": 1,
+    "ayah_index": 0,
+    "start": 5.72,
+    "end": 9.74,
+    "transcribed_text": "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ",
+    "corrected_text": "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ",
+    "similarity_score": 1.0
+  },
+  {
+    "id": 2,
+    "sura_id": 1,
+    "ayah_index": 1,
+    "start": 10.28,
+    "end": 14.9,
+    "transcribed_text": "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+    "corrected_text": "ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَٰلَمِينَ",
+    "similarity_score": 0.976
+  },
+  {
+    "id": 3,
+    "sura_id": 1,
+    "ayah_index": 2,
+    "start": 15.19,
+    "end": 18.77,
+    "transcribed_text": "الرَّحْمَنِ الرَّحِيمِ",
+    "corrected_text": "ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ",
+    "similarity_score": 1.0
+  },
+  {
+    "id": 4,
+    "sura_id": 1,
+    "ayah_index": 3,
+    "start": 18.98,
+    "end": 22.76,
+    "transcribed_text": "مَالِكِ يَوْمِ الدِّينِ",
+    "corrected_text": "مَٰلِكِ يَوۡمِ ٱلدِّينِ",
+    "similarity_score": 0.963
+  },
+  {
+    "id": 5,
+    "sura_id": 1,
+    "ayah_index": 4,
+    "start": 23.02,
+    "end": 28.43,
+    "transcribed_text": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+    "corrected_text": "إِيَّاكَ نَعۡبُدُ وَإِيَّاكَ نَسۡتَعِينُ",
+    "similarity_score": 1.0
+  },
+  {
+    "id": 6,
+    "sura_id": 1,
+    "ayah_index": 5,
+    "start": 28.74,
+    "end": 33.28,
+    "transcribed_text": "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+    "corrected_text": "ٱهۡدِنَا ٱلصِّرَٰطَ ٱلۡمُسۡتَقِيمَ",
+    "similarity_score": 0.976
+  },
+  {
+    "id": 7,
+    "sura_id": 1,
+    "ayah_index": 6,
+    "start": 33.82,
+    "end": 46.37,
+    "transcribed_text": "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+    "corrected_text": "صِرَٰطَ ٱلَّذِينَ أَنۡعَمۡتَ عَلَيۡهِمۡ غَيۡرِ ٱلۡمَغۡضُوبِ عَلَيۡهِمۡ وَلَا ٱلضَّآلِّينَ",
+    "similarity_score": 0.99
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "surah_id": 110,
+  "surah_name": "النصر",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 3,
+  "aligned_ayahs": 3,
+  "avg_similarity": 0.995,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.47,
+      "end": 14.24,
+      "text": "إِذَا جَآءَ نَصۡرُ ٱللَّهِ وَٱلۡفَتۡحُ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 14.77,
+      "end": 21.7,
+      "text": "وَرَأَيۡتَ ٱلنَّاسَ يَدۡخُلُونَ فِي دِينِ ٱللَّهِ أَفۡوَاجٗا",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 3,
+      "start": 22.27,
+      "end": 31.41,
+      "text": "فَسَبِّحۡ بِحَمۡدِ رَبِّكَ وَٱسۡتَغۡفِرۡهُۚ إِنَّهُۥ كَانَ تَوَّابَۢا",
+      "similarity": 0.986
+    }
+  ]
+}

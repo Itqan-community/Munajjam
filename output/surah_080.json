@@ -1,0 +1,304 @@
+{
+  "surah_id": 80,
+  "surah_name": "عبس",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 42,
+  "aligned_ayahs": 42,
+  "avg_similarity": 0.982,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.49,
+      "end": 11.68,
+      "text": "عَبَسَ وَتَوَلَّىٰٓ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 12.19,
+      "end": 16.14,
+      "text": "أَن جَآءَهُ ٱلۡأَعۡمَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 3,
+      "start": 16.59,
+      "end": 20.88,
+      "text": "وَمَا يُدۡرِيكَ لَعَلَّهُۥ يَزَّكَّىٰٓ",
+      "similarity": 0.974
+    },
+    {
+      "ayah_number": 4,
+      "start": 21.41,
+      "end": 26.0,
+      "text": "أَوۡ يَذَّكَّرُ فَتَنفَعَهُ ٱلذِّكۡرَىٰٓ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 5,
+      "start": 26.57,
+      "end": 29.44,
+      "text": "أَمَّا مَنِ ٱسۡتَغۡنَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 6,
+      "start": 29.86,
+      "end": 33.1,
+      "text": "فَأَنتَ لَهُۥ تَصَدَّىٰ",
+      "similarity": 0.96
+    },
+    {
+      "ayah_number": 7,
+      "start": 33.58,
+      "end": 37.24,
+      "text": "وَمَا عَلَيۡكَ أَلَّا يَزَّكَّىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 8,
+      "start": 37.7,
+      "end": 43.5,
+      "text": "وَأَمَّا مَن جَآءَكَ يَسۡعَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 9,
+      "start": 44.02,
+      "end": 45.7,
+      "text": "وَهُوَ يَخۡشَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 10,
+      "start": 46.16,
+      "end": 49.4,
+      "text": "فَأَنتَ عَنۡهُ تَلَهَّىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 11,
+      "start": 49.91,
+      "end": 55.21,
+      "text": "كـَلَّآ إِنَّهَا تَذۡكِرَةٞ",
+      "similarity": 0.966
+    },
+    {
+      "ayah_number": 12,
+      "start": 55.8,
+      "end": 59.72,
+      "text": "فَمَن شَآءَ ذَكَرَهُۥ",
+      "similarity": 0.96
+    },
+    {
+      "ayah_number": 13,
+      "start": 60.22,
+      "end": 63.45,
+      "text": "فِي صُحُفٖ مُّكَرَّمَةٖ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 14,
+      "start": 63.92,
+      "end": 67.33,
+      "text": "مَّرۡفُوعَةٖ مُّطَهَّرَةِۭ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 15,
+      "start": 67.74,
+      "end": 69.78,
+      "text": "بِأَيۡدِي سَفَرَةٖ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 16,
+      "start": 70.27,
+      "end": 73.31,
+      "text": "كِرَامِۭ بَرَرَةٖ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 17,
+      "start": 73.9,
+      "end": 79.72,
+      "text": "قُتِلَ ٱلۡإِنسَٰنُ مَآ أَكۡفَرَهُۥ",
+      "similarity": 0.95
+    },
+    {
+      "ayah_number": 18,
+      "start": 80.29,
+      "end": 83.12,
+      "text": "مِنۡ أَيِّ شَيۡءٍ خَلَقَهُۥ",
+      "similarity": 0.966
+    },
+    {
+      "ayah_number": 19,
+      "start": 83.55,
+      "end": 87.98,
+      "text": "مِن نُّطۡفَةٍ خَلَقَهُۥ فَقَدَّرَهُۥ",
+      "similarity": 0.947
+    },
+    {
+      "ayah_number": 20,
+      "start": 88.61,
+      "end": 91.89,
+      "text": "ثُمَّ ٱلسَّبِيلَ يَسَّرَهُۥ",
+      "similarity": 0.966
+    },
+    {
+      "ayah_number": 21,
+      "start": 92.43,
+      "end": 96.19,
+      "text": "ثُمَّ أَمَاتَهُۥ فَأَقۡبَرَهُۥ",
+      "similarity": 0.938
+    },
+    {
+      "ayah_number": 22,
+      "start": 96.72,
+      "end": 102.15,
+      "text": "ثُمَّ إِذَا شَآءَ أَنشَرَهُۥ",
+      "similarity": 0.97
+    },
+    {
+      "ayah_number": 23,
+      "start": 102.85,
+      "end": 108.64,
+      "text": "كـَلَّا لَمَّا يَقۡضِ مَآ أَمَرَهُۥ",
+      "similarity": 0.95
+    },
+    {
+      "ayah_number": 24,
+      "start": 109.18,
+      "end": 114.92,
+      "text": "فَلۡيَنظُرِ ٱلۡإِنسَٰنُ إِلَىٰ طَعَامِهِۦٓ",
+      "similarity": 0.958
+    },
+    {
+      "ayah_number": 25,
+      "start": 115.67,
+      "end": 121.31,
+      "text": "أَنَّا صَبَبۡنَا ٱلۡمَآءَ صَبّٗا",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 26,
+      "start": 121.81,
+      "end": 125.68,
+      "text": "ثُمَّ شَقَقۡنَا ٱلۡأَرۡضَ شَقّٗا",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 27,
+      "start": 126.16,
+      "end": 130.16,
+      "text": "فَأَنۢبَتۡنَا فِيهَا حَبّٗا",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 28,
+      "start": 130.56,
+      "end": 133.93,
+      "text": "وَعِنَبٗا وَقَضۡبٗا",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 29,
+      "start": 134.3,
+      "end": 138.41,
+      "text": "وَزَيۡتُونٗا وَنَخۡلٗا",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 30,
+      "start": 138.85,
+      "end": 143.03,
+      "text": "وَحَدَآئِقَ غُلۡبٗا",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 31,
+      "start": 143.44,
+      "end": 146.91,
+      "text": "وَفَٰكِهَةٗ وَأَبّٗا",
+      "similarity": 0.952
+    },
+    {
+      "ayah_number": 32,
+      "start": 147.32,
+      "end": 151.34,
+      "text": "مَّتَٰعٗا لَّكُمۡ وَلِأَنۡعَٰمِكُمۡ",
+      "similarity": 0.944
+    },
+    {
+      "ayah_number": 33,
+      "start": 151.81,
+      "end": 158.56,
+      "text": "فَإِذَا جَآءَتِ ٱلصَّآخَّةُ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 34,
+      "start": 159.03,
+      "end": 163.4,
+      "text": "يَوۡمَ يَفِرُّ ٱلۡمَرۡءُ مِنۡ أَخِيهِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 35,
+      "start": 163.91,
+      "end": 167.88,
+      "text": "وَأُمِّهِۦ وَأَبِيهِ",
+      "similarity": 0.952
+    },
+    {
+      "ayah_number": 36,
+      "start": 168.28,
+      "end": 171.76,
+      "text": "وَصَٰحِبَتِهِۦ وَبَنِيهِ",
+      "similarity": 0.923
+    },
+    {
+      "ayah_number": 37,
+      "start": 172.29,
+      "end": 181.79,
+      "text": "لِكُلِّ ٱمۡرِيٕٖ مِّنۡهُمۡ يَوۡمَئِذٖ شَأۡنٞ يُغۡنِيهِ",
+      "similarity": 0.966
+    },
+    {
+      "ayah_number": 38,
+      "start": 182.51,
+      "end": 188.13,
+      "text": "وُجُوهٞ يَوۡمَئِذٖ مُّسۡفِرَةٞ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 39,
+      "start": 188.65,
+      "end": 192.44,
+      "text": "ضَاحِكَةٞ مُّسۡتَبۡشِرَةٞ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 40,
+      "start": 192.93,
+      "end": 198.18,
+      "text": "وَوُجُوهٞ يَوۡمَئِذٍ عَلَيۡهَا غَبَرَةٞ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 41,
+      "start": 198.72,
+      "end": 201.01,
+      "text": "تَرۡهَقُهَا قَتَرَةٌ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 42,
+      "start": 201.54,
+      "end": 209.08,
+      "text": "أُوْلَٰٓئِكَ هُمُ ٱلۡكَفَرَةُ ٱلۡفَجَرَةُ",
+      "similarity": 1.0
+    }
+  ]
+}

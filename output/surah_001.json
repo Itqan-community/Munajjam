@@ -1,0 +1,59 @@
+{
+  "surah_id": 1,
+  "surah_name": "الفاتحة",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 7,
+  "aligned_ayahs": 7,
+  "avg_similarity": 0.986,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 5.62,
+      "end": 9.57,
+      "text": "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 10.51,
+      "end": 14.72,
+      "text": "ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَٰلَمِينَ",
+      "similarity": 0.976
+    },
+    {
+      "ayah_number": 3,
+      "start": 15.45,
+      "end": 18.53,
+      "text": "ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 19.21,
+      "end": 22.54,
+      "text": "مَٰلِكِ يَوۡمِ ٱلدِّينِ",
+      "similarity": 0.963
+    },
+    {
+      "ayah_number": 5,
+      "start": 23.27,
+      "end": 28.19,
+      "text": "إِيَّاكَ نَعۡبُدُ وَإِيَّاكَ نَسۡتَعِينُ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 6,
+      "start": 29.0,
+      "end": 33.07,
+      "text": "ٱهۡدِنَا ٱلصِّرَٰطَ ٱلۡمُسۡتَقِيمَ",
+      "similarity": 0.976
+    },
+    {
+      "ayah_number": 7,
+      "start": 33.98,
+      "end": 46.44,
+      "text": "صِرَٰطَ ٱلَّذِينَ أَنۡعَمۡتَ عَلَيۡهِمۡ غَيۡرِ ٱلۡمَغۡضُوبِ عَلَيۡهِمۡ وَلَا ٱلضَّآلِّينَ",
+      "similarity": 0.99
+    }
+  ]
+}

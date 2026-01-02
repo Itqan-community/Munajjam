@@ -1,0 +1,45 @@
+{
+  "surah_id": 111,
+  "surah_name": "المسد",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 5,
+  "aligned_ayahs": 5,
+  "avg_similarity": 0.991,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.62,
+      "end": 16.22,
+      "text": "تَبَّتۡ يَدَآ أَبِي لَهَبٖ وَتَبَّ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 16.74,
+      "end": 22.25,
+      "text": "مَآ أَغۡنَىٰ عَنۡهُ مَالُهُۥ وَمَا كَسَبَ",
+      "similarity": 0.98
+    },
+    {
+      "ayah_number": 3,
+      "start": 22.72,
+      "end": 26.82,
+      "text": "سَيَصۡلَىٰ نَارٗا ذَاتَ لَهَبٖ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 27.26,
+      "end": 32.27,
+      "text": "وَٱمۡرَأَتُهُۥ حَمَّالَةَ ٱلۡحَطَبِ",
+      "similarity": 0.974
+    },
+    {
+      "ayah_number": 5,
+      "start": 32.79,
+      "end": 38.09,
+      "text": "فِي جِيدِهَا حَبۡلٞ مِّن مَّسَدِۭ",
+      "similarity": 1.0
+    }
+  ]
+}

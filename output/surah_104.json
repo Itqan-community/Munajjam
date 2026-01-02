@@ -1,0 +1,73 @@
+{
+  "surah_id": 104,
+  "surah_name": "الهمزة",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 9,
+  "aligned_ayahs": 9,
+  "avg_similarity": 0.977,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.36,
+      "end": 12.89,
+      "text": "وَيۡلٞ لِّكُلِّ هُمَزَةٖ لُّمَزَةٍ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 13.44,
+      "end": 17.95,
+      "text": "ٱلَّذِي جَمَعَ مَالٗا وَعَدَّدَهُۥ",
+      "similarity": 0.974
+    },
+    {
+      "ayah_number": 3,
+      "start": 18.51,
+      "end": 24.68,
+      "text": "يَحۡسَبُ أَنَّ مَالَهُۥٓ أَخۡلَدَهُۥ",
+      "similarity": 0.947
+    },
+    {
+      "ayah_number": 4,
+      "start": 25.23,
+      "end": 31.54,
+      "text": "كـَلَّاۖ لَيُنۢبَذَنَّ فِي ٱلۡحُطَمَةِ",
+      "similarity": 0.976
+    },
+    {
+      "ayah_number": 5,
+      "start": 32.01,
+      "end": 36.11,
+      "text": "وَمَآ أَدۡرَىٰكَ مَا ٱلۡحُطَمَةُ",
+      "similarity": 0.947
+    },
+    {
+      "ayah_number": 6,
+      "start": 36.62,
+      "end": 39.55,
+      "text": "نَارُ ٱللَّهِ ٱلۡمُوقَدَةُ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 7,
+      "start": 40.05,
+      "end": 43.72,
+      "text": "ٱلَّتِي تَطَّلِعُ عَلَى ٱلۡأَفۡـِٔدَةِ",
+      "similarity": 0.952
+    },
+    {
+      "ayah_number": 8,
+      "start": 44.28,
+      "end": 50.08,
+      "text": "إِنَّهَا عَلَيۡهِم مُّؤۡصَدَةٞ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 9,
+      "start": 50.62,
+      "end": 55.2,
+      "text": "فِي عَمَدٖ مُّمَدَّدَةِۭ",
+      "similarity": 1.0
+    }
+  ]
+}

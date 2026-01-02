@@ -1,0 +1,115 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "munajjam"
+version = "2.0.0a1"
+description = "A Python library to synchronize Quran Ayat with audio recitations"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    { name = "Abdullah Mosaibah" }
+]
+keywords = [
+    "quran",
+    "arabic",
+    "audio",
+    "transcription",
+    "alignment",
+    "whisper",
+    "speech-to-text",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+]
+
+dependencies = [
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "torch>=2.0.0",
+    "transformers>=4.35.0",
+    "librosa>=0.10.0",
+    "pydub>=0.25.1",
+    "pandas>=2.0.0",
+]
+
+[project.optional-dependencies]
+faster-whisper = [
+    "faster-whisper>=1.0.0",
+    "soundfile>=0.12.0",
+]
+hf-inference = [
+    "httpx>=0.25.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+all = [
+    "munajjam[faster-whisper,hf-inference,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/abdullahmosaibah/munajjam"
+Documentation = "https://github.com/abdullahmosaibah/munajjam#readme"
+Repository = "https://github.com/abdullahmosaibah/munajjam"
+Issues = "https://github.com/abdullahmosaibah/munajjam/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["munajjam"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "munajjam/",
+    "README.md",
+    "LICENSE",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["munajjam"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+

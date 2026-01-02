@@ -1,0 +1,143 @@
+{
+  "surah_id": 87,
+  "surah_name": "الأعلى",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 19,
+  "aligned_ayahs": 19,
+  "avg_similarity": 0.992,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.72,
+      "end": 12.52,
+      "text": "سَبِّحِ ٱسۡمَ رَبِّكَ ٱلۡأَعۡلَى",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 12.91,
+      "end": 15.5,
+      "text": "ٱلَّذِي خَلَقَ فَسَوَّىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 3,
+      "start": 15.88,
+      "end": 18.56,
+      "text": "وَٱلَّذِي قَدَّرَ فَهَدَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 18.91,
+      "end": 22.84,
+      "text": "وَٱلَّذِيٓ أَخۡرَجَ ٱلۡمَرۡعَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 5,
+      "start": 23.27,
+      "end": 27.61,
+      "text": "فَجَعَلَهُۥ غُثَآءً أَحۡوَىٰ",
+      "similarity": 0.968
+    },
+    {
+      "ayah_number": 6,
+      "start": 28.04,
+      "end": 31.55,
+      "text": "سَنُقۡرِئُكَ فَلَا تَنسَىٰٓ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 7,
+      "start": 31.98,
+      "end": 41.19,
+      "text": "إِلَّا مَا شَآءَ ٱللَّهُۚ إِنَّهُۥ يَعۡلَمُ ٱلۡجَهۡرَ وَمَا يَخۡفَىٰ",
+      "similarity": 0.987
+    },
+    {
+      "ayah_number": 8,
+      "start": 41.67,
+      "end": 44.4,
+      "text": "وَنُيَسِّرُكَ لِلۡيُسۡرَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 9,
+      "start": 44.84,
+      "end": 48.67,
+      "text": "فَذَكِّرۡ إِن نَّفَعَتِ ٱلذِّكۡرَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 10,
+      "start": 49.1,
+      "end": 52.38,
+      "text": "سَيَذَّكَّرُ مَن يَخۡشَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 11,
+      "start": 52.78,
+      "end": 56.19,
+      "text": "وَيَتَجَنَّبُهَا ٱلۡأَشۡقَى",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 12,
+      "start": 56.65,
+      "end": 60.84,
+      "text": "ٱلَّذِي يَصۡلَى ٱلنَّارَ ٱلۡكُبۡرَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 13,
+      "start": 61.26,
+      "end": 65.95,
+      "text": "ثُمَّ لَا يَمُوتُ فِيهَا وَلَا يَحۡيَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 14,
+      "start": 66.5,
+      "end": 70.33,
+      "text": "قَدۡ أَفۡلَحَ مَن تَزَكَّىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 15,
+      "start": 70.73,
+      "end": 74.31,
+      "text": "وَذَكَرَ ٱسۡمَ رَبِّهِۦ فَصَلَّىٰ",
+      "similarity": 0.971
+    },
+    {
+      "ayah_number": 16,
+      "start": 74.78,
+      "end": 78.28,
+      "text": "بَلۡ تُؤۡثِرُونَ ٱلۡحَيَوٰةَ ٱلدُّنۡيَا",
+      "similarity": 0.957
+    },
+    {
+      "ayah_number": 17,
+      "start": 78.66,
+      "end": 82.71,
+      "text": "وَٱلۡأٓخِرَةُ خَيۡرٞ وَأَبۡقَىٰٓ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 18,
+      "start": 83.15,
+      "end": 87.47,
+      "text": "إِنَّ هَٰذَا لَفِي ٱلصُّحُفِ ٱلۡأُولَىٰ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 19,
+      "start": 87.92,
+      "end": 92.25,
+      "text": "صُحُفِ إِبۡرَٰهِيمَ وَمُوسَىٰ",
+      "similarity": 0.97
+    }
+  ]
+}

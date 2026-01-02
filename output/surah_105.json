@@ -1,0 +1,45 @@
+{
+  "surah_id": 105,
+  "surah_name": "الفيل",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 5,
+  "aligned_ayahs": 5,
+  "avg_similarity": 0.997,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.3,
+      "end": 15.05,
+      "text": "أَلَمۡ تَرَ كَيۡفَ فَعَلَ رَبُّكَ بِأَصۡحَٰبِ ٱلۡفِيلِ",
+      "similarity": 0.984
+    },
+    {
+      "ayah_number": 2,
+      "start": 15.48,
+      "end": 20.09,
+      "text": "أَلَمۡ يَجۡعَلۡ كَيۡدَهُمۡ فِي تَضۡلِيلٖ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 3,
+      "start": 20.55,
+      "end": 25.12,
+      "text": "وَأَرۡسَلَ عَلَيۡهِمۡ طَيۡرًا أَبَابِيلَ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 25.85,
+      "end": 32.1,
+      "text": "تَرۡمِيهِم بِحِجَارَةٖ مِّن سِجِّيلٖ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 5,
+      "start": 32.6,
+      "end": 38.17,
+      "text": "فَجَعَلَهُمۡ كَعَصۡفٖ مَّأۡكُولِۭ",
+      "similarity": 1.0
+    }
+  ]
+}

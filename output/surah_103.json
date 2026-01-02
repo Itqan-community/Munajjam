@@ -1,0 +1,31 @@
+{
+  "surah_id": 103,
+  "surah_name": "العصر",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 3,
+  "aligned_ayahs": 3,
+  "avg_similarity": 0.982,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.4,
+      "end": 10.42,
+      "text": "وَٱلۡعَصۡرِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 10.95,
+      "end": 15.65,
+      "text": "إِنَّ ٱلۡإِنسَٰنَ لَفِي خُسۡرٍ",
+      "similarity": 0.971
+    },
+    {
+      "ayah_number": 3,
+      "start": 16.2,
+      "end": 25.2,
+      "text": "إِلَّا ٱلَّذِينَ ءَامَنُواْ وَعَمِلُواْ ٱلصَّٰلِحَٰتِ وَتَوَاصَوۡاْ بِٱلۡحَقِّ وَتَوَاصَوۡاْ بِٱلصَّبۡرِ",
+      "similarity": 0.975
+    }
+  ]
+}
