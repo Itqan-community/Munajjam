@@ -1,0 +1,38 @@
+{
+  "surah_id": 106,
+  "surah_name": "قريش",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 4,
+  "aligned_ayahs": 4,
+  "avg_similarity": 0.97,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.55,
+      "end": 12.88,
+      "text": "لِإِيلَٰفِ قُرَيۡشٍ",
+      "similarity": 0.952
+    },
+    {
+      "ayah_number": 2,
+      "start": 13.46,
+      "end": 20.54,
+      "text": "إِۦلَٰفِهِمۡ رِحۡلَةَ ٱلشِّتَآءِ وَٱلصَّيۡفِ",
+      "similarity": 0.941
+    },
+    {
+      "ayah_number": 3,
+      "start": 21.07,
+      "end": 25.2,
+      "text": "فَلۡيَعۡبُدُواْ رَبَّ هَٰذَا ٱلۡبَيۡتِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 25.74,
+      "end": 35.95,
+      "text": "ٱلَّذِيٓ أَطۡعَمَهُم مِّن جُوعٖ وَءَامَنَهُم مِّنۡ خَوۡفِۭ",
+      "similarity": 0.985
+    }
+  ]
+}

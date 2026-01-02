@@ -137,6 +137,7 @@ cython_debug/
 
 # IDEs
 .vscode/
+.claude/
 .idea/
 *.swp
 *.swo
@@ -144,6 +145,7 @@ cython_debug/
 .project
 .pydevproject
 .settings/
+.docs/
 
 # OS files
 .DS_Store
@@ -161,3 +163,62 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+
+# Audio files and reciter data
+Quran/
+
+# External tools and binaries
+ffmpeg*/
+ffmpeg-*/
+
+# Data directory (local dev/testing only - munajjam has bundled data)
+# Includes: reciter data, amma/, all reciter UUID directories, generated CSVs/JSONs
+data/
+
+# Cache directory (generated segments, silences, etc.)
+cache/
+
+# Output directories (all generated JSON outputs)
+output/
+output_new/
+output_old/
+
+# Generated JSON files (output files, cache, data)
+*.json
+# But allow example JSON files in munajjam/examples
+!munajjam/examples/*.json
+# And allow package.json, pyproject.toml if they exist
+!package.json
+!tsconfig.json
+
+# Generated HTML visualizations
+*.html
+!docs/**/*.html
+
+# Temporary and utility files
+remaining_files.txt
+USB_COPY_STATUS.md
+WORD_CHECK_ANALYSIS.md
+alignment_visualization.html
+ALIGNMENT_EXPLANATION.md
+*alignment*.json
+# Ignore alignment docs in root, but allow in docs/
+*alignment*.md
+!docs/**/*alignment*.md
+
+# Utility scripts (local dev only)
+article.md
+article1.md
+batch_process.py
+check_missing.py
+process_surah.py
+reprocess_failed.py
+debug_alignment.py
+test_*.py
+player.py
+run_player.sh
+copy_remaining_files.sh
+fast_copy_to_usb.sh
+setup_and_install.ps1
+scripts/download.py
+scripts/to_wav.py

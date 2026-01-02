@@ -1,0 +1,45 @@
+{
+  "surah_id": 97,
+  "surah_name": "القدر",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 5,
+  "aligned_ayahs": 5,
+  "avg_similarity": 0.98,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.67,
+      "end": 16.73,
+      "text": "إِنَّآ أَنزَلۡنَٰهُ فِي لَيۡلَةِ ٱلۡقَدۡرِ",
+      "similarity": 0.98
+    },
+    {
+      "ayah_number": 2,
+      "start": 17.25,
+      "end": 22.15,
+      "text": "وَمَآ أَدۡرَىٰكَ مَا لَيۡلَةُ ٱلۡقَدۡرِ",
+      "similarity": 0.957
+    },
+    {
+      "ayah_number": 3,
+      "start": 22.61,
+      "end": 28.09,
+      "text": "لَيۡلَةُ ٱلۡقَدۡرِ خَيۡرٞ مِّنۡ أَلۡفِ شَهۡرٖ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 28.68,
+      "end": 37.98,
+      "text": "تَنَزَّلُ ٱلۡمَلَٰٓئِكَةُ وَٱلرُّوحُ فِيهَا بِإِذۡنِ رَبِّهِم مِّن كُلِّ أَمۡرٖ",
+      "similarity": 0.989
+    },
+    {
+      "ayah_number": 5,
+      "start": 38.57,
+      "end": 43.49,
+      "text": "سَلَٰمٌ هِيَ حَتَّىٰ مَطۡلَعِ ٱلۡفَجۡرِ",
+      "similarity": 0.977
+    }
+  ]
+}

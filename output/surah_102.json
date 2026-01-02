@@ -1,0 +1,66 @@
+{
+  "surah_id": 102,
+  "surah_name": "التكاثر",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 8,
+  "aligned_ayahs": 8,
+  "avg_similarity": 0.976,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.29,
+      "end": 11.6,
+      "text": "أَلۡهَىٰكُمُ ٱلتَّكَاثُرُ",
+      "similarity": 0.929
+    },
+    {
+      "ayah_number": 2,
+      "start": 12.18,
+      "end": 15.14,
+      "text": "حَتَّىٰ زُرۡتُمُ ٱلۡمَقَابِرَ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 3,
+      "start": 15.57,
+      "end": 18.8,
+      "text": "كـَلَّا سَوۡفَ تَعۡلَمُونَ",
+      "similarity": 0.966
+    },
+    {
+      "ayah_number": 4,
+      "start": 19.29,
+      "end": 23.93,
+      "text": "ثُمَّ كـَلَّا سَوۡفَ تَعۡلَمُونَ",
+      "similarity": 0.971
+    },
+    {
+      "ayah_number": 5,
+      "start": 24.39,
+      "end": 29.18,
+      "text": "كـَلَّا لَوۡ تَعۡلَمُونَ عِلۡمَ ٱلۡيَقِينِ",
+      "similarity": 0.98
+    },
+    {
+      "ayah_number": 6,
+      "start": 29.61,
+      "end": 33.77,
+      "text": "لَتَرَوُنَّ ٱلۡجَحِيمَ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 7,
+      "start": 34.27,
+      "end": 41.28,
+      "text": "ثُمَّ لَتَرَوُنَّهَا عَيۡنَ ٱلۡيَقِينِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 8,
+      "start": 41.8,
+      "end": 50.31,
+      "text": "ثُمَّ لَتُسۡـَٔلُنَّ يَوۡمَئِذٍ عَنِ ٱلنَّعِيمِ",
+      "similarity": 0.96
+    }
+  ]
+}

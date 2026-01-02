@@ -1,4 +1,0 @@
-sura_id,ayah_index,ayah_text,model_text,start_time,end_time,similarity_score,status,notes,overlap_status
-103,1,وَٱلۡعَصۡرِ,وَالْعَصْرِ,5.38,6.02,0.8333333333333334,Success,Last word matched,No Overlap
-103,2,إِنَّ ٱلۡإِنسَٰنَ لَفِي خُسۡرٍ,إِنَّ الْإِنْسَانَ لَفِي خُسْرٍ,6.99,10.73,0.9142857142857143,Success,Last word matched,No Overlap
-103,3,إِلَّا ٱلَّذِينَ ءَامَنُواْ وَعَمِلُواْ ٱلصَّٰلِحَٰتِ وَتَوَاصَوۡاْ بِٱلۡحَقِّ وَتَوَاصَوۡاْ بِٱلصَّبۡرِ,إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ وَتَوَاصَوْا بِالْحَقِّ وَتَوَاصَوْا بِالصَّبْرِ,11.84,20.42,0.907563025210084,Success,Last word matched,No Overlap

@@ -1,5 +1,0 @@
-sura_id,ayah_index,ayah_text,model_text,start_time,end_time,similarity_score,status,notes,overlap_status
-112,1,قُلۡ هُوَ ٱللَّهُ أَحَدٌ,قُلْ هُوَ اللَّهُ أَحَدٌ,5.91,7.89,0.9285714285714286,Success,Last word matched,No Overlap
-112,2,ٱللَّهُ ٱلصَّمَدُ,اللَّهُ الصَّمَدُ,8.94,10.58,0.8,Success,Last word matched,No Overlap
-112,3,لَمۡ يَلِدۡ وَلَمۡ يُولَدۡ,لَمْ يَلِدْ وَلَمْ يُولَدْ,11.55,13.92,1.0,Success,Last word matched,No Overlap
-112,4,وَلَمۡ يَكُن لَّهُۥ كُفُوًا أَحَدُۢ,وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ,14.72,17.99,0.9743589743589743,Success,Last word matched,No Overlap

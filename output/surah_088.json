@@ -1,0 +1,192 @@
+{
+  "surah_id": 88,
+  "surah_name": "الغاشية",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 26,
+  "aligned_ayahs": 26,
+  "avg_similarity": 0.992,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.49,
+      "end": 12.51,
+      "text": "هَلۡ أَتَىٰكَ حَدِيثُ ٱلۡغَٰشِيَةِ",
+      "similarity": 0.923
+    },
+    {
+      "ayah_number": 2,
+      "start": 12.91,
+      "end": 16.52,
+      "text": "وُجُوهٞ يَوۡمَئِذٍ خَٰشِعَةٌ",
+      "similarity": 0.968
+    },
+    {
+      "ayah_number": 3,
+      "start": 16.93,
+      "end": 19.82,
+      "text": "عَامِلَةٞ نَّاصِبَةٞ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 4,
+      "start": 20.21,
+      "end": 22.82,
+      "text": "تَصۡلَىٰ نَارًا حَامِيَةٗ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 5,
+      "start": 23.27,
+      "end": 26.23,
+      "text": "تُسۡقَىٰ مِنۡ عَيۡنٍ ءَانِيَةٖ",
+      "similarity": 0.97
+    },
+    {
+      "ayah_number": 6,
+      "start": 26.64,
+      "end": 32.26,
+      "text": "لَّيۡسَ لَهُمۡ طَعَامٌ إِلَّا مِن ضَرِيعٖ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 7,
+      "start": 32.73,
+      "end": 37.88,
+      "text": "لَّا يُسۡمِنُ وَلَا يُغۡنِي مِن جُوعٖ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 8,
+      "start": 38.33,
+      "end": 43.48,
+      "text": "وُجُوهٞ يَوۡمَئِذٖ نَّاعِمَةٞ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 9,
+      "start": 43.91,
+      "end": 46.16,
+      "text": "لِّسَعۡيِهَا رَاضِيَةٞ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 10,
+      "start": 46.62,
+      "end": 49.74,
+      "text": "فِي جَنَّةٍ عَالِيَةٖ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 11,
+      "start": 50.18,
+      "end": 53.45,
+      "text": "لَّا تَسۡمَعُ فِيهَا لَٰغِيَةٗ",
+      "similarity": 0.971
+    },
+    {
+      "ayah_number": 12,
+      "start": 53.91,
+      "end": 57.15,
+      "text": "فِيهَا عَيۡنٞ جَارِيَةٞ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 13,
+      "start": 57.64,
+      "end": 61.09,
+      "text": "فِيهَا سُرُرٞ مَّرۡفُوعَةٞ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 14,
+      "start": 61.48,
+      "end": 64.61,
+      "text": "وَأَكۡوَابٞ مَّوۡضُوعَةٞ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 15,
+      "start": 65.02,
+      "end": 67.56,
+      "text": "وَنَمَارِقُ مَصۡفُوفَةٞ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 16,
+      "start": 67.95,
+      "end": 70.81,
+      "text": "وَزَرَابِيُّ مَبۡثُوثَةٌ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 17,
+      "start": 71.31,
+      "end": 77.03,
+      "text": "أَفَلَا يَنظُرُونَ إِلَى ٱلۡإِبِلِ كَيۡفَ خُلِقَتۡ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 18,
+      "start": 77.52,
+      "end": 81.94,
+      "text": "وَإِلَى ٱلسَّمَآءِ كَيۡفَ رُفِعَتۡ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 19,
+      "start": 82.45,
+      "end": 85.83,
+      "text": "وَإِلَى ٱلۡجِبَالِ كَيۡفَ نُصِبَتۡ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 20,
+      "start": 86.23,
+      "end": 89.33,
+      "text": "وَإِلَى ٱلۡأَرۡضِ كَيۡفَ سُطِحَتۡ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 21,
+      "start": 89.82,
+      "end": 97.42,
+      "text": "فَذَكِّرۡ إِنَّمَآ أَنتَ مُذَكِّرٞ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 22,
+      "start": 97.86,
+      "end": 101.78,
+      "text": "لَّسۡتَ عَلَيۡهِم بِمُصَيۡطِرٍ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 23,
+      "start": 102.22,
+      "end": 106.33,
+      "text": "إِلَّا مَن تَوَلَّىٰ وَكَفَرَ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 24,
+      "start": 106.77,
+      "end": 111.41,
+      "text": "فَيُعَذِّبُهُ ٱللَّهُ ٱلۡعَذَابَ ٱلۡأَكۡبَرَ",
+      "similarity": 0.96
+    },
+    {
+      "ayah_number": 25,
+      "start": 111.85,
+      "end": 118.47,
+      "text": "إِنَّ إِلَيۡنَآ إِيَابَهُمۡ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 26,
+      "start": 118.94,
+      "end": 125.62,
+      "text": "ثُمَّ إِنَّ عَلَيۡنَا حِسَابَهُم",
+      "similarity": 1.0
+    }
+  ]
+}

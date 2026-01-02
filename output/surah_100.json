@@ -1,0 +1,87 @@
+{
+  "surah_id": 100,
+  "surah_name": "العاديات",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 11,
+  "aligned_ayahs": 11,
+  "avg_similarity": 0.971,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.29,
+      "end": 11.86,
+      "text": "وَٱلۡعَٰدِيَٰتِ ضَبۡحٗا",
+      "similarity": 0.923
+    },
+    {
+      "ayah_number": 2,
+      "start": 12.29,
+      "end": 14.72,
+      "text": "فَٱلۡمُورِيَٰتِ قَدۡحٗا",
+      "similarity": 0.963
+    },
+    {
+      "ayah_number": 3,
+      "start": 15.19,
+      "end": 17.68,
+      "text": "فَٱلۡمُغِيرَٰتِ صُبۡحٗا",
+      "similarity": 0.963
+    },
+    {
+      "ayah_number": 4,
+      "start": 18.17,
+      "end": 20.59,
+      "text": "فَأَثَرۡنَ بِهِۦ نَقۡعٗا",
+      "similarity": 0.963
+    },
+    {
+      "ayah_number": 5,
+      "start": 21.04,
+      "end": 23.6,
+      "text": "فَوَسَطۡنَ بِهِۦ جَمۡعًا",
+      "similarity": 0.963
+    },
+    {
+      "ayah_number": 6,
+      "start": 24.16,
+      "end": 30.52,
+      "text": "إِنَّ ٱلۡإِنسَٰنَ لِرَبِّهِۦ لَكَنُودٞ",
+      "similarity": 0.952
+    },
+    {
+      "ayah_number": 7,
+      "start": 30.97,
+      "end": 35.85,
+      "text": "وَإِنَّهُۥ عَلَىٰ ذَٰلِكَ لَشَهِيدٞ",
+      "similarity": 0.973
+    },
+    {
+      "ayah_number": 8,
+      "start": 36.34,
+      "end": 41.56,
+      "text": "وَإِنَّهُۥ لِحُبِّ ٱلۡخَيۡرِ لَشَدِيدٌ",
+      "similarity": 0.976
+    },
+    {
+      "ayah_number": 9,
+      "start": 42.14,
+      "end": 47.99,
+      "text": "۞ أَفَلَا يَعۡلَمُ إِذَا بُعۡثِرَ مَا فِي ٱلۡقُبُورِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 10,
+      "start": 48.47,
+      "end": 51.88,
+      "text": "وَحُصِّلَ مَا فِي ٱلصُّدُورِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 11,
+      "start": 52.31,
+      "end": 59.52,
+      "text": "إِنَّ رَبَّهُم بِهِمۡ يَوۡمَئِذٖ لَّخَبِيرُۢ",
+      "similarity": 1.0
+    }
+  ]
+}

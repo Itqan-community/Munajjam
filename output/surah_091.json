@@ -1,0 +1,115 @@
+{
+  "surah_id": 91,
+  "surah_name": "الشمس",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 15,
+  "aligned_ayahs": 15,
+  "avg_similarity": 0.943,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.62,
+      "end": 11.84,
+      "text": "وَٱلشَّمۡسِ وَضُحَىٰهَا",
+      "similarity": 0.923
+    },
+    {
+      "ayah_number": 2,
+      "start": 12.21,
+      "end": 14.96,
+      "text": "وَٱلۡقَمَرِ إِذَا تَلَىٰهَا",
+      "similarity": 0.938
+    },
+    {
+      "ayah_number": 3,
+      "start": 15.36,
+      "end": 19.25,
+      "text": "وَٱلنَّهَارِ إِذَا جَلَّىٰهَا",
+      "similarity": 0.941
+    },
+    {
+      "ayah_number": 4,
+      "start": 19.59,
+      "end": 22.8,
+      "text": "وَٱلَّيۡلِ إِذَا يَغۡشَىٰهَا",
+      "similarity": 0.909
+    },
+    {
+      "ayah_number": 5,
+      "start": 23.24,
+      "end": 27.61,
+      "text": "وَٱلسَّمَآءِ وَمَا بَنَىٰهَا",
+      "similarity": 0.941
+    },
+    {
+      "ayah_number": 6,
+      "start": 28.0,
+      "end": 31.02,
+      "text": "وَٱلۡأَرۡضِ وَمَا طَحَىٰهَا",
+      "similarity": 0.938
+    },
+    {
+      "ayah_number": 7,
+      "start": 31.41,
+      "end": 36.01,
+      "text": "وَنَفۡسٖ وَمَا سَوَّىٰهَا",
+      "similarity": 0.929
+    },
+    {
+      "ayah_number": 8,
+      "start": 36.52,
+      "end": 41.03,
+      "text": "فَأَلۡهَمَهَا فُجُورَهَا وَتَقۡوَىٰهَا",
+      "similarity": 0.955
+    },
+    {
+      "ayah_number": 9,
+      "start": 41.53,
+      "end": 45.22,
+      "text": "قَدۡ أَفۡلَحَ مَن زَكَّىٰهَا",
+      "similarity": 0.938
+    },
+    {
+      "ayah_number": 10,
+      "start": 45.66,
+      "end": 49.38,
+      "text": "وَقَدۡ خَابَ مَن دَسَّىٰهَا",
+      "similarity": 0.938
+    },
+    {
+      "ayah_number": 11,
+      "start": 49.81,
+      "end": 53.43,
+      "text": "كَذَّبَتۡ ثَمُودُ بِطَغۡوَىٰهَآ",
+      "similarity": 0.941
+    },
+    {
+      "ayah_number": 12,
+      "start": 53.88,
+      "end": 57.45,
+      "text": "إِذِ ٱنۢبَعَثَ أَشۡقَىٰهَا",
+      "similarity": 0.933
+    },
+    {
+      "ayah_number": 13,
+      "start": 57.93,
+      "end": 64.89,
+      "text": "فَقَالَ لَهُمۡ رَسُولُ ٱللَّهِ نَاقَةَ ٱللَّهِ وَسُقۡيَٰهَا",
+      "similarity": 0.986
+    },
+    {
+      "ayah_number": 14,
+      "start": 65.45,
+      "end": 76.45,
+      "text": "فَكَذَّبُوهُ فَعَقَرُوهَا فَدَمۡدَمَ عَلَيۡهِمۡ رَبُّهُم بِذَنۢبِهِمۡ فَسَوَّىٰهَا",
+      "similarity": 0.978
+    },
+    {
+      "ayah_number": 15,
+      "start": 76.97,
+      "end": 81.16,
+      "text": "وَلَا يَخَافُ عُقۡبَٰهَا",
+      "similarity": 0.966
+    }
+  ]
+}

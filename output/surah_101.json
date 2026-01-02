@@ -1,0 +1,87 @@
+{
+  "surah_id": 101,
+  "surah_name": "القارعة",
+  "reciter": "Badr Al-Turki",
+  "total_ayahs": 11,
+  "aligned_ayahs": 11,
+  "avg_similarity": 0.976,
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start": 9.65,
+      "end": 11.09,
+      "text": "ٱلۡقَارِعَةُ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 2,
+      "start": 11.65,
+      "end": 13.12,
+      "text": "مَا ٱلۡقَارِعَةُ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 3,
+      "start": 13.66,
+      "end": 18.09,
+      "text": "وَمَآ أَدۡرَىٰكَ مَا ٱلۡقَارِعَةُ",
+      "similarity": 0.95
+    },
+    {
+      "ayah_number": 4,
+      "start": 18.64,
+      "end": 24.61,
+      "text": "يَوۡمَ يَكُونُ ٱلنَّاسُ كَٱلۡفَرَاشِ ٱلۡمَبۡثُوثِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 5,
+      "start": 25.12,
+      "end": 30.91,
+      "text": "وَتَكُونُ ٱلۡجِبَالُ كَٱلۡعِهۡنِ ٱلۡمَنفُوشِ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 6,
+      "start": 31.5,
+      "end": 36.31,
+      "text": "فَأَمَّا مَن ثَقُلَتۡ مَوَٰزِينُهُۥ",
+      "similarity": 0.95
+    },
+    {
+      "ayah_number": 7,
+      "start": 36.95,
+      "end": 40.04,
+      "text": "فَهُوَ فِي عِيشَةٖ رَّاضِيَةٖ",
+      "similarity": 1.0
+    },
+    {
+      "ayah_number": 8,
+      "start": 40.59,
+      "end": 45.16,
+      "text": "وَأَمَّا مَنۡ خَفَّتۡ مَوَٰزِينُهُۥ",
+      "similarity": 0.947
+    },
+    {
+      "ayah_number": 9,
+      "start": 45.75,
+      "end": 48.78,
+      "text": "فَأُمُّهُۥ هَاوِيَةٞ",
+      "similarity": 0.952
+    },
+    {
+      "ayah_number": 10,
+      "start": 49.31,
+      "end": 53.34,
+      "text": "وَمَآ أَدۡرَىٰكَ مَا هِيَهۡ",
+      "similarity": 0.938
+    },
+    {
+      "ayah_number": 11,
+      "start": 53.95,
+      "end": 56.67,
+      "text": "نَارٌ حَامِيَةُۢ",
+      "similarity": 1.0
+    }
+  ]
+}
