@@ -317,17 +317,17 @@ def align_segments(
                     
                     # Finalize if: last words match, OR coverage is very high (>90%)
                     if last_words_match or coverage >= 0.9:
-                    result = _finalize_ayah(
-                        ctx,
-                        merged_text,
-                        start_time,
-                        end_time,
-                        overlap_flag,
-                        next_ayah_start=next_segment.start,
-                    )
-                    if on_ayah_aligned:
-                        on_ayah_aligned(result)
-                    break
+                        result = _finalize_ayah(
+                            ctx,
+                            merged_text,
+                            start_time,
+                            end_time,
+                            overlap_flag,
+                            next_ayah_start=next_segment.start,
+                        )
+                        if on_ayah_aligned:
+                            on_ayah_aligned(result)
+                        break
                     # If last words don't match and coverage < 90%, continue merging
 
                 # Check for silence gap
@@ -352,18 +352,18 @@ def align_segments(
                         
                         # Finalize if: last words match, OR coverage is very high (>90%)
                         if last_words_match or coverage >= 0.9:
-                        gap_start, _ = silence_gap
-                        result = _finalize_ayah(
-                            ctx,
-                            merged_text,
-                            start_time,
-                            end_time,
-                            overlap_flag,
-                            next_ayah_start=gap_start,
-                        )
-                        if on_ayah_aligned:
-                            on_ayah_aligned(result)
-                        break
+                            gap_start, _ = silence_gap
+                            result = _finalize_ayah(
+                                ctx,
+                                merged_text,
+                                start_time,
+                                end_time,
+                                overlap_flag,
+                                next_ayah_start=gap_start,
+                            )
+                            if on_ayah_aligned:
+                                on_ayah_aligned(result)
+                            break
                         # If last words don't match and coverage < 90%, continue merging
 
                 # Merge next segment
