@@ -22,8 +22,6 @@ Usage:
 from munajjam.models import (
     AlignmentResult,
     Ayah,
-    Recitation,
-    RecitationStatus,
     Segment,
     SegmentType,
     Surah,
@@ -49,8 +47,6 @@ __all__ = [
     "SegmentType",
     "Surah",
     "AlignmentResult",
-    "Recitation",
-    "RecitationStatus",
     # Config
     "MunajjamSettings",
     "get_settings",

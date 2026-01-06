@@ -153,3 +153,36 @@ def word_count(text: str) -> int:
         return 0
     return len(normalized.split())
 
+
+def detect_segment_type(text: str) -> tuple[SegmentType, int]:
+    """
+    Detect segment type from transcribed text.
+
+    Used by transcribers to classify segments as ayah, isti'aza, or basmala.
+    This is the canonical implementation - do not duplicate in other modules.
+
+    Args:
+        text: Transcribed Arabic text
+
+    Returns:
+        Tuple of (segment_type, segment_id)
+        segment_id is 0 for special segments, 1 for ayah (to be renumbered later)
+
+    Examples:
+        >>> detect_segment_type("أعوذ بالله من الشيطان الرجيم")
+        (SegmentType.ISTI3AZA, 0)
+        >>> detect_segment_type("بسم الله الرحمن الرحيم")
+        (SegmentType.BASMALA, 0)
+        >>> detect_segment_type("الحمد لله رب العالمين")
+        (SegmentType.AYAH, 1)
+    """
+    normalized = normalize_arabic(text)
+
+    if ISTI3AZA_PATTERN.search(normalized):
+        return SegmentType.ISTI3AZA, 0
+
+    if BASMALA_PATTERN.search(normalized):
+        return SegmentType.BASMALA, 0
+
+    return SegmentType.AYAH, 1
+

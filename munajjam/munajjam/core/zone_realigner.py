@@ -9,7 +9,7 @@ Fixes drift issues in long surahs by:
 
 from dataclasses import dataclass
 from munajjam.models import Segment, Ayah, AlignmentResult
-from .aligner_dp import align_segments_dp
+from .dp_core import align_segments_dp
 
 
 @dataclass

@@ -31,8 +31,7 @@ from threading import Thread
 
 from munajjam.transcription import WhisperTranscriber
 from munajjam.transcription.silence import detect_silences
-from munajjam.core.aligner_dp import align_segments_dp_with_constraints, align_segments_hybrid, HybridStats
-from munajjam.core.zone_realigner import realign_problem_zones, realign_from_anchors, fix_overlaps, ZoneStats
+from munajjam.core import Aligner, HybridStats
 from munajjam.data import load_surah_ayahs, get_surah_name
 
 
@@ -458,8 +457,8 @@ def process_surah(
         print()  # New line after progress bar
         print(f"   ✓ Transcribed {len(segments)} segments")
 
-        # 3. Get ayahs (from cache or load) and align using HYBRID algorithm
-        print("   📝 Aligning segments (Hybrid: DP + fallback)...")
+        # 3. Get ayahs (from cache or load) and align using Aligner
+        print("   📝 Aligning segments (Hybrid: DP + fallback + drift fix)...")
         if ayahs_cache and surah_id in ayahs_cache:
             ayahs = ayahs_cache[surah_id]
         else:
@@ -467,7 +466,7 @@ def process_surah(
         
         result.total_ayahs = len(ayahs)
         
-        # Hybrid alignment progress callback
+        # Alignment progress callback
         def align_progress(current: int, total: int):
             percent = (current / total) * 100
             bar_width = 30
@@ -475,12 +474,19 @@ def process_surah(
             bar = "█" * filled + "░" * (bar_width - filled)
             print(f"\r      [{bar}] {current}/{total} ({percent:.0f}%)", end="", flush=True)
         
-        aligned_results, hybrid_stats = align_segments_hybrid(
-            segments, 
-            ayahs, 
-            silences_ms=silences,
+        # Use the unified Aligner class - handles DP, fallback, and drift fix
+        aligner = Aligner(
+            strategy="hybrid",
             quality_threshold=0.85,
-            on_progress=align_progress
+            fix_drift=True,
+            fix_overlaps=True,
+        )
+        
+        aligned_results = aligner.align(
+            segments=segments,
+            ayahs=ayahs,
+            silences_ms=silences,
+            on_progress=align_progress,
         )
         print()  # New line after progress
 
@@ -490,73 +496,13 @@ def process_surah(
             if aligned_results else 0.0
         )
         
-        # Store hybrid stats in result
-        result.dp_kept = hybrid_stats.dp_kept
-        result.old_fallback = hybrid_stats.old_fallback
-        result.split_improved = hybrid_stats.split_improved
-        result.still_low = hybrid_stats.still_low
-
-        # 4. Zone re-alignment (drift fix)
-        # This fixes timing drift in long surahs by re-aligning problem zones
-        print(f"   🔧 Checking for drift issues...")
-        aligned_results, zone_stats = realign_problem_zones(
-            results=aligned_results,
-            segments=segments,
-            ayahs=ayahs,
-            min_consecutive=3,
-            quality_threshold=0.85,
-            buffer_seconds=10.0,
-        )
-        
-        result.zones_found = zone_stats.zones_found
-        result.zones_improved = zone_stats.zones_improved
-        result.zone_ayahs_improved = zone_stats.ayahs_improved
-        
-        if zone_stats.zones_found > 0:
-            print(f"   ✓ Found {zone_stats.zones_found} problem zones, "
-                  f"{zone_stats.zones_improved} improved, "
-                  f"{zone_stats.ayahs_improved} ayahs fixed")
-            
-            # Recalculate avg similarity after zone realignment
-            result.avg_similarity = (
-                sum(r.similarity_score for r in aligned_results) / len(aligned_results)
-                if aligned_results else 0.0
-            )
-        else:
-            print(f"   ✓ No drift issues detected")
-
-        # 4b. Anchor-based re-alignment (additional drift fix)
-        # Uses high-confidence ayahs as anchors and re-aligns gaps between them
-        print(f"   🔧 Running anchor-based re-alignment...")
-        aligned_results, anchor_stats = realign_from_anchors(
-            results=aligned_results,
-            segments=segments,
-            ayahs=ayahs,
-            min_gap_size=3,
-            buffer_seconds=5.0,
-        )
-        
-        if anchor_stats.zones_found > 0:
-            result.zones_found += anchor_stats.zones_found
-            result.zones_improved += anchor_stats.zones_improved
-            result.zone_ayahs_improved += anchor_stats.ayahs_improved
-            
-            print(f"   ✓ Found {anchor_stats.zones_found} gaps between anchors, "
-                  f"{anchor_stats.zones_improved} improved, "
-                  f"{anchor_stats.ayahs_improved} ayahs fixed")
-            
-            # Recalculate avg similarity
-            result.avg_similarity = (
-                sum(r.similarity_score for r in aligned_results) / len(aligned_results)
-                if aligned_results else 0.0
-            )
-        else:
-            print(f"   ✓ No additional gaps found")
-
-        # 4c. Fix any overlapping ayah timings
-        overlaps_fixed = fix_overlaps(aligned_results)
-        if overlaps_fixed > 0:
-            print(f"   🔧 Fixed {overlaps_fixed} overlapping ayah timings")
+        # Store hybrid stats if available
+        hybrid_stats = aligner.last_stats
+        if hybrid_stats:
+            result.dp_kept = hybrid_stats.dp_kept
+            result.old_fallback = hybrid_stats.old_fallback
+            result.split_improved = hybrid_stats.split_improved
+            result.still_low = hybrid_stats.still_low
 
         # 5. Save output (async - non-blocking)
         save_output(surah_id, surah_name, aligned_results, len(ayahs), hybrid_stats, async_save=True)

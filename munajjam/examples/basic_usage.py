@@ -12,9 +12,8 @@ from pathlib import Path
 
 # Import core components
 from munajjam.transcription import WhisperTranscriber
-from munajjam.core import align_segments
+from munajjam.core import align
 from munajjam.data import load_surah_ayahs
-from munajjam.models import Recitation
 
 
 def process_surah(audio_path: str, surah_id: int, reciter: str = "Unknown"):
@@ -51,7 +50,7 @@ def process_surah(audio_path: str, surah_id: int, reciter: str = "Unknown"):
     # Step 3: Align segments to ayahs
     print("\n🔗 Step 3: Aligning segments to ayahs...")
     
-    results = align_segments(segments, ayahs)
+    results = align(segments, ayahs)
     print(f"   Aligned {len(results)} ayahs")
     
     # Show alignment results

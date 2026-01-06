@@ -6,14 +6,12 @@ These models represent the core data structures used throughout the library:
 - Segment: A transcribed audio segment
 - Surah: Surah metadata
 - AlignmentResult: Result of aligning a segment to an ayah
-- Recitation: A complete recitation processing session
 """
 
 from munajjam.models.ayah import Ayah
 from munajjam.models.segment import Segment, SegmentType
 from munajjam.models.surah import Surah
 from munajjam.models.result import AlignmentResult
-from munajjam.models.recitation import Recitation, RecitationStatus
 
 __all__ = [
     "Ayah",
@@ -21,7 +19,5 @@ __all__ = [
     "SegmentType",
     "Surah",
     "AlignmentResult",
-    "Recitation",
-    "RecitationStatus",
 ]
 

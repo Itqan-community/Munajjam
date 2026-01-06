@@ -30,7 +30,7 @@ pip install munajjam[faster-whisper]
 
 ```python
 from munajjam.transcription import WhisperTranscriber
-from munajjam.core.aligner import align_segments
+from munajjam.core import Aligner
 from munajjam.data import load_surah_ayahs
 import json
 
@@ -41,8 +41,9 @@ with WhisperTranscriber() as transcriber:
 # Step 2: Load reference ayahs
 ayahs = load_surah_ayahs(1)
 
-# Step 3: Align segments to ayahs
-results = align_segments(segments, ayahs)
+# Step 3: Align segments to ayahs (uses hybrid strategy with drift fix)
+aligner = Aligner(strategy="hybrid")
+results = aligner.align(segments, ayahs)
 
 # Step 4: Output as JSON
 output = []
@@ -85,13 +86,65 @@ settings = configure(
 
 ```
 munajjam/
-├── core/           # Core algorithms (alignment, matching, Arabic normalization)
-├── transcription/  # Audio transcription (Whisper implementation)
+├── core/           # Alignment algorithms (Aligner class)
+├── transcription/  # Audio transcription (Whisper implementations)
 ├── models/         # Pydantic data models
 ├── data/           # Bundled Quran reference data
 ├── config.py       # Configuration management
 └── exceptions.py   # Custom exceptions
 ```
+
+## Core API
+
+### Aligner Class
+
+The `Aligner` class is the main entry point for alignment:
+
+```python
+from munajjam.core import Aligner, AlignmentStrategy
+
+# Create an aligner with default settings (hybrid strategy)
+aligner = Aligner()
+
+# Or with custom configuration
+aligner = Aligner(
+    strategy="hybrid",      # "greedy", "dp", or "hybrid" (recommended)
+    quality_threshold=0.85, # Similarity threshold for high-quality alignment
+    fix_drift=True,         # Run zone realignment for long surahs
+    fix_overlaps=True,      # Fix overlapping ayah timings
+)
+
+# Run alignment
+results = aligner.align(
+    segments=segments,
+    ayahs=ayahs,
+    silences_ms=silences,   # Optional: silence periods for better boundaries
+    on_progress=callback,   # Optional: progress callback (current, total)
+)
+
+# Access stats from hybrid alignment
+if aligner.last_stats:
+    print(f"DP kept: {aligner.last_stats.dp_kept}")
+    print(f"Fallback used: {aligner.last_stats.old_fallback}")
+```
+
+### Convenience Function
+
+For simple usage with default settings:
+
+```python
+from munajjam.core import align
+
+results = align(segments, ayahs)
+```
+
+### Alignment Strategies
+
+| Strategy | Description | Use Case |
+|----------|-------------|----------|
+| `greedy` | Fast, simple matching | Quick prototyping |
+| `dp` | Dynamic programming for optimal alignment | High accuracy needed |
+| `hybrid` | DP with fallback to greedy | **Recommended** - best balance |
 
 ## Models
 
@@ -133,7 +186,7 @@ result.similarity_score  # Match quality (0.0-1.0)
 result.is_high_confidence  # True if score >= 0.8
 ```
 
-## Core Functions
+## Text Utilities
 
 ### Arabic Text Normalization
 

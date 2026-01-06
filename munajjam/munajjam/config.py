@@ -48,16 +48,6 @@ class MunajjamSettings(BaseSettings):
         description="Model backend type",
     )
 
-    hf_inference_endpoint: str | None = Field(
-        default=None,
-        description="HuggingFace Inference Endpoint URL",
-    )
-
-    hf_api_token: str | None = Field(
-        default=None,
-        description="HuggingFace API token for inference endpoint",
-    )
-
     # ============ Audio Processing ============
 
     silence_threshold_db: int = Field(

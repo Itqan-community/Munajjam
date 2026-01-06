@@ -5,11 +5,11 @@ Uses Tarteel AI's Whisper models fine-tuned for Quran recitation.
 """
 
 import asyncio
-import re
 from pathlib import Path
 from typing import Callable, Literal
 
 from munajjam.config import MunajjamSettings, get_settings
+from munajjam.core.arabic import detect_segment_type
 from munajjam.exceptions import TranscriptionError, ModelNotLoadedError, AudioFileError
 from munajjam.models import Segment, SegmentType
 from munajjam.transcription.base import BaseTranscriber
@@ -18,40 +18,6 @@ from munajjam.transcription.silence import (
     load_audio_waveform,
     extract_segment_audio,
 )
-
-
-# Regex patterns for special segment detection
-ISTI3AZA_PATTERN = re.compile(r"[اأإآٱو]?عوذ\s*بالله\s*من\s*الشيطان\s*الرجيم")
-BASMALA_PATTERN = re.compile(r"(?:ب\s*س?م?\s*)?الله\s*الرحمن\s*الرحيم")
-
-
-def _normalize_for_detection(text: str) -> str:
-    """Normalize text for pattern detection."""
-    text = re.sub(r"[أإآاٱ]", "ا", text)
-    text = re.sub(r"ى", "ي", text)
-    text = re.sub(r"ة", "ه", text)
-    text = re.sub(r"[^\w\s]", "", text)
-    text = re.sub(r"\s+", " ", text).strip()
-    return text
-
-
-def _detect_segment_type(text: str) -> tuple[SegmentType, int]:
-    """
-    Detect segment type from transcribed text.
-
-    Returns:
-        Tuple of (segment_type, segment_id)
-        segment_id is 0 for special segments, positive otherwise
-    """
-    normalized = _normalize_for_detection(text)
-
-    if ISTI3AZA_PATTERN.search(normalized):
-        return SegmentType.ISTI3AZA, 0
-
-    if BASMALA_PATTERN.search(normalized):
-        return SegmentType.BASMALA, 0
-
-    return SegmentType.AYAH, 1  # Will be renumbered later
 
 
 class WhisperTranscriber(BaseTranscriber):
@@ -285,7 +251,7 @@ class WhisperTranscriber(BaseTranscriber):
                 )
 
             # Detect segment type
-            seg_type, seg_id = _detect_segment_type(text)
+            seg_type, seg_id = detect_segment_type(text)
             if seg_type == SegmentType.AYAH:
                 seg_id = segment_idx
                 segment_idx += 1
