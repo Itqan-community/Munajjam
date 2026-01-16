@@ -3,12 +3,23 @@ Arabic text normalization utilities.
 
 This module provides functions for normalizing Arabic text, which is essential
 for accurate comparison between transcribed audio and reference Quran text.
+
+Uses high-performance Rust implementations when available, with
+fallback to pure Python implementations.
 """
 
 import re
 from typing import Literal
 
 from munajjam.models.segment import Segment, SegmentType
+
+
+# Try to import Rust implementations for better performance
+try:
+    import munajjam_rs
+    _USE_RUST = True
+except ImportError:
+    _USE_RUST = False
 
 
 # Regex patterns for special segments
@@ -30,6 +41,8 @@ def normalize_arabic(text: str) -> str:
     - Remove punctuation
     - Collapse multiple spaces
 
+    When munajjam_rs is installed, uses high-performance Rust implementation.
+
     Args:
         text: Arabic text to normalize
 
@@ -45,6 +58,11 @@ def normalize_arabic(text: str) -> str:
     if not text:
         return ""
 
+    # Use Rust implementation if available
+    if _USE_RUST:
+        return munajjam_rs.normalize_arabic(text)
+
+    # Fallback to Python implementation
     # Normalize alef variants (including alef wasla ٱ U+0671)
     text = re.sub(r"[أإآاٱ]", "ا", text)
 

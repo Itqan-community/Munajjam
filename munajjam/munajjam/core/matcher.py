@@ -3,19 +3,32 @@ Similarity matching algorithms for Arabic text.
 
 This module provides functions for computing similarity between
 transcribed audio text and reference Quran text.
+
+Uses high-performance Rust implementations when available, with
+fallback to SIMD-accelerated rapidfuzz.
 """
 
-from difflib import SequenceMatcher
+from rapidfuzz.distance import Indel as _rapidfuzz_indel
 
 from munajjam.core.arabic import normalize_arabic
+
+# Try to import Rust implementations for better performance
+try:
+    import munajjam_rs
+    _USE_RUST = True
+except ImportError:
+    _USE_RUST = False
 
 
 def similarity(text1: str, text2: str, normalize: bool = True) -> float:
     """
     Compute similarity ratio between two strings.
 
-    Uses SequenceMatcher to compute a ratio between 0.0 (no similarity)
-    and 1.0 (identical strings).
+    Returns a ratio between 0.0 (no similarity) and 1.0 (identical strings).
+
+    Implementation priority:
+    1. Rust (munajjam_rs) - fastest (~6x speedup)
+    2. rapidfuzz - SIMD-accelerated C++ (~4x speedup)
 
     Args:
         text1: First string to compare
@@ -31,11 +44,16 @@ def similarity(text1: str, text2: str, normalize: bool = True) -> float:
         >>> similarity("بِسْمِ اللَّهِ", "بسم الله", normalize=True)
         1.0
     """
+    # Use Rust implementation if available (fastest)
+    if _USE_RUST:
+        return munajjam_rs.similarity(text1, text2, normalize)
+
+    # Fallback to rapidfuzz SIMD-accelerated implementation
     if normalize:
         text1 = normalize_arabic(text1)
         text2 = normalize_arabic(text2)
 
-    return SequenceMatcher(None, text1, text2).ratio()
+    return _rapidfuzz_indel.normalized_similarity(text1, text2)
 
 
 def get_first_words(text: str, n: int = 1, normalize: bool = True) -> str:
@@ -108,6 +126,8 @@ def compute_coverage_ratio(transcribed_text: str, ayah_text: str) -> float:
     This helps determine if the transcription covers enough of the ayah
     to be considered a complete match.
 
+    When munajjam_rs is installed, uses high-performance Rust implementation.
+
     Args:
         transcribed_text: Text from transcription
         ayah_text: Reference ayah text
@@ -115,6 +135,11 @@ def compute_coverage_ratio(transcribed_text: str, ayah_text: str) -> float:
     Returns:
         Ratio of transcribed words to ayah words (can be > 1.0)
     """
+    # Use Rust implementation if available
+    if _USE_RUST:
+        return munajjam_rs.compute_coverage_ratio(transcribed_text, ayah_text)
+
+    # Fallback to Python implementation
     trans_words = len(normalize_arabic(transcribed_text).split())
     ayah_words = len(normalize_arabic(ayah_text).split())
 

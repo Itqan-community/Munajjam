@@ -1,0 +1,19 @@
+[package]
+name = "munajjam_rs"
+version = "0.1.0"
+edition = "2021"
+description = "High-performance Rust core for Munajjam Quran alignment"
+
+[lib]
+name = "munajjam_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module"] }
+rayon = "1.10"
+unicode-normalization = "0.1"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3

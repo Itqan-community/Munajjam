@@ -44,6 +44,7 @@ dependencies = [
     "librosa>=0.10.0",
     "pydub>=0.25.1",
     "pandas>=2.0.0",
+    "rapidfuzz>=3.0.0",
 ]
 
 [project.optional-dependencies]

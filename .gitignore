@@ -124,3 +124,4 @@ cache/
 *.csv
 batch_process.py
 *.mp3
+munajjam-rs/target/
