@@ -50,7 +50,7 @@ def process_surah(audio_path: str, surah_id: int, reciter: str = "Unknown"):
     # Step 3: Align segments to ayahs
     print("\n🔗 Step 3: Aligning segments to ayahs...")
     
-    results = align(segments, ayahs)
+    results = align(audio_path, segments, ayahs)
     print(f"   Aligned {len(results)} ayahs")
     
     # Show alignment results
