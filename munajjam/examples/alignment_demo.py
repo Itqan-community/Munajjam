@@ -126,7 +126,7 @@ def test_with_transcription(audio_path: str, surah_id: int):
     print("=" * 60)
 
 
-def test_with_existing_segments(surah_id: int):
+def test_with_existing_segments(surah_id: int, audio_path: str = ""):
     """Test alignment using existing segment data (skip transcription)."""
     
     print("=" * 60)
@@ -291,7 +291,8 @@ if __name__ == "__main__":
             print("Usage: python alignment_demo.py --existing <surah_id>")
             sys.exit(1)
         surah_id = int(sys.argv[2])
-        test_with_existing_segments(surah_id)
+        audio_path = sys.argv[3] if len(sys.argv) > 3 else ""
+        test_with_existing_segments(surah_id, audio_path)
     else:
         if len(sys.argv) < 3:
             print("Usage: python alignment_demo.py <audio_path> <surah_id>")

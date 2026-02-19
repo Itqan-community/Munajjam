@@ -16,6 +16,13 @@ import os
 import re
 import pytest
 
+try:
+    from munajjam.core import align as _align_fn
+    _align_importable = True
+except ImportError:
+    _align_importable = False
+    _align_fn = None
+
 # ─────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────
@@ -107,14 +114,11 @@ class TestBug55:
     # ── The API itself ────────────────────────────────────────
 
     def test_align_function_exists(self):
-        """align() function must be importable from munajjam.core."""
-        from munajjam.core import align
-        assert callable(align)
+        assert _align_importable and callable(_align_fn)
 
     def test_align_first_param_is_audio_path(self):
-        """First parameter of align() must be audio_path."""
-        from munajjam.core import align
-        params = list(inspect.signature(align).parameters.keys())
+        assert _align_importable
+        params = list(inspect.signature(_align_fn).parameters.keys())
         assert params[0] == "audio_path", (
             f"First parameter of align() is '{params[0]}' instead of 'audio_path'.\n"
             f"Full signature: {params}"
@@ -204,7 +208,7 @@ class TestBug55:
     def test_basic_usage_imports_align_from_core(self):
         """basic_usage.py must import align from munajjam.core."""
         source = read_source(self.BASIC_USAGE)
-        assert "from munajjam.core import" in source and "align" in source, (
+        assert re.search(r'from munajjam\.core import[^\n]*\balign\b', source), (
             "basic_usage.py must contain: from munajjam.core import align"
         )
 
