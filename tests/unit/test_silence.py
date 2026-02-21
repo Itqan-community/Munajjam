@@ -90,12 +90,12 @@ class TestAdaptiveSilenceDetection:
                 min_chunks_ratio=0.5,
             )
 
-        # First call (initial) + at least one retry
-        assert mock_raw.call_count >= 2
+        # First call (initial) + exactly one retry
+        assert mock_raw.call_count == 2
         assert result == enough_chunks
 
     def test_adaptive_retry_uses_relaxed_thresholds(self):
-        """Retry calls must use a lower (more negative) silence_thresh."""
+        """Retry calls must use a higher (less negative) silence_thresh."""
         few_chunks = self._make_chunks(1)
 
         recorded_thresholds: list[int] = []
@@ -116,11 +116,11 @@ class TestAdaptiveSilenceDetection:
                 min_chunks_ratio=0.5,
             )
 
-        # First threshold is the original; subsequent thresholds must be lower
+        # First threshold is the original; subsequent thresholds must be higher
         assert recorded_thresholds[0] == -30
         for i in range(1, len(recorded_thresholds)):
-            assert recorded_thresholds[i] < recorded_thresholds[i - 1], (
-                f"Retry {i} threshold {recorded_thresholds[i]} is not lower than "
+            assert recorded_thresholds[i] > recorded_thresholds[i - 1], (
+                f"Retry {i} threshold {recorded_thresholds[i]} is not higher than "
                 f"previous {recorded_thresholds[i - 1]}"
             )
 
@@ -179,7 +179,7 @@ class TestAdaptiveSilenceDetection:
             assert length >= 50, f"min_silence_len {length} dropped below 50 ms"
 
     def test_adaptive_exhausts_all_retries_gracefully(self):
-        """When all retries fail to find enough chunks, return the last result."""
+        """When all retries fail to find enough chunks, return the best result."""
         few_chunks = self._make_chunks(1)
 
         with patch(
@@ -244,3 +244,95 @@ class TestAdaptiveSilenceDetection:
 
         assert mock_raw.call_count == 1
         assert result == chunks
+
+    def test_adaptive_min_required_never_zero(self):
+        """min_required should be at least 1 to prevent the retry from being silently skipped."""
+        # Without the max(1, ...) fix, int(0.5 * 1) = 0, so len([]) >= 0 is
+        # always True and retries never fire.  With the fix, min_required = 1
+        # and an empty initial result triggers retries.
+        empty_chunks: list[tuple[int, int]] = []
+
+        with patch(
+            "munajjam.transcription.silence._detect_non_silent_chunks_raw",
+            return_value=empty_chunks,
+        ) as mock_raw:
+            detect_non_silent_chunks(
+                "dummy.wav",
+                adaptive=True,
+                expected_chunks=1,       # int(0.5 * 1) = 0 → retry never fires without the fix
+                min_chunks_ratio=0.5,
+            )
+
+        # Should still attempt retries even for tiny expected_chunks
+        # because min_required is clamped to at least 1
+        assert mock_raw.call_count > 1
+
+    def test_adaptive_returns_best_result(self):
+        """Adaptive retry should return the best result (most chunks) across all attempts."""
+        initial_chunks = self._make_chunks(1)
+        better_chunks = self._make_chunks(3)
+        worse_chunks = self._make_chunks(2)
+
+        call_index = {"i": 0}
+        call_results = [initial_chunks, better_chunks, worse_chunks, worse_chunks, worse_chunks]
+
+        def side_effect(*args, **kwargs):
+            result = call_results[min(call_index["i"], len(call_results) - 1)]
+            call_index["i"] += 1
+            return result
+
+        with patch(
+            "munajjam.transcription.silence._detect_non_silent_chunks_raw",
+            side_effect=side_effect,
+        ):
+            result = detect_non_silent_chunks(
+                "dummy.wav",
+                adaptive=True,
+                expected_chunks=10,
+                min_chunks_ratio=0.5,
+            )
+
+        # Should return the best result (3 chunks), not the last one (2 chunks)
+        assert result == better_chunks
+
+    def test_adaptive_thresh_capped_at_minus_10(self):
+        """Relaxed threshold should never exceed -10 dBFS to avoid classifying speech as silence."""
+        few_chunks = self._make_chunks(1)
+
+        recorded_thresholds: list[int] = []
+
+        def side_effect(audio_path, min_silence_len, silence_thresh, use_fast):
+            recorded_thresholds.append(silence_thresh)
+            return few_chunks
+
+        with patch(
+            "munajjam.transcription.silence._detect_non_silent_chunks_raw",
+            side_effect=side_effect,
+        ):
+            detect_non_silent_chunks(
+                "dummy.wav",
+                silence_thresh=-15,  # Close to cap
+                adaptive=True,
+                expected_chunks=10,
+                min_chunks_ratio=0.5,
+            )
+
+        for thresh in recorded_thresholds[1:]:  # Skip initial call
+            assert thresh >= -10 or thresh <= -10, "Threshold should be capped"
+            assert thresh <= -10, (
+                f"Threshold {thresh} exceeded -10 dBFS cap"
+            )
+
+    def test_adaptive_raises_on_invalid_min_chunks_ratio(self):
+        """Adaptive mode should raise ValueError when min_chunks_ratio <= 0."""
+        with patch(
+            "munajjam.transcription.silence._detect_non_silent_chunks_raw",
+            return_value=self._make_chunks(1),
+        ):
+            with pytest.raises(ValueError, match="min_chunks_ratio must be > 0"):
+                detect_non_silent_chunks(
+                    "dummy.wav",
+                    adaptive=True,
+                    expected_chunks=10,
+                    min_chunks_ratio=0,
+                )

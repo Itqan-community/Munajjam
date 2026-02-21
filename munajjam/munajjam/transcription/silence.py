@@ -141,8 +141,10 @@ def detect_non_silent_chunks(
     Supports adaptive retry mode: when ``adaptive=True`` and the number of
     detected chunks is fewer than ``min_chunks_ratio * expected_chunks``,
     the function automatically retries with progressively relaxed thresholds
-    (lower ``silence_thresh`` and shorter ``min_silence_len``) until enough
-    chunks are found or all retry levels are exhausted.
+    (higher ``silence_thresh`` to detect more silence, and shorter
+    ``min_silence_len``) until enough chunks are found or all retry levels
+    are exhausted.  The best result (most chunks) across all attempts is
+    returned.
 
     Args:
         audio_path: Path to the audio file
@@ -164,31 +166,42 @@ def detect_non_silent_chunks(
     if not adaptive or expected_chunks is None or expected_chunks <= 0:
         return chunks
 
+    if min_chunks_ratio <= 0:
+        raise ValueError(
+            "detect_non_silent_chunks: min_chunks_ratio must be > 0 when "
+            f"adaptive=True (got {min_chunks_ratio}). Provide a positive "
+            "ratio relative to expected_chunks."
+        )
+
     # Adaptive retry: relax thresholds progressively until we have enough chunks
     # Each level relaxes the dB threshold (allow quieter sounds) and shortens
     # the minimum silence length (detect shorter pauses).
     retry_levels = [
         # (silence_thresh_delta, min_silence_len_factor)
-        (-5, 0.75),   # level 1: slightly more sensitive
-        (-10, 0.5),   # level 2: moderately more sensitive
-        (-15, 0.35),  # level 3: quite sensitive
-        (-20, 0.25),  # level 4: very sensitive (last resort)
+        (+5, 0.75),   # level 1: slightly more sensitive (raise thresh → more silence detected)
+        (+10, 0.5),   # level 2: moderately more sensitive
+        (+15, 0.35),  # level 3: quite sensitive
+        (+20, 0.25),  # level 4: very sensitive (last resort)
     ]
 
-    min_required = int(min_chunks_ratio * expected_chunks)
+    min_required = max(1, int(min_chunks_ratio * expected_chunks))
+
+    best_chunks = chunks
 
     for thresh_delta, len_factor in retry_levels:
-        if len(chunks) >= min_required:
+        if len(best_chunks) >= min_required:
             break
 
-        relaxed_thresh = silence_thresh + thresh_delta  # e.g. -30 + (-5) = -35
+        relaxed_thresh = min(silence_thresh + thresh_delta, -10)  # e.g. -30 + 5 = -25, capped at -10
         relaxed_len = max(50, int(min_silence_len * len_factor))  # never below 50 ms
 
         chunks = _detect_non_silent_chunks_raw(
             audio_path, relaxed_len, relaxed_thresh, use_fast
         )
+        if len(chunks) > len(best_chunks):
+            best_chunks = chunks
 
-    return chunks
+    return best_chunks
 
 
 def _detect_non_silent_chunks_raw(
