@@ -42,9 +42,10 @@ jobs:
           pip install -e ./munajjam --no-deps
 
       - name: Lint with ruff
+        working-directory: ./munajjam
         run: |
-          ruff check ./munajjam
-          ruff format --check ./munajjam
+          ruff check .
+          ruff format --check .
 
       - name: Type check with mypy
         run: mypy ./munajjam/munajjam --ignore-missing-imports
