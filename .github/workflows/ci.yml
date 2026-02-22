@@ -23,7 +23,7 @@ jobs:
           cache: "pip"
 
       - name: Install lightweight dependencies for CI
-        working-directory: ./munajjam
+        
         run: |
           python -m pip install --upgrade pip
           # Install only lightweight deps needed for unit tests (skip torch/transformers)
@@ -43,17 +43,17 @@ jobs:
           pip install -e . --no-deps
 
       - name: Lint with ruff
-        working-directory: ./munajjam
+        
         run: |
           ruff check .
           ruff format --check .
 
       - name: Type check with mypy
-        working-directory: ./munajjam
+        
         run: mypy munajjam --ignore-missing-imports
 
       - name: Run tests
-        working-directory: ./munajjam
+        
         run: pytest tests/unit/ -v --tb=short
 
   build:
@@ -73,7 +73,7 @@ jobs:
         run: pip install build
 
       - name: Build package
-        working-directory: ./munajjam
+        
         run: python -m build
 
       - name: Upload build artifacts
