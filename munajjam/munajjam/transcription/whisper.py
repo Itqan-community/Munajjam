@@ -5,18 +5,19 @@ Uses Tarteel AI's Whisper models fine-tuned for Quran recitation.
 """
 
 import asyncio
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Literal
 
 from munajjam.config import MunajjamSettings, get_settings
 from munajjam.core.arabic import detect_segment_type
-from munajjam.exceptions import TranscriptionError, ModelNotLoadedError, AudioFileError
+from munajjam.exceptions import AudioFileError, ModelNotLoadedError, TranscriptionError
 from munajjam.models import Segment, SegmentType, WordTimestamp
 from munajjam.transcription.base import BaseTranscriber
 from munajjam.transcription.silence import (
     detect_non_silent_chunks,
-    load_audio_waveform,
     extract_segment_audio,
+    load_audio_waveform,
 )
 
 
@@ -110,23 +111,23 @@ class WhisperTranscriber(BaseTranscriber):
             self._load_faster_whisper()
         else:
             self._load_transformers()
-        
-        print(f"✅ Model loaded successfully")
+
+        print("✅ Model loaded successfully")
 
     def _load_transformers(self) -> None:
         """Load Transformers-based Whisper model."""
-        import torch
         import warnings
-        import logging
-        from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
+
+        import torch
+        from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
         from transformers.utils import logging as transformers_logging
 
         # Temporarily suppress warnings during model loading
         transformers_logging.set_verbosity_error()
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
-            
-            print(f"   Loading processor...")
+
+            print("   Loading processor...")
             self._processor = AutoProcessor.from_pretrained(self._model_id)
 
             # Determine dtype
@@ -145,23 +146,23 @@ class WhisperTranscriber(BaseTranscriber):
 
         # Restore verbosity after loading
         transformers_logging.set_verbosity_warning()
-        
+
         self._model.eval()
 
     def _load_faster_whisper(self) -> None:
         """Load Faster Whisper model."""
         try:
             from faster_whisper import WhisperModel
-        except ImportError:
+        except ImportError as e:
             raise TranscriptionError(
                 "faster-whisper not installed. "
                 "Install with: pip install munajjam[faster-whisper]"
-            )
+            ) from e
 
         device = self._resolved_device
         if device == "mps":
             device = "cpu"  # Faster Whisper doesn't support MPS
-            print(f"   Note: Faster Whisper doesn't support MPS, using CPU instead")
+            print("   Note: Faster Whisper doesn't support MPS, using CPU instead")
 
         compute_type = "float16" if device == "cuda" else "int8"
         print(f"   Loading model (compute_type: {compute_type})...")
@@ -251,7 +252,7 @@ class WhisperTranscriber(BaseTranscriber):
                 raise TranscriptionError(
                     f"Failed to transcribe segment at {start_ms}ms-{end_ms}ms: {e}",
                     audio_path=str(audio_path),
-                )
+                ) from e
 
             # Detect segment type
             seg_type, seg_id = detect_segment_type(text)
@@ -299,12 +300,12 @@ class WhisperTranscriber(BaseTranscriber):
 
     def _transcribe_transformers(self, segment_audio, sample_rate: int) -> str:
         """Transcribe using Transformers."""
-        import torch
-        import warnings
-        import logging
-        import sys
         import io
+        import logging
+        import warnings
         from contextlib import redirect_stderr
+
+        import torch
         from transformers import GenerationConfig
         from transformers.utils import logging as transformers_logging
 
@@ -325,11 +326,11 @@ class WhisperTranscriber(BaseTranscriber):
         # Suppress Python warnings
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
-            
+
             # Create a null device to suppress stderr output for warnings
             # (Some transformers warnings are printed directly via print/warning)
             null_stream = io.StringIO()
-            
+
             try:
                 inputs = self._processor(
                     segment_audio,
@@ -340,11 +341,11 @@ class WhisperTranscriber(BaseTranscriber):
                 # Extract input features and attention mask
                 input_features = inputs["input_features"]
                 attention_mask = inputs.get("attention_mask")
-                
+
                 # Convert input features to model's dtype (float16 on CUDA, float32 on CPU)
                 model_dtype = next(self._model.parameters()).dtype
                 input_features = input_features.to(dtype=model_dtype)
-                
+
                 # Create attention mask if it doesn't exist
                 # Whisper models need attention_mask because pad_token == eos_token
                 if attention_mask is None:
@@ -377,7 +378,7 @@ class WhisperTranscriber(BaseTranscriber):
                 return text
             finally:
                 # Restore original logging levels
-                for logger, original_level in zip(transformers_loggers, original_levels):
+                for logger, original_level in zip(transformers_loggers, original_levels, strict=False):
                     logger.setLevel(original_level)
                 # Restore transformers verbosity
                 transformers_logging.set_verbosity_warning()
@@ -393,16 +394,16 @@ class WhisperTranscriber(BaseTranscriber):
         Returns:
             Tuple of (combined_text, word_timestamps).
         """
-        import tempfile
         import os
+        import tempfile
 
         try:
             import soundfile as sf
-        except ImportError:
+        except ImportError as e:
             raise TranscriptionError(
                 "soundfile not installed. "
                 "Install with: pip install munajjam[faster-whisper]"
-            )
+            ) from e
 
         # Save to temp file (Faster Whisper needs file path)
         # On Windows, we need to close the file before another process can read it
@@ -461,32 +462,32 @@ class WhisperTranscriber(BaseTranscriber):
     def transcribe_segment(self, audio_path: str | Path) -> str:
         """
         Transcribe a single audio file and return the combined text.
-        
+
         This is a simplified interface for reprocessing where we just
         need the text, not the full segment information.
-        
+
         Args:
             audio_path: Path to the audio file
-        
+
         Returns:
             Transcribed text as a single string
         """
         if not self.is_loaded:
             raise ModelNotLoadedError()
-        
+
         audio_path = Path(audio_path)
         if not audio_path.exists():
             raise AudioFileError(str(audio_path), "File not found")
-        
+
         # Load audio waveform
         waveform, sr = load_audio_waveform(
             audio_path,
             sample_rate=self._settings.sample_rate,
         )
-        
+
         if len(waveform) == 0:
             return ""
-        
+
         # Transcribe the whole file as one segment
         text, _ = self._transcribe_segment(waveform, sr)
         return text.strip()

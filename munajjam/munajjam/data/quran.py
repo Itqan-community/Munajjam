@@ -8,11 +8,10 @@ bundled CSV file.
 import csv
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
 
 from munajjam.exceptions import QuranDataError
 from munajjam.models import Ayah, Surah
-from munajjam.models.surah import SURAH_NAMES, SURAH_AYAH_COUNTS
+from munajjam.models.surah import SURAH_AYAH_COUNTS, SURAH_NAMES
 
 
 def _get_data_path() -> Path:
@@ -53,7 +52,7 @@ def load_ayahs() -> list[Ayah]:
         csv_path = _get_quran_csv_path()
         ayahs = []
 
-        with open(csv_path, "r", encoding="utf-8") as f:
+        with open(csv_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 ayah = Ayah(
@@ -66,10 +65,10 @@ def load_ayahs() -> list[Ayah]:
 
         return ayahs
 
-    except FileNotFoundError:
-        raise QuranDataError("Quran ayahs CSV file not found")
+    except FileNotFoundError as e:
+        raise QuranDataError("Quran ayahs CSV file not found") from e
     except Exception as e:
-        raise QuranDataError(f"Failed to load Quran ayahs: {e}")
+        raise QuranDataError(f"Failed to load Quran ayahs: {e}") from e
 
 
 def load_surah_ayahs(surah_id: int) -> list[Ayah]:
@@ -89,7 +88,7 @@ def load_surah_ayahs(surah_id: int) -> list[Ayah]:
     return [a for a in all_ayahs if a.surah_id == surah_id]
 
 
-def get_ayah(surah_id: int, ayah_number: int) -> Optional[Ayah]:
+def get_ayah(surah_id: int, ayah_number: int) -> Ayah | None:
     """
     Get a specific ayah by surah and ayah number.
 

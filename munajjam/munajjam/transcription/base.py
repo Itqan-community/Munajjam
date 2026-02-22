@@ -5,8 +5,8 @@ This module defines the interface that all transcriber implementations must foll
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
-from typing import AsyncIterator, Iterator
 
 from munajjam.models import Segment
 

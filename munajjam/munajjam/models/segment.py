@@ -3,7 +3,6 @@ Audio segment data model.
 """
 
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -69,7 +68,7 @@ class Segment(BaseModel):
         default=SegmentType.AYAH,
         description="Type of segment",
     )
-    confidence: Optional[float] = Field(
+    confidence: float | None = Field(
         default=None,
         description="Confidence score from transcription (0.0-1.0)",
         ge=0.0,

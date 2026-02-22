@@ -9,7 +9,6 @@ from pathlib import Path
 import pytest
 
 from munajjam.formatters import (
-    AlignmentMetadata,
     AlignmentOutput,
     FormattedAyahResult,
     format_alignment_results,
