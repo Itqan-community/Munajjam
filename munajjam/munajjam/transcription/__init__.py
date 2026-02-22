@@ -14,4 +14,3 @@ __all__ = [
     "detect_silences",
     "detect_non_silent_chunks",
 ]
-

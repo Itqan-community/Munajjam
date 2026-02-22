@@ -23,4 +23,3 @@ __all__ = [
     "get_surah",
     "get_surah_name",
 ]
-

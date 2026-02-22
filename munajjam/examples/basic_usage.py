@@ -72,16 +72,18 @@ def process_surah(audio_path: str, surah_id: int, reciter: str = "Unknown"):
 
     output = []
     for result in results:
-        output.append({
-            "id": result.ayah.ayah_number,
-            "sura_id": result.ayah.surah_id,
-            "ayah_index": result.ayah.ayah_number - 1,
-            "start": round(result.start_time, 2),
-            "end": round(result.end_time, 2),
-            "transcribed_text": result.transcribed_text,
-            "corrected_text": result.ayah.text,
-            "similarity_score": round(result.similarity_score, 3),
-        })
+        output.append(
+            {
+                "id": result.ayah.ayah_number,
+                "sura_id": result.ayah.surah_id,
+                "ayah_index": result.ayah.ayah_number - 1,
+                "start": round(result.start_time, 2),
+                "end": round(result.end_time, 2),
+                "transcribed_text": result.transcribed_text,
+                "corrected_text": result.ayah.text,
+                "similarity_score": round(result.similarity_score, 3),
+            }
+        )
 
     return output
 

@@ -9,18 +9,13 @@ No real model downloads or audio files are needed.
 
 Closes #48
 """
+
 from __future__ import annotations
-
-
-
-
 
 
 from munajjam.models import Segment, Ayah, AlignmentResult
 from munajjam.transcription.base import BaseTranscriber
 from munajjam.core import Aligner, normalize_arabic, similarity
-
-
 
 
 # ---------------------------------------------------------------------------
@@ -78,6 +73,7 @@ FAKE_SEGMENTS = [
 # Smoke test: advanced_alignment example pattern (02)
 # ---------------------------------------------------------------------------
 
+
 class TestAdvancedAlignmentSmoke:
     """Smoke tests mirroring examples/02_advanced_alignment.py logic."""
 
@@ -85,37 +81,51 @@ class TestAdvancedAlignmentSmoke:
         """Verify Aligner class and its methods used in example 02."""
         aligner = Aligner()
         assert hasattr(aligner, "align")
-        
+
         # Mock segments for a subset of ayahs
         segments = [FAKE_SEGMENTS[0], FAKE_SEGMENTS[1]]
         results = aligner.align(segments, surah_1_ayahs[:2])
-        
+
         assert len(results) == 2
         assert all(isinstance(r, AlignmentResult) for r in results)
+
 
 # ---------------------------------------------------------------------------
 # Smoke test: custom_transcriber example pattern (03)
 # ---------------------------------------------------------------------------
+
 
 class TestCustomTranscriberSmoke:
     """Smoke tests mirroring examples/03_custom_transcriber.py logic."""
 
     def test_custom_transcriber_inheritance(self) -> None:
         """Verify that a custom class can inherit from BaseTranscriber."""
+
         class MyTranscriber(BaseTranscriber):
-            def transcribe(self, audio_path): return []
-            async def transcribe_async(self, audio_path): return []
-            def load(self): pass
-            def unload(self): pass
+            def transcribe(self, audio_path):
+                return []
+
+            async def transcribe_async(self, audio_path):
+                return []
+
+            def load(self):
+                pass
+
+            def unload(self):
+                pass
+
             @property
-            def is_loaded(self): return True
-            
+            def is_loaded(self):
+                return True
+
         transcriber = MyTranscriber()
         assert isinstance(transcriber, BaseTranscriber)
+
 
 # ---------------------------------------------------------------------------
 # Smoke test: text_processing example pattern (04)
 # ---------------------------------------------------------------------------
+
 
 class TestTextProcessingSmoke:
     """Smoke tests mirroring examples/04_text_processing.py logic."""
@@ -124,9 +134,9 @@ class TestTextProcessingSmoke:
         """Verify text processing utilities used in example 04."""
         t1 = "بِسْمِ اللَّهِ"
         t2 = "بسم الله"
-        
+
         n1 = normalize_arabic(t1)
         n2 = normalize_arabic(t2)
-        
+
         assert n1 == n2
         assert similarity(t1, t2) > 0.9

@@ -198,4 +198,3 @@ def configure(**kwargs) -> MunajjamSettings:
     global _default_settings
     _default_settings = MunajjamSettings(**kwargs)
     return _default_settings
-

@@ -56,4 +56,3 @@ class Ayah(BaseModel):
 
     def __repr__(self) -> str:
         return f"Ayah(id={self.id}, surah_id={self.surah_id}, ayah_number={self.ayah_number})"
-

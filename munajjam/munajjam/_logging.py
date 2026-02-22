@@ -130,4 +130,3 @@ def log_error(message: str, exc_info: bool = False, **context) -> None:
         _logger.error(f"{message} ({ctx_str})", exc_info=exc_info)
     else:
         _logger.error(message, exc_info=exc_info)
-

@@ -2,7 +2,6 @@
 Surah metadata model.
 """
 
-
 from pydantic import BaseModel, Field
 
 # Surah names in Arabic
@@ -314,4 +313,3 @@ class Surah(BaseModel):
 
     def __str__(self) -> str:
         return f"Surah {self.id}: {self.name_arabic}"
-
