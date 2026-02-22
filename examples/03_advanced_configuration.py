@@ -119,7 +119,7 @@ def main():
     fair = [r for r in results if 0.70 <= r.similarity_score < 0.85]
     poor = [r for r in results if r.similarity_score < 0.70]
 
-    print(f"\nQuality Distribution:")
+    print("\nQuality Distribution:")
     print(f"  Excellent (≥95%): {len(excellent)} ayahs")
     print(f"  Good (85-95%): {len(good)} ayahs")
     print(f"  Fair (70-85%): {len(fair)} ayahs")
@@ -134,7 +134,7 @@ def main():
 
     # Show poor quality ayahs for investigation
     if poor:
-        print(f"\nPoor quality ayahs (need review):")
+        print("\nPoor quality ayahs (need review):")
         for r in poor:
             print(f"  Ayah {r.ayah.ayah_number}: {r.similarity_score:.2%}")
             print(f"    Expected: {r.ayah.text[:50]}...")

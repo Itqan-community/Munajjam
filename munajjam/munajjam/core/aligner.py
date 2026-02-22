@@ -12,10 +12,10 @@ Usage:
     results = aligner.align(segments, ayahs, silences_ms=silences)
 """
 
+from collections.abc import Callable
 from enum import Enum
-from typing import Callable
 
-from ..models import Segment, Ayah, AlignmentResult
+from ..models import AlignmentResult, Ayah, Segment
 from .hybrid import HybridStats
 
 
@@ -215,8 +215,8 @@ class Aligner:
         """Apply zone realignment to fix timing drift."""
         from .zone_realigner import (
             iterative_realign_problem_zones,
-            realign_from_anchors,
             realign_drift_zones_word_dp,
+            realign_from_anchors,
         )
 
         # First pass: iterative zone realignment with adaptive thresholds
@@ -251,8 +251,8 @@ class Aligner:
 
     def _apply_energy_snap(self, results: list[AlignmentResult]) -> int:
         """Snap boundaries to local energy minima for precise timing."""
-        from .zone_realigner import snap_boundaries_to_energy
         from ..transcription.silence import compute_energy_envelope
+        from .zone_realigner import snap_boundaries_to_energy
 
         try:
             envelope = compute_energy_envelope(self.audio_path)

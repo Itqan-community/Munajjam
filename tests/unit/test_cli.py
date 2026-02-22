@@ -1,7 +1,7 @@
 """Tests for the munajjam CLI entry point."""
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 from munajjam.cli import create_parser, main, _infer_surah_number, _format_results
 
 

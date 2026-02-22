@@ -182,9 +182,9 @@ def _write_output(content: str, output_path: str | None) -> None:
 
 def cmd_align(args: argparse.Namespace) -> int:
     """Execute the align command."""
-    from munajjam.transcription import WhisperTranscriber
     from munajjam.core import align
     from munajjam.data import load_surah_ayahs
+    from munajjam.transcription import WhisperTranscriber
 
     audio_path = args.audio_file
     if not Path(audio_path).exists():
@@ -220,9 +220,9 @@ def cmd_align(args: argparse.Namespace) -> int:
 
 def cmd_batch(args: argparse.Namespace) -> int:
     """Execute the batch command."""
-    from munajjam.transcription import WhisperTranscriber
     from munajjam.core import align
     from munajjam.data import load_surah_ayahs
+    from munajjam.transcription import WhisperTranscriber
 
     input_dir = Path(args.directory)
     if not input_dir.is_dir():

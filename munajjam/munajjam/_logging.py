@@ -6,8 +6,6 @@ Provides a configured logger and helper functions for consistent logging.
 
 import logging
 import sys
-from typing import Optional
-
 
 # Default format for Munajjam logs
 DEFAULT_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -29,9 +27,9 @@ def get_logger(name: str = "munajjam") -> logging.Logger:
 
 def configure_logging(
     level: int = logging.INFO,
-    format_string: Optional[str] = None,
-    date_format: Optional[str] = None,
-    stream: Optional[object] = None,
+    format_string: str | None = None,
+    date_format: str | None = None,
+    stream: object | None = None,
 ) -> logging.Logger:
     """
     Configure logging for the Munajjam library.
