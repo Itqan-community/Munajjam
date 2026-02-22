@@ -188,4 +188,3 @@ def convert_silences_to_seconds(
     silences_sec = [(s[0] / 1000, s[1] / 1000) for s in silences_ms]
     silences_sec.sort(key=lambda x: x[0])
     return silences_sec
-

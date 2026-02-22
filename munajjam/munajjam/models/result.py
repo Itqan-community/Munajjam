@@ -90,4 +90,3 @@ class AlignmentResult(BaseModel):
             f"{self.start_time:.2f}s-{self.end_time:.2f}s, "
             f"score={self.similarity_score:.2f})"
         )
-

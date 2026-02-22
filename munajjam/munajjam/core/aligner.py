@@ -21,6 +21,7 @@ from .hybrid import HybridStats
 
 class AlignmentStrategy(str, Enum):
     """Available alignment strategies."""
+
     GREEDY = "greedy"  # Fast, simple greedy matching
     DP = "dp"  # Dynamic programming for optimal alignment
     HYBRID = "hybrid"  # DP with fallback to greedy (recommended)

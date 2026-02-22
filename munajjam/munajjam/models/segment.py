@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, field_validator
 
 class WordTimestamp(BaseModel):
     """Per-word timestamp from CTC/attention-based decoding (e.g. faster-whisper)."""
+
     word: str
     start: float
     end: float
@@ -115,4 +116,3 @@ class Segment(BaseModel):
 
     def __str__(self) -> str:
         return f"Segment({self.start:.2f}s-{self.end:.2f}s, {self.type.value})"
-

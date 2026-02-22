@@ -155,8 +155,7 @@ class WhisperTranscriber(BaseTranscriber):
             from faster_whisper import WhisperModel
         except ImportError as e:
             raise TranscriptionError(
-                "faster-whisper not installed. "
-                "Install with: pip install munajjam[faster-whisper]"
+                "faster-whisper not installed. Install with: pip install munajjam[faster-whisper]"
             ) from e
 
         device = self._resolved_device
@@ -246,7 +245,9 @@ class WhisperTranscriber(BaseTranscriber):
             chunk_start_sec = start_ms / 1000.0
             try:
                 text, word_ts = self._transcribe_segment(
-                    segment_audio, sr, chunk_offset=chunk_start_sec,
+                    segment_audio,
+                    sr,
+                    chunk_offset=chunk_start_sec,
                 )
             except Exception as e:
                 raise TranscriptionError(
@@ -292,7 +293,9 @@ class WhisperTranscriber(BaseTranscriber):
         """
         if self._model_type == "faster-whisper":
             return self._transcribe_faster_whisper(
-                segment_audio, sample_rate, chunk_offset=chunk_offset,
+                segment_audio,
+                sample_rate,
+                chunk_offset=chunk_offset,
             )
         else:
             text = self._transcribe_transformers(segment_audio, sample_rate)
@@ -354,14 +357,14 @@ class WhisperTranscriber(BaseTranscriber):
                     batch_size = input_features.shape[0]
                     time_frames = input_features.shape[2]
                     attention_mask = torch.ones(
-                        (batch_size, time_frames),
-                        dtype=torch.long,
-                        device=self._resolved_device
+                        (batch_size, time_frames), dtype=torch.long, device=self._resolved_device
                     )
 
                 # Use model's generation config and explicitly set parameters
                 # Get the model's default generation config and copy it
-                generation_config = GenerationConfig.from_dict(self._model.generation_config.to_dict())
+                generation_config = GenerationConfig.from_dict(
+                    self._model.generation_config.to_dict()
+                )
                 generation_config.max_new_tokens = 128
                 generation_config.num_beams = 1
 
@@ -378,7 +381,9 @@ class WhisperTranscriber(BaseTranscriber):
                 return text
             finally:
                 # Restore original logging levels
-                for logger, original_level in zip(transformers_loggers, original_levels, strict=False):
+                for logger, original_level in zip(
+                    transformers_loggers, original_levels, strict=False
+                ):
                     logger.setLevel(original_level)
                 # Restore transformers verbosity
                 transformers_logging.set_verbosity_warning()
@@ -401,8 +406,7 @@ class WhisperTranscriber(BaseTranscriber):
             import soundfile as sf
         except ImportError as e:
             raise TranscriptionError(
-                "soundfile not installed. "
-                "Install with: pip install munajjam[faster-whisper]"
+                "soundfile not installed. Install with: pip install munajjam[faster-whisper]"
             ) from e
 
         # Save to temp file (Faster Whisper needs file path)
@@ -441,12 +445,14 @@ class WhisperTranscriber(BaseTranscriber):
             for seg in segments_result2:
                 if seg.words:
                     for w in seg.words:
-                        word_timestamps.append(WordTimestamp(
-                            word=w.word.strip(),
-                            start=round(w.start + chunk_offset, 3),
-                            end=round(w.end + chunk_offset, 3),
-                            probability=round(w.probability, 4),
-                        ))
+                        word_timestamps.append(
+                            WordTimestamp(
+                                word=w.word.strip(),
+                                start=round(w.start + chunk_offset, 3),
+                                end=round(w.end + chunk_offset, 3),
+                                probability=round(w.probability, 4),
+                            )
+                        )
                 break  # First segment only, matches text pass
 
             return text, word_timestamps if word_timestamps else None
@@ -500,4 +506,3 @@ class WhisperTranscriber(BaseTranscriber):
         """
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self.transcribe, audio_path)
-

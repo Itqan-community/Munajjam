@@ -44,6 +44,7 @@ from .dp_core import align_segments_dp
 @dataclass
 class ZoneStats:
     """Statistics from zone re-alignment."""
+
     zones_found: int = 0
     zones_improved: int = 0
     ayahs_improved: int = 0
@@ -54,8 +55,9 @@ class ZoneStats:
 @dataclass
 class ProblemZone:
     """A zone of consecutive low-confidence ayahs."""
+
     start_idx: int  # Index in results list
-    end_idx: int    # Index in results list (exclusive)
+    end_idx: int  # Index in results list (exclusive)
     start_ayah: int
     end_ayah: int
     avg_similarity: float
@@ -121,7 +123,7 @@ def identify_problem_zones(
     """
     zones = []
     current_zone_start = None  # Index where current zone started
-    current_zone_sims = []     # Similarity scores in current zone
+    current_zone_sims = []  # Similarity scores in current zone
 
     for i, result in enumerate(results):
         if adaptive:
@@ -144,15 +146,17 @@ def identify_problem_zones(
             if current_zone_start is not None and len(current_zone_sims) >= min_consecutive:
                 # We have a valid zone (enough consecutive low-conf ayahs)
                 zone_results = results[current_zone_start:i]
-                zones.append(ProblemZone(
-                    start_idx=current_zone_start,
-                    end_idx=i,
-                    start_ayah=zone_results[0].ayah.ayah_number,
-                    end_ayah=zone_results[-1].ayah.ayah_number,
-                    avg_similarity=sum(current_zone_sims) / len(current_zone_sims),
-                    start_time=zone_results[0].start_time,
-                    end_time=zone_results[-1].end_time,
-                ))
+                zones.append(
+                    ProblemZone(
+                        start_idx=current_zone_start,
+                        end_idx=i,
+                        start_ayah=zone_results[0].ayah.ayah_number,
+                        end_ayah=zone_results[-1].ayah.ayah_number,
+                        avg_similarity=sum(current_zone_sims) / len(current_zone_sims),
+                        start_time=zone_results[0].start_time,
+                        end_time=zone_results[-1].end_time,
+                    )
+                )
             # Reset zone tracking
             current_zone_start = None
             current_zone_sims = []
@@ -160,15 +164,17 @@ def identify_problem_zones(
     # Handle zone that extends to the end of the surah
     if current_zone_start is not None and len(current_zone_sims) >= min_consecutive:
         zone_results = results[current_zone_start:]
-        zones.append(ProblemZone(
-            start_idx=current_zone_start,
-            end_idx=len(results),
-            start_ayah=zone_results[0].ayah.ayah_number,
-            end_ayah=zone_results[-1].ayah.ayah_number,
-            avg_similarity=sum(current_zone_sims) / len(current_zone_sims),
-            start_time=zone_results[0].start_time,
-            end_time=zone_results[-1].end_time,
-        ))
+        zones.append(
+            ProblemZone(
+                start_idx=current_zone_start,
+                end_idx=len(results),
+                start_ayah=zone_results[0].ayah.ayah_number,
+                end_ayah=zone_results[-1].ayah.ayah_number,
+                avg_similarity=sum(current_zone_sims) / len(current_zone_sims),
+                start_time=zone_results[0].start_time,
+                end_time=zone_results[-1].end_time,
+            )
+        )
 
     return zones
 
@@ -307,8 +313,9 @@ def realign_problem_zones(
             continue
 
         # --- Extract ayahs for this zone ---
-        zone_ayahs = [ayah_by_num[n] for n in range(zone.start_ayah, zone.end_ayah + 1)
-                      if n in ayah_by_num]
+        zone_ayahs = [
+            ayah_by_num[n] for n in range(zone.start_ayah, zone.end_ayah + 1) if n in ayah_by_num
+        ]
 
         # --- Re-run DP alignment on just this small region ---
         # This is much faster than re-aligning the entire surah
@@ -540,12 +547,14 @@ def realign_from_anchors(
         if prev_idx >= 0:
             gap_size = idx - prev_idx - 1
             if gap_size >= min_gap_size:
-                gaps.append({
-                    'start_idx': prev_idx + 1,
-                    'end_idx': idx,
-                    'start_time': prev_result.end_time - buffer_seconds,
-                    'end_time': result.start_time + buffer_seconds,
-                })
+                gaps.append(
+                    {
+                        "start_idx": prev_idx + 1,
+                        "end_idx": idx,
+                        "start_time": prev_result.end_time - buffer_seconds,
+                        "end_time": result.start_time + buffer_seconds,
+                    }
+                )
         prev_idx = idx
         prev_result = result
 
@@ -553,25 +562,30 @@ def realign_from_anchors(
     if anchors:
         last_idx, last_result = anchors[-1]
         if len(results) - last_idx - 1 >= min_gap_size:
-            gaps.append({
-                'start_idx': last_idx + 1,
-                'end_idx': len(results),
-                'start_time': last_result.end_time - buffer_seconds,
-                'end_time': segments[-1].end + buffer_seconds if segments else 0,
-            })
+            gaps.append(
+                {
+                    "start_idx": last_idx + 1,
+                    "end_idx": len(results),
+                    "start_time": last_result.end_time - buffer_seconds,
+                    "end_time": segments[-1].end + buffer_seconds if segments else 0,
+                }
+            )
 
     stats.zones_found = len(gaps)
 
     # Re-align each gap
     for gap in gaps:
-        start_idx = gap['start_idx']
-        end_idx = gap['end_idx']
-        time_start = max(0, gap['start_time'])
-        time_end = gap['end_time']
+        start_idx = gap["start_idx"]
+        end_idx = gap["end_idx"]
+        time_start = max(0, gap["start_time"])
+        time_end = gap["end_time"]
 
         # Get segments and ayahs for this gap
         gap_segments = [s for s in segments if s.start >= time_start and s.end <= time_end]
-        gap_ayah_nums = [new_results[i].ayah.ayah_number for i in range(start_idx, min(end_idx, len(new_results)))]
+        gap_ayah_nums = [
+            new_results[i].ayah.ayah_number
+            for i in range(start_idx, min(end_idx, len(new_results)))
+        ]
         gap_ayahs = [ayah_by_num[n] for n in gap_ayah_nums if n in ayah_by_num]
 
         if not gap_segments or not gap_ayahs:
@@ -628,7 +642,7 @@ def fix_overlaps(results: list[AlignmentResult], min_gap: float = 0.0) -> int:
 
     fixes = 0
     for i in range(1, len(results)):
-        prev = results[i-1]
+        prev = results[i - 1]
         curr = results[i]
 
         actual_gap = curr.start_time - prev.end_time
@@ -651,7 +665,7 @@ def fix_overlaps(results: list[AlignmentResult], min_gap: float = 0.0) -> int:
                 new_curr_start = curr.end_time - 0.1
 
             # Update timing (create new results since AlignmentResult might be immutable)
-            results[i-1] = AlignmentResult(
+            results[i - 1] = AlignmentResult(
                 ayah=prev.ayah,
                 start_time=prev.start_time,
                 end_time=round(new_prev_end, 2),
@@ -718,7 +732,7 @@ def snap_boundaries_to_silences(
 
         # Find nearest silence midpoint
         best_silence_mid = None
-        best_distance = float('inf')
+        best_distance = float("inf")
 
         for sil_start, sil_end in silences_sec:
             sil_mid = (sil_start + sil_end) / 2
@@ -797,7 +811,10 @@ def snap_boundaries_to_energy(
         search_end = boundary_time + max_snap_distance
 
         minima = find_energy_minima(
-            energy_envelope, search_start, search_end, top_n=1,
+            energy_envelope,
+            search_start,
+            search_end,
+            top_n=1,
         )
 
         if not minima:
@@ -890,30 +907,34 @@ def identify_drift_zones(
             if run_start is not None and (i - run_start) >= min_consecutive:
                 zone_results = results[run_start:i]
                 avg_sim = sum(r.similarity_score for r in zone_results) / len(zone_results)
-                zones.append(ProblemZone(
-                    start_idx=run_start,
-                    end_idx=i,
-                    start_ayah=zone_results[0].ayah.ayah_number,
-                    end_ayah=zone_results[-1].ayah.ayah_number,
-                    avg_similarity=avg_sim,
-                    start_time=zone_results[0].start_time,
-                    end_time=zone_results[-1].end_time,
-                ))
+                zones.append(
+                    ProblemZone(
+                        start_idx=run_start,
+                        end_idx=i,
+                        start_ayah=zone_results[0].ayah.ayah_number,
+                        end_ayah=zone_results[-1].ayah.ayah_number,
+                        avg_similarity=avg_sim,
+                        start_time=zone_results[0].start_time,
+                        end_time=zone_results[-1].end_time,
+                    )
+                )
             run_start = None
 
     # Trailing zone
     if run_start is not None and (len(results) - run_start) >= min_consecutive:
         zone_results = results[run_start:]
         avg_sim = sum(r.similarity_score for r in zone_results) / len(zone_results)
-        zones.append(ProblemZone(
-            start_idx=run_start,
-            end_idx=len(results),
-            start_ayah=zone_results[0].ayah.ayah_number,
-            end_ayah=zone_results[-1].ayah.ayah_number,
-            avg_similarity=avg_sim,
-            start_time=zone_results[0].start_time,
-            end_time=zone_results[-1].end_time,
-        ))
+        zones.append(
+            ProblemZone(
+                start_idx=run_start,
+                end_idx=len(results),
+                start_ayah=zone_results[0].ayah.ayah_number,
+                end_ayah=zone_results[-1].ayah.ayah_number,
+                avg_similarity=avg_sim,
+                start_time=zone_results[0].start_time,
+                end_time=zone_results[-1].end_time,
+            )
+        )
 
     return zones
 
@@ -1016,6 +1037,7 @@ def realign_drift_zones_word_dp(
 
     # Build full word stream once
     from .dp_core import _filter_special_segments
+
     filtered = _filter_special_segments(segments, ayahs)
     all_words = build_word_stream(filtered)
     all_ref_words = build_reference_words(ayahs)
@@ -1055,7 +1077,8 @@ def realign_drift_zones_word_dp(
 
         # Extract words within the anchor time bounds
         zone_word_indices = [
-            i for i, w in enumerate(all_words)
+            i
+            for i, w in enumerate(all_words)
             if w.estimated_start >= t_lo and w.estimated_end <= t_hi
         ]
 
@@ -1077,8 +1100,11 @@ def realign_drift_zones_word_dp(
 
         # Run word-DP on just this zone
         assignments = align_words_dp(
-            zone_words, zone_ayahs, zone_ref_words,
-            max_word_ratio=3.0, beam_width=80,
+            zone_words,
+            zone_ayahs,
+            zone_ref_words,
+            max_word_ratio=3.0,
+            beam_width=80,
         )
 
         if not assignments:
@@ -1158,21 +1184,19 @@ def realign_drift_zones_word_dp(
     return new_results, stats
 
 
-
-
 # Export for use in other modules
 __all__ = [
-    'realign_problem_zones',
-    'iterative_realign_problem_zones',
-    'identify_problem_zones',
-    'identify_drift_zones',
-    'realign_drift_zones_word_dp',
-    'adaptive_quality_threshold',
-    'realign_from_anchors',
-    'find_anchors',
-    'fix_overlaps',
-    'snap_boundaries_to_silences',
-    'snap_boundaries_to_energy',
-    'ProblemZone',
-    'ZoneStats',
+    "realign_problem_zones",
+    "iterative_realign_problem_zones",
+    "identify_problem_zones",
+    "identify_drift_zones",
+    "realign_drift_zones_word_dp",
+    "adaptive_quality_threshold",
+    "realign_from_anchors",
+    "find_anchors",
+    "fix_overlaps",
+    "snap_boundaries_to_silences",
+    "snap_boundaries_to_energy",
+    "ProblemZone",
+    "ZoneStats",
 ]

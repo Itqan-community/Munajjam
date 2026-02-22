@@ -94,9 +94,9 @@ def _detect_silences_fast(
     is_silent = rms_normalized < amplitude_thresh
 
     # Convert to time-based regions
-    frame_times_ms = librosa.frames_to_time(
-        np.arange(len(rms)), sr=sr, hop_length=hop_length
-    ) * 1000
+    frame_times_ms = (
+        librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=hop_length) * 1000
+    )
 
     # Find contiguous silent regions
     silences = []
@@ -206,9 +206,9 @@ def _detect_non_silent_fast(
     # Find frames above threshold (non-silent)
     is_speech = rms_normalized >= amplitude_thresh
 
-    frame_times_ms = librosa.frames_to_time(
-        np.arange(len(rms)), sr=sr, hop_length=hop_length
-    ) * 1000
+    frame_times_ms = (
+        librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=hop_length) * 1000
+    )
 
     # Find contiguous speech regions
     chunks = []
@@ -295,10 +295,7 @@ def find_energy_minima(
     Returns:
         List of times (seconds) at local energy minima, sorted by energy (lowest first)
     """
-    candidates = [
-        (t, e) for t, e in envelope
-        if search_start <= t <= search_end
-    ]
+    candidates = [(t, e) for t, e in envelope if search_start <= t <= search_end]
 
     if not candidates:
         return []
@@ -349,4 +346,3 @@ def extract_segment_audio(
     start_sample = int((start_ms / 1000) * sample_rate)
     end_sample = int((end_ms / 1000) * sample_rate)
     return waveform[start_sample:end_sample]
-

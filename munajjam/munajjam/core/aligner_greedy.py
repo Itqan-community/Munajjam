@@ -79,9 +79,8 @@ class AlignmentContext:
     @property
     def is_complete(self) -> bool:
         """Whether alignment is complete."""
-        return (
-            self.current_segment_idx >= len(self.segments)
-            or self.current_ayah_idx >= len(self.ayahs)
+        return self.current_segment_idx >= len(self.segments) or self.current_ayah_idx >= len(
+            self.ayahs
         )
 
 
@@ -292,9 +291,7 @@ def align_segments(
             # Check if reached end of ayah
             is_end, _ = _check_end_of_ayah(merged_text, ayah, settings)
             if is_end:
-                result = _finalize_ayah(
-                    ctx, merged_text, start_time, end_time, overlap_flag
-                )
+                result = _finalize_ayah(ctx, merged_text, start_time, end_time, overlap_flag)
                 if on_ayah_aligned:
                     on_ayah_aligned(result)
                 break
@@ -313,7 +310,9 @@ def align_segments(
                     n_check = _get_n_check_words(ayah.text)
                     _, seg_last = get_first_last_words(merged_text, n=n_check)
                     _, ayah_last = get_first_last_words(ayah.text, n=n_check)
-                    last_words_match = similarity(seg_last, ayah_last) >= settings.similarity_threshold
+                    last_words_match = (
+                        similarity(seg_last, ayah_last) >= settings.similarity_threshold
+                    )
 
                     # Finalize if: last words match, OR coverage is very high (>90%)
                     if last_words_match or coverage >= 0.9:
@@ -348,7 +347,9 @@ def align_segments(
                         n_check = _get_n_check_words(ayah.text)
                         _, seg_last = get_first_last_words(merged_text, n=n_check)
                         _, ayah_last = get_first_last_words(ayah.text, n=n_check)
-                        last_words_match = similarity(seg_last, ayah_last) >= settings.similarity_threshold
+                        last_words_match = (
+                            similarity(seg_last, ayah_last) >= settings.similarity_threshold
+                        )
 
                         # Finalize if: last words match, OR coverage is very high (>90%)
                         if last_words_match or coverage >= 0.9:
@@ -367,9 +368,7 @@ def align_segments(
                         # If last words don't match and coverage < 90%, continue merging
 
                 # Merge next segment
-                merged_text, overlap_found = remove_overlap(
-                    merged_text, next_segment.text
-                )
+                merged_text, overlap_found = remove_overlap(merged_text, next_segment.text)
                 if overlap_found:
                     overlap_flag = True
                     ctx.overlaps_detected += 1
@@ -379,9 +378,7 @@ def align_segments(
 
             else:
                 # End of segments - finalize last ayah
-                result = _finalize_ayah(
-                    ctx, merged_text, start_time, end_time, overlap_flag
-                )
+                result = _finalize_ayah(ctx, merged_text, start_time, end_time, overlap_flag)
                 if on_ayah_aligned:
                     on_ayah_aligned(result)
                 break

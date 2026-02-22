@@ -12,24 +12,36 @@ def sample_segments():
     """Sample transcribed segments for testing."""
     return [
         Segment(
-            id=0, surah_id=1, start=0.0, end=4.5,
+            id=0,
+            surah_id=1,
+            start=0.0,
+            end=4.5,
             text="أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ",
-            type=SegmentType.ISTIADHA
+            type=SegmentType.ISTIADHA,
         ),
         Segment(
-            id=1, surah_id=1, start=5.0, end=8.5,
+            id=1,
+            surah_id=1,
+            start=5.0,
+            end=8.5,
             text="بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ",
-            type=SegmentType.BASMALA
+            type=SegmentType.BASMALA,
         ),
         Segment(
-            id=2, surah_id=1, start=9.0, end=13.5,
+            id=2,
+            surah_id=1,
+            start=9.0,
+            end=13.5,
             text="الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
-            type=SegmentType.AYAH
+            type=SegmentType.AYAH,
         ),
         Segment(
-            id=3, surah_id=1, start=14.0, end=18.0,
+            id=3,
+            surah_id=1,
+            start=14.0,
+            end=18.0,
             text="الرَّحْمَٰنِ الرَّحِيمِ",
-            type=SegmentType.AYAH
+            type=SegmentType.AYAH,
         ),
     ]
 
