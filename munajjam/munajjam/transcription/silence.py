@@ -425,4 +425,3 @@ def extract_segment_audio(
     start_sample = int((start_ms / 1000) * sample_rate)
     end_sample = int((end_ms / 1000) * sample_rate)
     return waveform[start_sample:end_sample]
-
