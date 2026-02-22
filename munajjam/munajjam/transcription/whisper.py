@@ -5,25 +5,10 @@ Whisper-based transcription implementation.
 Uses Tarteel AI's Whisper models fine-tuned for Quran recitation.
 """
 
-
-import asyncio
-from collections.abc import Callable
-from pathlib import Path
 from typing import Any, Literal
 
-
 from munajjam.config import MunajjamSettings, get_settings
-from munajjam.core.arabic import detect_segment_type
-from munajjam.exceptions import AudioFileError, ModelNotLoadedError, TranscriptionError
-from munajjam.models import Segment, SegmentType, WordTimestamp
 from munajjam.transcription.base import BaseTranscriber
-from munajjam.transcription.silence import (
-    detect_non_silent_chunks,
-    extract_segment_audio,
-    load_audio_waveform,
-)
-
-
 
 
 class WhisperTranscriber(BaseTranscriber):
@@ -51,7 +36,6 @@ class WhisperTranscriber(BaseTranscriber):
             segments = transcriber.transcribe("surah_1.wav")
     """
 
-
     def __init__(
         self,
         model_id: str | None = None,
@@ -71,11 +55,9 @@ class WhisperTranscriber(BaseTranscriber):
         """
         self._settings = settings or get_settings()
 
-
         self._model_id = model_id or self._settings.model_id
         self._device = device or self._settings.device
         self._model_type = model_type or self._settings.model_type
-
 
         # Model state
         self._model: Any = None
