@@ -30,7 +30,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from munajjam import __version__
+from munajjam._version import __version__
 from munajjam.models.result import AlignmentResult
 
 
@@ -156,7 +156,7 @@ class AlignmentOutput(BaseModel):
         Returns:
             JSON string representation.
         """
-        return self.model_dump_json(indent=indent)
+        return json.dumps(self.model_dump(), indent=indent, ensure_ascii=ensure_ascii)
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize to a Python dictionary.
@@ -189,14 +189,18 @@ def _format_single_result(result: AlignmentResult) -> FormattedAyahResult:
     Returns:
         A FormattedAyahResult instance.
     """
+    rounded_start = round(result.start_time, 2)
+    rounded_end = round(result.end_time, 2)
+    duration = round(rounded_end - rounded_start, 2)
+
     return FormattedAyahResult(
         id=result.ayah.id,
         surah_id=result.ayah.surah_id,
         ayah_number=result.ayah.ayah_number,
         ayah_index=result.ayah.ayah_number - 1,
-        start_time=round(result.start_time, 2),
-        end_time=round(result.end_time, 2),
-        duration=round(result.duration, 2),
+        start_time=rounded_start,
+        end_time=rounded_end,
+        duration=duration,
         transcribed_text=result.transcribed_text,
         original_text=result.ayah.text,
         similarity_score=round(result.similarity_score, 3),
