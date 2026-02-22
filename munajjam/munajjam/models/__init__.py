@@ -9,9 +9,9 @@ These models represent the core data structures used throughout the library:
 """
 
 from munajjam.models.ayah import Ayah
+from munajjam.models.result import AlignmentResult
 from munajjam.models.segment import Segment, SegmentType, WordTimestamp
 from munajjam.models.surah import Surah
-from munajjam.models.result import AlignmentResult
 
 __all__ = [
     "Ayah",

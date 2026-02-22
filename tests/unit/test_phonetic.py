@@ -2,7 +2,6 @@
 Unit tests for phonetic similarity scoring.
 """
 
-import pytest
 from munajjam.core.phonetic import phonetic_word_similarity, phonetic_similarity
 
 

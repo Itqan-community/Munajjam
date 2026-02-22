@@ -2,7 +2,6 @@
 Unit tests for word-level DP alignment.
 """
 
-import pytest
 from munajjam.core.word_level_dp import align_segments_word_dp
 from munajjam.models import AlignmentResult
 

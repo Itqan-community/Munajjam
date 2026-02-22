@@ -5,11 +5,11 @@ Contains the fundamental DP components for aligning transcribed segments
 to reference Quran ayahs.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
-from ..models import Ayah, Segment, AlignmentResult, SegmentType
-from .matcher import similarity, compute_coverage_ratio
+from ..models import AlignmentResult, Ayah, Segment, SegmentType
+from .matcher import compute_coverage_ratio, similarity
 
 
 @dataclass
