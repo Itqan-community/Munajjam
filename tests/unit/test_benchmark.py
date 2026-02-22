@@ -12,14 +12,11 @@ Tests cover:
 
 import json
 import time
-from pathlib import Path
 
-import pytest
 
 from benchmarks.benchmark import (
     GROUND_TRUTH,
     STRATEGIES,
-    SURAH_IDS,
     StrategyMetrics,
     _compute_metrics,
     _make_ayahs_from_ground_truth,
@@ -29,8 +26,7 @@ from benchmarks.benchmark import (
     run_benchmark,
     save_results_json,
 )
-from munajjam.core import Aligner
-from munajjam.models import AlignmentResult, Ayah, Segment, SegmentType
+from munajjam.models import AlignmentResult
 
 
 # ---------------------------------------------------------------------------

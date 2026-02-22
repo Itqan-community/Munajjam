@@ -19,22 +19,22 @@ Usage:
         print(f"Ayah {result.ayah.ayah_number}: {result.start_time:.2f}s - {result.end_time:.2f}s")
 """
 
+from munajjam.config import MunajjamSettings, configure, get_settings
+from munajjam.exceptions import (
+    AlignmentError,
+    AudioFileError,
+    ConfigurationError,
+    ModelNotLoadedError,
+    MunajjamError,
+    QuranDataError,
+    TranscriptionError,
+)
 from munajjam.models import (
     AlignmentResult,
     Ayah,
     Segment,
     SegmentType,
     Surah,
-)
-from munajjam.config import MunajjamSettings, get_settings, configure
-from munajjam.exceptions import (
-    MunajjamError,
-    TranscriptionError,
-    AlignmentError,
-    ConfigurationError,
-    AudioFileError,
-    ModelNotLoadedError,
-    QuranDataError,
 )
 
 __version__ = "2.0.0a1"

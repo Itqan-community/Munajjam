@@ -34,10 +34,11 @@ TWO STRATEGIES:
 """
 
 from dataclasses import dataclass
-from munajjam.models import Segment, Ayah, AlignmentResult
-from .dp_core import align_segments_dp
+
+from munajjam.models import AlignmentResult, Ayah, Segment
+
 from .arabic import normalize_arabic
-from .matcher import similarity as _similarity
+from .dp_core import align_segments_dp
 
 
 @dataclass
@@ -179,18 +180,18 @@ def find_segments_for_zone(
 ) -> list[Segment]:
     """
     Find all segments that fall within a problem zone's time range.
-    
+
     Args:
         segments: All segments
         zone: The problem zone
         buffer_seconds: Extra time to include at boundaries
-    
+
     Returns:
         List of segments in the zone's time range
     """
     zone_start = zone.start_time - buffer_seconds
     zone_end = zone.end_time + buffer_seconds
-    
+
     return [s for s in segments if s.start >= zone_start and s.end <= zone_end]
 
 
@@ -201,24 +202,24 @@ def realign_zone(
 ) -> list[AlignmentResult]:
     """
     Re-align a problem zone using the DP aligner.
-    
+
     Args:
         zone: The problem zone
         zone_segments: Segments in the zone's time range
         ayahs: All ayahs (will filter to zone's ayahs)
-    
+
     Returns:
         New alignment results for the zone
     """
     # Get the ayahs for this zone (1-indexed)
     zone_ayahs = [a for a in ayahs if zone.start_ayah <= a.ayah_number <= zone.end_ayah]
-    
+
     if not zone_ayahs or not zone_segments:
         return []
-    
+
     # Run DP alignment on this small zone
     results = align_segments_dp(zone_segments, zone_ayahs)
-    
+
     return results
 
 
@@ -519,22 +520,22 @@ def realign_from_anchors(
         Tuple of (updated results, statistics)
     """
     stats = ZoneStats()
-    
+
     # Find anchors
     anchors = find_anchors(results)
-    
+
     if len(anchors) < 2:
         return results, stats
-    
+
     # Create mutable copy
     new_results = list(results)
     ayah_by_num = {a.ayah_number: a for a in ayahs}
-    
+
     # Find gaps between anchors
     gaps = []
     prev_idx = -1
     prev_result = None
-    
+
     for idx, result in anchors:
         if prev_idx >= 0:
             gap_size = idx - prev_idx - 1
@@ -547,7 +548,7 @@ def realign_from_anchors(
                 })
         prev_idx = idx
         prev_result = result
-    
+
     # Check for gap at the end (after last anchor to end of surah)
     if anchors:
         last_idx, last_result = anchors[-1]
@@ -558,41 +559,41 @@ def realign_from_anchors(
                 'start_time': last_result.end_time - buffer_seconds,
                 'end_time': segments[-1].end + buffer_seconds if segments else 0,
             })
-    
+
     stats.zones_found = len(gaps)
-    
+
     # Re-align each gap
     for gap in gaps:
         start_idx = gap['start_idx']
         end_idx = gap['end_idx']
         time_start = max(0, gap['start_time'])
         time_end = gap['end_time']
-        
+
         # Get segments and ayahs for this gap
         gap_segments = [s for s in segments if s.start >= time_start and s.end <= time_end]
         gap_ayah_nums = [new_results[i].ayah.ayah_number for i in range(start_idx, min(end_idx, len(new_results)))]
         gap_ayahs = [ayah_by_num[n] for n in gap_ayah_nums if n in ayah_by_num]
-        
+
         if not gap_segments or not gap_ayahs:
             continue
-        
+
         # Re-align
         new_gap_results = align_segments_dp(gap_segments, gap_ayahs)
-        
+
         if not new_gap_results:
             continue
-        
+
         # Update results where improved
         new_by_ayah = {r.ayah.ayah_number: r for r in new_gap_results}
         gap_improved = False
-        
+
         for i in range(start_idx, min(end_idx, len(new_results))):
             old_result = new_results[i]
             ayah_num = old_result.ayah.ayah_number
-            
+
             if ayah_num in new_by_ayah:
                 new_result = new_by_ayah[ayah_num]
-                
+
                 if new_result.similarity_score > old_result.similarity_score + 0.01:
                     new_results[i] = new_result
                     stats.ayahs_improved += 1
@@ -601,54 +602,54 @@ def realign_from_anchors(
                     stats.ayahs_degraded += 1
                 else:
                     stats.ayahs_unchanged += 1
-        
+
         if gap_improved:
             stats.zones_improved += 1
-    
+
     return new_results, stats
 
 
 def fix_overlaps(results: list[AlignmentResult], min_gap: float = 0.0) -> int:
     """
     Fix any overlapping ayah timings by adjusting boundaries.
-    
+
     Args:
         results: List of alignment results to fix in-place
         min_gap: Minimum gap in seconds between consecutive ayahs (default 0.0)
-    
+
     Returns:
         Number of overlaps/zero-gaps fixed.
     """
     if len(results) < 2:
         return 0
-    
+
     # Sort by ayah number
     results.sort(key=lambda r: r.ayah.ayah_number)
-    
+
     fixes = 0
     for i in range(1, len(results)):
         prev = results[i-1]
         curr = results[i]
-        
+
         actual_gap = curr.start_time - prev.end_time
-        
+
         # Fix if there's an overlap OR if gap is less than minimum
         if actual_gap < min_gap:
             # Calculate how much adjustment is needed
             gap_needed = min_gap - actual_gap
-            
+
             # Split the adjustment: take half from previous end, add half to current start
             half_adjust = gap_needed / 2
-            
+
             new_prev_end = prev.end_time - half_adjust
             new_curr_start = curr.start_time + half_adjust
-            
+
             # Ensure we don't create invalid timings
             if new_prev_end < prev.start_time:
                 new_prev_end = prev.start_time + 0.1
             if new_curr_start > curr.end_time:
                 new_curr_start = curr.end_time - 0.1
-            
+
             # Update timing (create new results since AlignmentResult might be immutable)
             results[i-1] = AlignmentResult(
                 ayah=prev.ayah,
@@ -667,7 +668,7 @@ def fix_overlaps(results: list[AlignmentResult], min_gap: float = 0.0) -> int:
                 overlap_detected=curr.overlap_detected,
             )
             fixes += 1
-    
+
     return fixes
 
 
@@ -678,60 +679,60 @@ def snap_boundaries_to_silences(
 ) -> int:
     """
     Snap ayah start/end boundaries to nearest silence periods.
-    
+
     This fixes timestamp drift by aligning ayah boundaries to actual
     pauses in the audio rather than relying on potentially drifted
     segment timestamps.
-    
+
     Args:
         results: List of alignment results to fix in-place
         silences_ms: Silence periods in milliseconds [(start_ms, end_ms), ...]
         max_snap_distance: Maximum distance in seconds to snap (default 2.0)
-    
+
     Returns:
         Number of boundaries snapped.
     """
     if not silences_ms or len(results) < 2:
         return 0
-    
+
     # Convert silences to seconds and create lookup structure
     silences_sec = [(s / 1000.0, e / 1000.0) for s, e in silences_ms]
     silences_sec.sort(key=lambda x: x[0])
-    
+
     # Create list of silence midpoints (natural ayah boundary points)
-    silence_midpoints = [(s + e) / 2 for s, e in silences_sec]
-    
+    [(s + e) / 2 for s, e in silences_sec]
+
     # Sort results by ayah number
     results.sort(key=lambda r: r.ayah.ayah_number)
-    
+
     snaps = 0
-    
+
     # For each ayah boundary (except first start and last end),
     # find the nearest silence and snap to it
     for i in range(len(results) - 1):
         curr = results[i]
         next_r = results[i + 1]
-        
+
         # Current boundary is at curr.end_time / next_r.start_time
         boundary_time = (curr.end_time + next_r.start_time) / 2
-        
+
         # Find nearest silence midpoint
         best_silence_mid = None
         best_distance = float('inf')
-        
+
         for sil_start, sil_end in silences_sec:
             sil_mid = (sil_start + sil_end) / 2
             distance = abs(sil_mid - boundary_time)
-            
+
             if distance < best_distance and distance <= max_snap_distance:
                 best_distance = distance
                 best_silence_mid = sil_mid
                 best_silence = (sil_start, sil_end)
-        
+
         if best_silence_mid is not None:
             # Snap curr.end to silence start, next.start to silence end
             sil_start, sil_end = best_silence
-            
+
             # Only snap if it doesn't create invalid timings
             if sil_start > curr.start_time and sil_end < next_r.end_time:
                 # Update curr to end at silence start
@@ -743,7 +744,7 @@ def snap_boundaries_to_silences(
                     similarity_score=curr.similarity_score,
                     overlap_detected=curr.overlap_detected,
                 )
-                
+
                 # Update next to start at silence end
                 results[i + 1] = AlignmentResult(
                     ayah=next_r.ayah,
@@ -753,9 +754,9 @@ def snap_boundaries_to_silences(
                     similarity_score=next_r.similarity_score,
                     overlap_detected=next_r.overlap_detected,
                 )
-                
+
                 snaps += 1
-    
+
     return snaps
 
 
@@ -996,10 +997,12 @@ def realign_drift_zones_word_dp(
     Returns:
         Tuple of (updated results, statistics)
     """
-    from .word_level_dp import (
-        build_word_stream, build_reference_words, align_words_dp,
-    )
     from .matcher import similarity as _sim
+    from .word_level_dp import (
+        align_words_dp,
+        build_reference_words,
+        build_word_stream,
+    )
 
     stats = ZoneStats()
     drift_zones = identify_drift_zones(results, min_consecutive, max_pace_ratio)

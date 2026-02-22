@@ -5,9 +5,9 @@ Detects sequences of consecutive low-scoring ayahs and attempts
 to re-align them using silence boundaries for better sync.
 """
 
-from ..models import Segment, Ayah, AlignmentResult
-from .matcher import similarity
+from ..models import AlignmentResult, Ayah, Segment
 from .dp_core import compute_alignment_cost
+from .matcher import similarity
 
 
 def find_cascade_sequences(
@@ -108,7 +108,7 @@ def _recover_cascade_with_resync(
     # Build set of segment indices that align with silences
     silence_aligned_ends = set()
     for idx, seg in enumerate(sub_segments):
-        for sil_start, sil_end in relevant_silences:
+        for sil_start, _sil_end in relevant_silences:
             if abs(seg.end - sil_start) < 0.3:
                 silence_aligned_ends.add(idx + 1)
 
@@ -201,7 +201,7 @@ def _recover_cascade_with_resync(
     old_results_range = results[extended_start:extended_end]
 
     # Conservative check: Don't accept recovery if ANY ayah degrades significantly
-    for old, new in zip(old_results_range, new_results):
+    for old, new in zip(old_results_range, new_results, strict=False):
         drop = old.similarity_score - new.similarity_score
 
         # Strict protection for good ayahs (>= 75%): max 8% drop

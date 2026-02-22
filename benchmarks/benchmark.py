@@ -17,14 +17,11 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Optional
 
 from munajjam.core import Aligner, AlignmentStrategy
 from munajjam.models import Segment, SegmentType, Ayah, AlignmentResult
-from munajjam.core.arabic import normalize_arabic
-from munajjam.core.matcher import similarity
 
 
 # ---------------------------------------------------------------------------

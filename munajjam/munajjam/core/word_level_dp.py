@@ -10,15 +10,14 @@ when they fall mid-segment.
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
-from ..models import Ayah, Segment, AlignmentResult, SegmentType
+from ..models import AlignmentResult, Ayah, Segment
 from .arabic import normalize_arabic
-from .dp_core import _filter_special_segments, compute_alignment_cost
+from .dp_core import _filter_special_segments
 from .matcher import similarity
 from .phonetic import phonetic_similarity
-
 
 # ---------------------------------------------------------------------------
 # Data structures
@@ -76,7 +75,7 @@ def build_word_stream(segments: list[Segment]) -> list[TranscribedWord]:
         seg_duration = seg.end - seg.start
         current_time = seg.start
 
-        for word_idx, (word, char_len) in enumerate(zip(raw_words, char_lengths)):
+        for word_idx, (word, char_len) in enumerate(zip(raw_words, char_lengths, strict=False)):
             word_duration = (char_len / total_chars) * seg_duration
             word_end = current_time + word_duration
 

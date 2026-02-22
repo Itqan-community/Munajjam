@@ -5,23 +5,23 @@ This module contains the core logic for aligning transcribed audio segments
 with reference Quran ayahs (verses).
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable
 
-from munajjam.core.arabic import normalize_arabic, detect_special_type
+from munajjam.config import MunajjamSettings, get_settings
+from munajjam.core.arabic import detect_special_type, normalize_arabic
 from munajjam.core.matcher import (
-    similarity,
-    get_first_last_words,
     compute_coverage_ratio,
+    get_first_last_words,
+    similarity,
 )
 from munajjam.core.overlap import (
-    remove_overlap,
     apply_buffers,
-    find_silence_gap_between,
     convert_silences_to_seconds,
+    find_silence_gap_between,
+    remove_overlap,
 )
-from munajjam.models import Ayah, Segment, AlignmentResult
-from munajjam.config import MunajjamSettings, get_settings
+from munajjam.models import AlignmentResult, Ayah, Segment
 
 
 @dataclass
@@ -127,13 +127,13 @@ def _check_next_ayah_starts(
     settings: MunajjamSettings,
 ) -> bool:
     """Check if the next segment starts the next ayah.
-    
+
     Uses adaptive word count (1-3) based on ayah length.
     The coverage check in the caller provides additional safeguard against
     false positives when consecutive ayahs share similar opening phrases.
     """
     n_check = _get_n_check_words(next_ayah.text)
-    
+
     next_first_seg, _ = get_first_last_words(next_segment.text, n=n_check)
     next_first_ayah, _ = get_first_last_words(next_ayah.text, n=n_check)
 
@@ -236,18 +236,18 @@ def align_segments(
 
         # Determine if we should skip this segment
         special_type = detect_special_type(segment)
-        
+
         # Always skip istiadha
         if special_type == "istiadha":
             i += 1
             continue
-        
+
         # Skip basmala UNLESS it's Surah Al-Fatiha (surah 1) where basmala is ayah 1
         # In Al-Fatiha, the basmala is the first ayah, not a special segment
         if special_type == "basmala" and segment.surah_id != 1:
             i += 1
             continue
-        
+
         # Skip other id=0 segments that aren't basmala in surah 1
         if segment.id == 0 and special_type is None:
             i += 1
@@ -308,13 +308,13 @@ def align_segments(
                     # This prevents false positives when consecutive ayahs share opening phrases
                     # (e.g., ayahs 106-107 both contain "ألم تعلم أن الله")
                     coverage = compute_coverage_ratio(merged_text, ayah.text)
-                    
+
                     # Check if current ayah's last words match
                     n_check = _get_n_check_words(ayah.text)
                     _, seg_last = get_first_last_words(merged_text, n=n_check)
                     _, ayah_last = get_first_last_words(ayah.text, n=n_check)
                     last_words_match = similarity(seg_last, ayah_last) >= settings.similarity_threshold
-                    
+
                     # Finalize if: last words match, OR coverage is very high (>90%)
                     if last_words_match or coverage >= 0.9:
                         result = _finalize_ayah(
@@ -343,13 +343,13 @@ def align_segments(
                     if _check_next_ayah_starts(next_segment, ctx.next_ayah, settings):
                         # Additional safeguard: verify current ayah is complete enough
                         coverage = compute_coverage_ratio(merged_text, ayah.text)
-                        
+
                         # Check if current ayah's last words match
                         n_check = _get_n_check_words(ayah.text)
                         _, seg_last = get_first_last_words(merged_text, n=n_check)
                         _, ayah_last = get_first_last_words(ayah.text, n=n_check)
                         last_words_match = similarity(seg_last, ayah_last) >= settings.similarity_threshold
-                        
+
                         # Finalize if: last words match, OR coverage is very high (>90%)
                         if last_words_match or coverage >= 0.9:
                             gap_start, _ = silence_gap

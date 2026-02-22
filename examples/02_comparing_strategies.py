@@ -11,7 +11,7 @@ This example demonstrates the differences between the six alignment strategies:
 """
 
 from munajjam.transcription import WhisperTranscriber
-from munajjam.core import Aligner, AlignmentStrategy
+from munajjam.core import Aligner
 from munajjam.data import load_surah_ayahs
 import time
 
@@ -35,14 +35,14 @@ def align_with_strategy(segments, ayahs, strategy_name, audio_path):
     high_confidence = len([r for r in results if r.is_high_confidence])
     overlaps = sum(r.overlap_detected for r in results)
 
-    print(f"\nResults:")
+    print("\nResults:")
     print(f"  Time taken: {elapsed:.3f} seconds")
     print(f"  Average similarity: {avg_similarity:.2%}")
     print(f"  High confidence: {high_confidence}/{len(results)} ({high_confidence/len(results):.1%})")
     print(f"  Overlaps detected: {overlaps}")
 
     # Show first 5 results as sample
-    print(f"\n  First 5 ayahs:")
+    print("\n  First 5 ayahs:")
     for result in results[:5]:
         print(f"    Ayah {result.ayah.ayah_number:3d}: "
               f"{result.start_time:6.2f}s - {result.end_time:6.2f}s "

@@ -5,8 +5,8 @@ Uses Pydantic Settings for type-safe configuration with environment variable sup
 All settings can be overridden via environment variables with the MUNAJJAM_ prefix.
 """
 
-from typing import Literal
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict

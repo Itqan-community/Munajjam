@@ -5,10 +5,10 @@ Combines DP alignment with fallback to greedy alignment and
 split-and-restitch for long ayahs.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
-from ..models import Segment, Ayah, AlignmentResult
+from ..models import AlignmentResult, Ayah, Segment
 from .matcher import similarity
 
 
