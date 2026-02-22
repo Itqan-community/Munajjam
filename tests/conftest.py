@@ -3,7 +3,7 @@ Shared fixtures and test configuration for Munajjam tests.
 """
 
 import pytest
-from munajjam.models import Segment, SegmentType, Ayah, AlignmentResult
+from munajjam.models import Segment, SegmentType, Ayah
 from munajjam.data import load_surah_ayahs
 
 

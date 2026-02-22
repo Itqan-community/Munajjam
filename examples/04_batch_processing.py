@@ -10,7 +10,7 @@ This example demonstrates how to process multiple surahs efficiently:
 
 from munajjam.transcription import WhisperTranscriber
 from munajjam.core import Aligner
-from munajjam.data import load_surah_ayahs, get_all_surahs
+from munajjam.data import load_surah_ayahs
 from pathlib import Path
 import json
 import time
@@ -156,7 +156,7 @@ def main():
         total_overlaps = sum(s["overlaps"] for s in all_stats)
         avg_processing_time = sum(s["processing_time"] for s in all_stats) / len(all_stats)
 
-        print(f"\nOverall Statistics:")
+        print("\nOverall Statistics:")
         print(f"  Total ayahs processed: {total_ayahs}")
         print(f"  Overall avg similarity: {avg_similarity_overall:.2%}")
         print(f"  Total overlaps detected: {total_overlaps}")

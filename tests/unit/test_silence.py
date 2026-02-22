@@ -4,7 +4,7 @@ Unit tests for silence detection.
 
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from munajjam.transcription.silence import detect_silences, detect_non_silent_chunks
 
 
@@ -47,7 +47,7 @@ class TestAdaptiveSilenceDetection:
         with patch(
             "munajjam.transcription.silence._detect_non_silent_chunks_raw",
             return_value=few_chunks,
-        ) as mock_raw:
+        ):
             result = detect_non_silent_chunks(
                 "dummy.wav",
                 adaptive=False,
@@ -67,7 +67,7 @@ class TestAdaptiveSilenceDetection:
         with patch(
             "munajjam.transcription.silence._detect_non_silent_chunks_raw",
             return_value=enough_chunks,
-        ) as mock_raw:
+        ):
             result = detect_non_silent_chunks(
                 "dummy.wav",
                 adaptive=True,
