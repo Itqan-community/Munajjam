@@ -19,16 +19,16 @@ from .arabic import normalize_arabic
 
 # Place of articulation groups (letters that share the same makhraj)
 _PLACE_GROUPS: list[set[str]] = [
-    {"ب", "م"},           # bilabial
-    {"ف", "و"},           # labiodental / labial
-    {"ث", "ذ", "ظ"},     # interdental
+    {"ب", "م"},  # bilabial
+    {"ف", "و"},  # labiodental / labial
+    {"ث", "ذ", "ظ"},  # interdental
     {"ت", "د", "ط", "ض", "ن", "ل", "ر"},  # alveolar / dental
-    {"س", "ز", "ص"},     # sibilant
-    {"ش", "ج", "ي"},     # palatal
-    {"ك", "غ", "خ"},     # velar
-    {"ق"},               # uvular
-    {"ع", "ح"},          # pharyngeal
-    {"ه", "ا"},          # glottal / laryngeal
+    {"س", "ز", "ص"},  # sibilant
+    {"ش", "ج", "ي"},  # palatal
+    {"ك", "غ", "خ"},  # velar
+    {"ق"},  # uvular
+    {"ع", "ح"},  # pharyngeal
+    {"ه", "ا"},  # glottal / laryngeal
 ]
 
 # Build letter → group-index lookup
@@ -57,6 +57,7 @@ _CONFUSION_PAIRS: set[frozenset[str]] = {
 # ---------------------------------------------------------------------------
 # Character-level phonetic distance
 # ---------------------------------------------------------------------------
+
 
 def _char_distance(a: str, b: str) -> float:
     """Return phonetic distance between two Arabic characters (0.0 = same, 1.0 = max)."""
@@ -89,6 +90,7 @@ def _char_distance(a: str, b: str) -> float:
 # ---------------------------------------------------------------------------
 # Word-level phonetic similarity
 # ---------------------------------------------------------------------------
+
 
 @lru_cache(maxsize=4096)
 def phonetic_word_similarity(word_a: str, word_b: str) -> float:

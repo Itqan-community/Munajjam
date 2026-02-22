@@ -178,4 +178,3 @@ def ayahs_for_surah(surah_id: int | str) -> list[Ayah]:
         surah_id = int(surah_id)
 
     return load_surah_ayahs(surah_id)
-

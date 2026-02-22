@@ -149,12 +149,14 @@ def _format_results(results: list, fmt: str) -> str:
     if fmt == "json":
         output = []
         for r in results:
-            output.append({
-                "ayah_number": r.ayah.ayah_number,
-                "start_time": round(r.start_time, 2),
-                "end_time": round(r.end_time, 2),
-                "text": r.ayah.text if hasattr(r.ayah, "text") else "",
-            })
+            output.append(
+                {
+                    "ayah_number": r.ayah.ayah_number,
+                    "start_time": round(r.start_time, 2),
+                    "end_time": round(r.end_time, 2),
+                    "text": r.ayah.text if hasattr(r.ayah, "text") else "",
+                }
+            )
         return json.dumps(output, ensure_ascii=False, indent=2)
     elif fmt == "csv":
         lines = ["ayah_number,start_time,end_time"]
@@ -164,9 +166,7 @@ def _format_results(results: list, fmt: str) -> str:
     else:  # text
         lines = []
         for r in results:
-            lines.append(
-                f"Ayah {r.ayah.ayah_number}: {r.start_time:.2f}s - {r.end_time:.2f}s"
-            )
+            lines.append(f"Ayah {r.ayah.ayah_number}: {r.start_time:.2f}s - {r.end_time:.2f}s")
         return "\n".join(lines)
 
 

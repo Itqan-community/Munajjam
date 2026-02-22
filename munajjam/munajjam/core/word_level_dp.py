@@ -23,9 +23,11 @@ from .phonetic import phonetic_similarity
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TranscribedWord:
     """A single word extracted from a Whisper segment with estimated timing."""
+
     text: str
     normalized: str
     estimated_start: float
@@ -37,6 +39,7 @@ class TranscribedWord:
 # ---------------------------------------------------------------------------
 # 1. Build word stream
 # ---------------------------------------------------------------------------
+
 
 def build_word_stream(segments: list[Segment]) -> list[TranscribedWord]:
     """
@@ -52,14 +55,16 @@ def build_word_stream(segments: list[Segment]) -> list[TranscribedWord]:
         # Prefer real word timestamps from faster-whisper
         if seg.words:
             for word_idx, wt in enumerate(seg.words):
-                words.append(TranscribedWord(
-                    text=wt.word,
-                    normalized=normalize_arabic(wt.word),
-                    estimated_start=wt.start,
-                    estimated_end=wt.end,
-                    segment_idx=seg_idx,
-                    word_idx_in_segment=word_idx,
-                ))
+                words.append(
+                    TranscribedWord(
+                        text=wt.word,
+                        normalized=normalize_arabic(wt.word),
+                        estimated_start=wt.start,
+                        estimated_end=wt.end,
+                        segment_idx=seg_idx,
+                        word_idx_in_segment=word_idx,
+                    )
+                )
             continue
 
         # Fallback: character-weighted time distribution
@@ -79,14 +84,16 @@ def build_word_stream(segments: list[Segment]) -> list[TranscribedWord]:
             word_duration = (char_len / total_chars) * seg_duration
             word_end = current_time + word_duration
 
-            words.append(TranscribedWord(
-                text=word,
-                normalized=normalize_arabic(word),
-                estimated_start=current_time,
-                estimated_end=word_end,
-                segment_idx=seg_idx,
-                word_idx_in_segment=word_idx,
-            ))
+            words.append(
+                TranscribedWord(
+                    text=word,
+                    normalized=normalize_arabic(word),
+                    estimated_start=current_time,
+                    estimated_end=word_end,
+                    segment_idx=seg_idx,
+                    word_idx_in_segment=word_idx,
+                )
+            )
 
             current_time = word_end
 
@@ -97,6 +104,7 @@ def build_word_stream(segments: list[Segment]) -> list[TranscribedWord]:
 # 2. Build reference word lists
 # ---------------------------------------------------------------------------
 
+
 def build_reference_words(ayahs: list[Ayah]) -> list[list[str]]:
     """Return normalized word lists per ayah."""
     return [normalize_arabic(a.text).split() for a in ayahs]
@@ -105,6 +113,7 @@ def build_reference_words(ayahs: list[Ayah]) -> list[list[str]]:
 # ---------------------------------------------------------------------------
 # 3. Word-level DP
 # ---------------------------------------------------------------------------
+
 
 def _jaccard_word_overlap(words_a: set[str], words_b: set[str]) -> float:
     """Fast Jaccard similarity between two word sets."""
@@ -121,8 +130,8 @@ def _bigram_overlap(text_a: str, text_b: str) -> float:
     nb = normalize_arabic(text_b)
     if len(na) < 2 or len(nb) < 2:
         return 0.0
-    bg_a = {na[i:i+2] for i in range(len(na) - 1)}
-    bg_b = {nb[i:i+2] for i in range(len(nb) - 1)}
+    bg_a = {na[i : i + 2] for i in range(len(na) - 1)}
+    bg_b = {nb[i : i + 2] for i in range(len(nb) - 1)}
     inter = len(bg_a & bg_b)
     union = len(bg_a | bg_b)
     return inter / union if union > 0 else 0.0
@@ -158,6 +167,7 @@ def _word_alignment_cost(
 
     # Coverage ratio penalty (from compute_alignment_cost logic)
     from .matcher import compute_coverage_ratio
+
     coverage = compute_coverage_ratio(merged_text, ayah_text)
     coverage_penalty = 0.0
     if coverage < 0.7:
@@ -310,9 +320,7 @@ def align_words_dp(
 
     # Compute median seconds-per-word for duration prior
     total_audio_duration = words[-1].estimated_end - words[0].estimated_start
-    median_sec_per_word = (
-        total_audio_duration / n_words if n_words > 0 else 0.5
-    )
+    median_sec_per_word = total_audio_duration / n_words if n_words > 0 else 0.5
 
     # Build silence bonus array for boundary guidance
     silence_bonus = _build_silence_bonus(words, silences_ms)
@@ -379,10 +387,7 @@ def align_words_dp(
                 merged_text = " ".join(word_texts[prev_w:w_end])
 
                 # Compute actual duration for this span
-                actual_dur = (
-                    words[w_end - 1].estimated_end
-                    - words[prev_w].estimated_start
-                )
+                actual_dur = words[w_end - 1].estimated_end - words[prev_w].estimated_start
 
                 # Cache by (text_hash, ayah_index, duration_bucket) to
                 # avoid recomputing identical text spans.  Duration is
@@ -393,7 +398,10 @@ def align_words_dp(
                     cost = _cost_cache[cache_key]
                 else:
                     cost = _word_alignment_cost(
-                        merged_text, ayah_text, n_assigned, ref_count,
+                        merged_text,
+                        ayah_text,
+                        n_assigned,
+                        ref_count,
                         actual_duration=actual_dur,
                         median_sec_per_word=median_sec_per_word,
                     )
@@ -449,9 +457,7 @@ def align_words_dp(
                 min_cost = min(costs)
                 # Count states within 20% of best — if most are close, it's
                 # an ambiguous region and we should keep more candidates.
-                close_count = sum(
-                    1 for c in costs if c < min_cost * 1.2 + 0.1
-                )
+                close_count = sum(1 for c in costs if c < min_cost * 1.2 + 0.1)
                 if close_count > beam_width * 0.6:
                     effective_beam = min(beam_width * 3, len(dp_cur))
             sorted_states = sorted(dp_cur.items(), key=lambda x: x[1])
@@ -495,6 +501,7 @@ def align_words_dp(
 # 3b. Chunked Word-DP for large surahs
 # ---------------------------------------------------------------------------
 
+
 def _chunked_align_words_dp(
     words: list[TranscribedWord],
     ayahs: list[Ayah],
@@ -519,8 +526,7 @@ def _chunked_align_words_dp(
     n_ayahs = len(ayahs)
 
     if n_ayahs <= chunk_size:
-        return align_words_dp(words, ayahs, ref_words, max_word_ratio,
-                              silences_ms=silences_ms)
+        return align_words_dp(words, ayahs, ref_words, max_word_ratio, silences_ms=silences_ms)
 
     # Pre-compute cumulative reference word counts
     cum_ref = [0] * (n_ayahs + 1)
@@ -552,15 +558,15 @@ def _chunked_align_words_dp(
         chunk_ref = ref_words[a_start:a_end]
 
         assignments = align_words_dp(
-            chunk_words, chunk_ayahs, chunk_ref, max_word_ratio,
+            chunk_words,
+            chunk_ayahs,
+            chunk_ref,
+            max_word_ratio,
             silences_ms=silences_ms,
         )
 
         # Remap indices back to global
-        remapped = [
-            (ws + w_lo, we + w_lo, ai + a_start)
-            for ws, we, ai in assignments
-        ]
+        remapped = [(ws + w_lo, we + w_lo, ai + a_start) for ws, we, ai in assignments]
         chunk_results.append(remapped)
 
     # Stitch: merge chunks, resolving overlaps by cost
@@ -571,7 +577,9 @@ def _chunked_align_words_dp(
         for ws, we, ai in assignments:
             merged = " ".join(w.text for w in words[ws:we])
             cost = _word_alignment_cost(
-                merged, ayahs[ai].text, we - ws,
+                merged,
+                ayahs[ai].text,
+                we - ws,
                 max(len(ref_words[ai]), 1),
             )
             existing = best_per_ayah.get(ai)
@@ -602,6 +610,7 @@ def _chunked_align_words_dp(
 # ---------------------------------------------------------------------------
 # 4. Entry point
 # ---------------------------------------------------------------------------
+
 
 def align_segments_word_dp(
     segments: list[Segment],
@@ -651,12 +660,18 @@ def align_segments_word_dp(
     # Choose chunked vs direct DP based on problem size
     if len(words) > 2000:
         assignments = _chunked_align_words_dp(
-            words, ayahs, ref_words, max_word_ratio,
+            words,
+            ayahs,
+            ref_words,
+            max_word_ratio,
             silences_ms=silences_ms,
         )
     else:
         assignments = align_words_dp(
-            words, ayahs, ref_words, max_word_ratio,
+            words,
+            ayahs,
+            ref_words,
+            max_word_ratio,
             silences_ms=silences_ms,
         )
 
@@ -689,13 +704,15 @@ def align_segments_word_dp(
 
         sim = similarity(transcribed, ayah.text)
 
-        results.append(AlignmentResult(
-            ayah=ayah,
-            start_time=round(start_time, 3),
-            end_time=round(end_time, 3),
-            transcribed_text=transcribed,
-            similarity_score=round(sim, 4),
-            overlap_detected=False,
-        ))
+        results.append(
+            AlignmentResult(
+                ayah=ayah,
+                start_time=round(start_time, 3),
+                end_time=round(end_time, 3),
+                transcribed_text=transcribed,
+                similarity_score=round(sim, 4),
+                overlap_detected=False,
+            )
+        )
 
     return results

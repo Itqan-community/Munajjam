@@ -101,7 +101,7 @@ def _recover_cascade_with_resync(
     n_sub_seg = len(sub_segments)
     n_sub_ayah = len(sub_ayahs)
 
-    INF = float('inf')
+    INF = float("inf")
     dp: dict[tuple[int, int], tuple[float, str, int, tuple | None]] = {}
     dp[(0, 0)] = (0.0, "", 0, None)
 
@@ -228,8 +228,12 @@ def _recover_cascade_with_resync(
     cascade_new_start = cascade_old_start
     cascade_new_end = cascade_old_end
 
-    old_cascade_sim = sum(r.similarity_score for r in old_results_range[cascade_old_start:cascade_old_end])
-    new_cascade_sim = sum(r.similarity_score for r in new_results[cascade_new_start:cascade_new_end])
+    old_cascade_sim = sum(
+        r.similarity_score for r in old_results_range[cascade_old_start:cascade_old_end]
+    )
+    new_cascade_sim = sum(
+        r.similarity_score for r in new_results[cascade_new_start:cascade_new_end]
+    )
 
     cascade_len = cascade_old_end - cascade_old_start
     if cascade_len == 0:
@@ -303,10 +307,6 @@ def apply_cascade_recovery(
             ext_start = max(0, cascade_start - context)
             ext_end = min(len(improved_results), cascade_end + context)
 
-            improved_results = (
-                improved_results[:ext_start] +
-                recovery +
-                improved_results[ext_end:]
-            )
+            improved_results = improved_results[:ext_start] + recovery + improved_results[ext_end:]
 
     return improved_results

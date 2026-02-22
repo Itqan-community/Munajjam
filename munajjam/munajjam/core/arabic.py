@@ -191,4 +191,3 @@ def detect_segment_type(text: str) -> tuple[SegmentType, int]:
         return SegmentType.BASMALA, 0
 
     return SegmentType.AYAH, 1
-

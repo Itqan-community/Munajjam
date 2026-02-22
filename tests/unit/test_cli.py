@@ -36,13 +36,20 @@ class TestCreateParser:
 
     def test_align_with_options(self):
         parser = create_parser()
-        args = parser.parse_args([
-            "align", "001.mp3",
-            "--surah", "1",
-            "--strategy", "greedy",
-            "--output", "output.json",
-            "--format", "csv",
-        ])
+        args = parser.parse_args(
+            [
+                "align",
+                "001.mp3",
+                "--surah",
+                "1",
+                "--strategy",
+                "greedy",
+                "--output",
+                "output.json",
+                "--format",
+                "csv",
+            ]
+        )
         assert args.surah == 1
         assert args.strategy == "greedy"
         assert args.output == "output.json"
@@ -58,13 +65,20 @@ class TestCreateParser:
 
     def test_batch_with_options(self):
         parser = create_parser()
-        args = parser.parse_args([
-            "batch", "/path/to/audio",
-            "--pattern", "*.wav",
-            "--output-dir", "/output",
-            "--format", "text",
-            "--strategy", "dp",
-        ])
+        args = parser.parse_args(
+            [
+                "batch",
+                "/path/to/audio",
+                "--pattern",
+                "*.wav",
+                "--output-dir",
+                "/output",
+                "--format",
+                "text",
+                "--strategy",
+                "dp",
+            ]
+        )
         assert args.pattern == "*.wav"
         assert args.output_dir == "/output"
         assert args.format == "text"
@@ -124,6 +138,7 @@ class TestFormatResults:
         results = [self._make_mock_result(1, 5.62, 9.57, "بسم الله")]
         output = _format_results(results, "json")
         import json
+
         data = json.loads(output)
         assert len(data) == 1
         assert data[0]["ayah_number"] == 1
