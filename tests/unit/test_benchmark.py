@@ -141,7 +141,9 @@ class TestSyntheticDataGeneration:
 class TestMetricsComputation:
     """Test that metrics are computed correctly."""
 
-    def _make_perfect_results(self, gt: list[dict], surah_id: int) -> list[AlignmentResult]:
+    def _make_perfect_results(
+        self, gt: list[dict], surah_id: int
+    ) -> list[AlignmentResult]:
         """Build AlignmentResult objects that perfectly match ground truth."""
         ayahs = _make_ayahs_from_ground_truth(gt, surah_id)
         return [
@@ -212,10 +214,42 @@ class TestStrategyRanking:
 
     def _make_metrics_list(self) -> list[StrategyMetrics]:
         return [
-            StrategyMetrics("greedy", "surah_1_fatiha", 7, mae_combined=0.5, avg_similarity=0.7, pct_high_confidence=60.0, runtime_seconds=0.01),
-            StrategyMetrics("dp", "surah_1_fatiha", 7, mae_combined=0.2, avg_similarity=0.9, pct_high_confidence=90.0, runtime_seconds=0.05),
-            StrategyMetrics("hybrid", "surah_1_fatiha", 7, mae_combined=0.3, avg_similarity=0.85, pct_high_confidence=80.0, runtime_seconds=0.04),
-            StrategyMetrics("auto", "surah_1_fatiha", 7, mae_combined=0.25, avg_similarity=0.88, pct_high_confidence=85.0, runtime_seconds=0.04),
+            StrategyMetrics(
+                "greedy",
+                "surah_1_fatiha",
+                7,
+                mae_combined=0.5,
+                avg_similarity=0.7,
+                pct_high_confidence=60.0,
+                runtime_seconds=0.01,
+            ),
+            StrategyMetrics(
+                "dp",
+                "surah_1_fatiha",
+                7,
+                mae_combined=0.2,
+                avg_similarity=0.9,
+                pct_high_confidence=90.0,
+                runtime_seconds=0.05,
+            ),
+            StrategyMetrics(
+                "hybrid",
+                "surah_1_fatiha",
+                7,
+                mae_combined=0.3,
+                avg_similarity=0.85,
+                pct_high_confidence=80.0,
+                runtime_seconds=0.04,
+            ),
+            StrategyMetrics(
+                "auto",
+                "surah_1_fatiha",
+                7,
+                mae_combined=0.25,
+                avg_similarity=0.88,
+                pct_high_confidence=85.0,
+                runtime_seconds=0.04,
+            ),
         ]
 
     def test_ranking_returns_all_strategies(self):
@@ -247,7 +281,15 @@ class TestJsonOutput:
 
     def test_json_output_is_valid(self, tmp_path):
         metrics = [
-            StrategyMetrics("greedy", "surah_1_fatiha", 7, mae_combined=0.3, avg_similarity=0.85, pct_high_confidence=80.0, runtime_seconds=0.01),
+            StrategyMetrics(
+                "greedy",
+                "surah_1_fatiha",
+                7,
+                mae_combined=0.3,
+                avg_similarity=0.85,
+                pct_high_confidence=80.0,
+                runtime_seconds=0.01,
+            ),
         ]
         output = tmp_path / "results" / "benchmark_results.json"
         save_results_json(metrics, output)
@@ -266,10 +308,16 @@ class TestJsonOutput:
         data = json.loads(output.read_text())
         result = data["results"][0]
         expected_fields = {
-            "strategy", "surah_name", "num_ayahs",
-            "mae_start", "mae_end", "mae_combined",
-            "avg_similarity", "pct_high_confidence",
-            "runtime_seconds", "aligned_count",
+            "strategy",
+            "surah_name",
+            "num_ayahs",
+            "mae_start",
+            "mae_end",
+            "mae_combined",
+            "avg_similarity",
+            "pct_high_confidence",
+            "runtime_seconds",
+            "aligned_count",
         }
         assert expected_fields.issubset(result.keys())
 
@@ -284,10 +332,42 @@ class TestLeaderboardGeneration:
 
     def _sample_metrics(self) -> list[StrategyMetrics]:
         return [
-            StrategyMetrics("greedy", "surah_1_fatiha", 7, mae_combined=0.5, avg_similarity=0.7, pct_high_confidence=60.0, runtime_seconds=0.01),
-            StrategyMetrics("dp", "surah_1_fatiha", 7, mae_combined=0.2, avg_similarity=0.9, pct_high_confidence=90.0, runtime_seconds=0.05),
-            StrategyMetrics("greedy", "surah_112_ikhlas", 4, mae_combined=0.4, avg_similarity=0.75, pct_high_confidence=70.0, runtime_seconds=0.01),
-            StrategyMetrics("dp", "surah_112_ikhlas", 4, mae_combined=0.15, avg_similarity=0.92, pct_high_confidence=95.0, runtime_seconds=0.04),
+            StrategyMetrics(
+                "greedy",
+                "surah_1_fatiha",
+                7,
+                mae_combined=0.5,
+                avg_similarity=0.7,
+                pct_high_confidence=60.0,
+                runtime_seconds=0.01,
+            ),
+            StrategyMetrics(
+                "dp",
+                "surah_1_fatiha",
+                7,
+                mae_combined=0.2,
+                avg_similarity=0.9,
+                pct_high_confidence=90.0,
+                runtime_seconds=0.05,
+            ),
+            StrategyMetrics(
+                "greedy",
+                "surah_112_ikhlas",
+                4,
+                mae_combined=0.4,
+                avg_similarity=0.75,
+                pct_high_confidence=70.0,
+                runtime_seconds=0.01,
+            ),
+            StrategyMetrics(
+                "dp",
+                "surah_112_ikhlas",
+                4,
+                mae_combined=0.15,
+                avg_similarity=0.92,
+                pct_high_confidence=95.0,
+                runtime_seconds=0.04,
+            ),
         ]
 
     def test_leaderboard_file_is_created(self, tmp_path):

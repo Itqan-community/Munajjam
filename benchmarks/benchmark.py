@@ -106,6 +106,7 @@ GROUND_TRUTH: dict[str, list[dict]] = {
 # Synthetic segment generator (no GPU / audio file needed)
 # ---------------------------------------------------------------------------
 
+
 def _make_segments_from_ground_truth(
     gt_ayahs: list[dict],
     surah_id: int,
@@ -156,6 +157,7 @@ def _make_ayahs_from_ground_truth(
 # Metrics
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class StrategyMetrics:
     """Metrics for a single strategy on a single surah."""
@@ -163,13 +165,13 @@ class StrategyMetrics:
     strategy: str
     surah_name: str
     num_ayahs: int
-    mae_start: float = 0.0          # Mean Absolute Error of start timestamps (s)
-    mae_end: float = 0.0            # Mean Absolute Error of end timestamps (s)
-    mae_combined: float = 0.0       # Average of mae_start and mae_end
-    avg_similarity: float = 0.0     # Average similarity score (0–1)
+    mae_start: float = 0.0  # Mean Absolute Error of start timestamps (s)
+    mae_end: float = 0.0  # Mean Absolute Error of end timestamps (s)
+    mae_combined: float = 0.0  # Average of mae_start and mae_end
+    avg_similarity: float = 0.0  # Average similarity score (0–1)
     pct_high_confidence: float = 0.0  # % of ayahs with similarity >= 0.8
-    runtime_seconds: float = 0.0    # Wall-clock time for alignment
-    aligned_count: int = 0          # Number of ayahs successfully aligned
+    runtime_seconds: float = 0.0  # Wall-clock time for alignment
+    aligned_count: int = 0  # Number of ayahs successfully aligned
 
 
 def _compute_metrics(
@@ -252,7 +254,7 @@ def run_benchmark() -> list[StrategyMetrics]:
             aligner = Aligner(
                 audio_path=DUMMY_AUDIO,
                 strategy=strategy,
-                energy_snap=False,   # no real audio → skip acoustic features
+                energy_snap=False,  # no real audio → skip acoustic features
                 fix_drift=True,
                 fix_overlaps=True,
             )
@@ -280,6 +282,7 @@ def run_benchmark() -> list[StrategyMetrics]:
 # JSON output
 # ---------------------------------------------------------------------------
 
+
 def save_results_json(metrics: list[StrategyMetrics], output_path: Path) -> None:
     """Save raw benchmark results to a JSON file."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -294,6 +297,7 @@ def save_results_json(metrics: list[StrategyMetrics], output_path: Path) -> None
 # ---------------------------------------------------------------------------
 # Markdown leaderboard generator
 # ---------------------------------------------------------------------------
+
 
 def _rank_strategies(metrics: list[StrategyMetrics]) -> list[tuple[str, float]]:
     """
@@ -348,7 +352,7 @@ def generate_leaderboard(metrics: list[StrategyMetrics], output_path: Path) -> N
         "|------|----------|----------------|",
     ]
     for i, (strategy, score) in enumerate(ranked):
-        m_str = medal[i] if i < len(medal) else f"{i+1}."
+        m_str = medal[i] if i < len(medal) else f"{i + 1}."
         lines.append(f"| {m_str} | `{strategy}` | {score:.4f} |")
 
     lines += [
@@ -413,6 +417,7 @@ def generate_leaderboard(metrics: list[StrategyMetrics], output_path: Path) -> N
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
+
 
 def main() -> None:
     """Run the benchmark and generate outputs."""

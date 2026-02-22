@@ -44,7 +44,7 @@ def test_with_transcription(audio_path: str, surah_id: int):
     print("\n🔇 Step 1: Detecting silences...")
     start = time.time()
     silences = detect_silences(audio_path)
-    print(f"   Found {len(silences)} silence periods in {time.time()-start:.2f}s")
+    print(f"   Found {len(silences)} silence periods in {time.time() - start:.2f}s")
 
     # Step 2: Transcribe
     print("\n📝 Step 2: Transcribing audio...")
@@ -84,11 +84,19 @@ def test_with_transcription(audio_path: str, surah_id: int):
     print("-" * 60)
     for result in results:
         conf = "✅" if result.is_high_confidence else "⚠️"
-        print(f"{conf} Ayah {result.ayah.ayah_number}: {result.start_time:.2f}s - {result.end_time:.2f}s")
+        print(
+            f"{conf} Ayah {result.ayah.ayah_number}: {result.start_time:.2f}s - {result.end_time:.2f}s"
+        )
         print(f"   Score: {result.similarity_score:.2f} | Duration: {result.duration:.2f}s")
-        text_preview = result.ayah.text[:60] + "..." if len(result.ayah.text) > 60 else result.ayah.text
+        text_preview = (
+            result.ayah.text[:60] + "..." if len(result.ayah.text) > 60 else result.ayah.text
+        )
         print(f"   Reference: {text_preview}")
-        trans_preview = result.transcribed_text[:60] + "..." if len(result.transcribed_text) > 60 else result.transcribed_text
+        trans_preview = (
+            result.transcribed_text[:60] + "..."
+            if len(result.transcribed_text) > 60
+            else result.transcribed_text
+        )
         print(f"   Transcribed: {trans_preview}")
         print()
 
@@ -96,16 +104,18 @@ def test_with_transcription(audio_path: str, surah_id: int):
     output_file = f"output_surah_{surah_id:03d}.json"
     output = []
     for result in results:
-        output.append({
-            "id": result.ayah.ayah_number,
-            "sura_id": result.ayah.surah_id,
-            "ayah_index": result.ayah.ayah_number - 1,
-            "start": round(result.start_time, 2),
-            "end": round(result.end_time, 2),
-            "transcribed_text": result.transcribed_text,
-            "corrected_text": result.ayah.text,
-            "similarity_score": round(result.similarity_score, 3),
-        })
+        output.append(
+            {
+                "id": result.ayah.ayah_number,
+                "sura_id": result.ayah.surah_id,
+                "ayah_index": result.ayah.ayah_number - 1,
+                "start": round(result.start_time, 2),
+                "end": round(result.end_time, 2),
+                "transcribed_text": result.transcribed_text,
+                "corrected_text": result.ayah.text,
+                "similarity_score": round(result.similarity_score, 3),
+            }
+        )
 
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
@@ -117,7 +127,7 @@ def test_with_transcription(audio_path: str, surah_id: int):
     print("=" * 60)
     print(f"Total ayahs: {len(ayahs)}")
     print(f"Aligned ayahs: {len(results)}")
-    print(f"Coverage: {len(results)/len(ayahs)*100:.0f}%")
+    print(f"Coverage: {len(results) / len(ayahs) * 100:.0f}%")
     if results:
         avg_score = sum(r.similarity_score for r in results) / len(results)
         print(f"Average similarity: {avg_score:.2f}")
@@ -156,14 +166,16 @@ def test_with_existing_segments(surah_id: int):
         elif seg.get("type") == "basmala":
             seg_type = SegmentType.BASMALA
 
-        segments.append(Segment(
-            id=seg["id"],
-            surah_id=seg["sura_id"],
-            start=seg["start"],
-            end=seg["end"],
-            text=seg["text"],
-            type=seg_type,
-        ))
+        segments.append(
+            Segment(
+                id=seg["id"],
+                surah_id=seg["sura_id"],
+                start=seg["start"],
+                end=seg["end"],
+                text=seg["text"],
+                type=seg_type,
+            )
+        )
 
     print(f"   Loaded {len(segments)} segments")
 
@@ -201,7 +213,9 @@ def test_with_existing_segments(surah_id: int):
     print("-" * 60)
     for result in results[:10]:
         conf = "✅" if result.is_high_confidence else "⚠️"
-        print(f"{conf} Ayah {result.ayah.ayah_number}: {result.start_time:.2f}s - {result.end_time:.2f}s (score: {result.similarity_score:.2f})")
+        print(
+            f"{conf} Ayah {result.ayah.ayah_number}: {result.start_time:.2f}s - {result.end_time:.2f}s (score: {result.similarity_score:.2f})"
+        )
 
     if len(results) > 10:
         print(f"... and {len(results) - 10} more")
@@ -220,7 +234,7 @@ def test_with_existing_segments(surah_id: int):
         for result in results:
             existing_match = next(
                 (e for e in existing_ayahs if e.get("ayah_index") == result.ayah.ayah_number - 1),
-                None
+                None,
             )
             if existing_match:
                 time_diff = abs(result.start_time - existing_match["start"])
@@ -278,10 +292,18 @@ if __name__ == "__main__":
         print("  python test_alignment.py --core                   # Test core functions only")
         print()
         print("Examples:")
-        print("  python test_alignment.py ../../Quran/badr_alturki_audio/001.wav 1   # Al-Fatiha (7 ayahs)")
-        print("  python test_alignment.py ../../Quran/badr_alturki_audio/062.wav 62  # Al-Jumu'ah (11 ayahs)")
-        print("  python test_alignment.py --existing 67                               # Use existing data")
-        print("  python test_alignment.py --core                                      # Test core only")
+        print(
+            "  python test_alignment.py ../../Quran/badr_alturki_audio/001.wav 1   # Al-Fatiha (7 ayahs)"
+        )
+        print(
+            "  python test_alignment.py ../../Quran/badr_alturki_audio/062.wav 62  # Al-Jumu'ah (11 ayahs)"
+        )
+        print(
+            "  python test_alignment.py --existing 67                               # Use existing data"
+        )
+        print(
+            "  python test_alignment.py --core                                      # Test core only"
+        )
         sys.exit(0)
 
     if sys.argv[1] == "--core":
@@ -299,4 +321,3 @@ if __name__ == "__main__":
         audio_path = sys.argv[1]
         surah_id = int(sys.argv[2])
         test_with_transcription(audio_path, surah_id)
-
