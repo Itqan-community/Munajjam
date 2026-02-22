@@ -35,7 +35,7 @@ class AlignmentContext:
 
     ayahs: list[Ayah]
     segments: list[Segment]
-    silences_ms: list[list[int] | tuple[int, int]] = field(default_factory=list)
+    silences_ms: list[tuple[int, int]] = field(default_factory=list)
     settings: MunajjamSettings = field(default_factory=get_settings)
 
     # Progress tracking
@@ -193,7 +193,7 @@ def _finalize_ayah(
 def align_segments(
     segments: list[Segment],
     ayahs: list[Ayah],
-    silences_ms: list[list[int] | tuple[int, int]] | None = None,
+    silences_ms: list[tuple[int, int]] | None = None,
     settings: MunajjamSettings | None = None,
     on_ayah_aligned: Callable[[AlignmentResult], None] | None = None,
     required_tokens_map: dict[tuple[int, int], list[str]] | None = None,

@@ -312,7 +312,7 @@ def align_segments_dp(
 def align_segments_dp_with_constraints(
     segments: list[Segment],
     ayahs: list[Ayah],
-    silences_ms: list[list[int] | tuple[int, int]] | None = None,
+    silences_ms: list[tuple[int, int]] | None = None,
     max_segments_per_ayah: int = 8,
     on_progress: Callable[[int, int], None] | None = None,
 ) -> list[AlignmentResult]:

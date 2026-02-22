@@ -80,7 +80,7 @@ def build_word_stream(segments: list[Segment]) -> list[TranscribedWord]:
         seg_duration = seg.end - seg.start
         current_time = seg.start
 
-        for word_idx, (word, char_len) in enumerate(zip(raw_words, char_lengths, strict=False)):
+        for word_idx, (word, char_len) in enumerate(zip(raw_words, char_lengths, strict=True)):
             word_duration = (char_len / total_chars) * seg_duration
             word_end = current_time + word_duration
 
@@ -210,7 +210,7 @@ def _word_alignment_cost(
 
 def _build_silence_bonus(
     words: list[TranscribedWord],
-    silences_ms: list[list[int] | tuple[int, int]] | None,
+    silences_ms: list[tuple[int, int]] | None,
     bonus: float = 0.15,
     penalty: float = 0.05,
 ) -> list[float]:
@@ -274,7 +274,7 @@ def align_words_dp(
     ref_words: list[list[str]],
     max_word_ratio: float = 3.0,
     beam_width: int = 50,
-    silences_ms: list[list[int] | tuple[int, int]] | None = None,
+    silences_ms: list[tuple[int, int]] | None = None,
 ) -> list[tuple[int, int, int]]:
     """
     Run DP at word granularity to find optimal word-to-ayah mapping.
@@ -509,7 +509,7 @@ def _chunked_align_words_dp(
     max_word_ratio: float = 3.0,
     chunk_size: int = 60,
     overlap: int = 10,
-    silences_ms: list[list[int] | tuple[int, int]] | None = None,
+    silences_ms: list[tuple[int, int]] | None = None,
 ) -> list[tuple[int, int, int]]:
     """
     Split large alignment problems into overlapping chunks and stitch results.
@@ -615,7 +615,7 @@ def _chunked_align_words_dp(
 def align_segments_word_dp(
     segments: list[Segment],
     ayahs: list[Ayah],
-    silences_ms: list[list[int] | tuple[int, int]] | None = None,
+    silences_ms: list[tuple[int, int]] | None = None,
     on_progress: Callable[[int, int], None] | None = None,
     max_word_ratio: float = 3.0,
 ) -> list[AlignmentResult]:

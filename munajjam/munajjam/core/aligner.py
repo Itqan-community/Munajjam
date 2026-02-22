@@ -101,7 +101,7 @@ class Aligner:
         self,
         segments: list[Segment],
         ayahs: list[Ayah],
-        silences_ms: list[list[int] | tuple[int, int]] | None = None,
+        silences_ms: list[tuple[int, int]] | None = None,
         on_progress: Callable[[int, int], None] | None = None,
     ) -> list[AlignmentResult]:
         """
@@ -159,7 +159,7 @@ class Aligner:
         self,
         segments: list[Segment],
         ayahs: list[Ayah],
-        silences_ms: list[list[int] | tuple[int, int]] | None,
+        silences_ms: list[tuple[int, int]] | None,
     ) -> list[AlignmentResult]:
         """Run greedy alignment."""
         from .aligner_greedy import align_segments
@@ -174,7 +174,7 @@ class Aligner:
         self,
         segments: list[Segment],
         ayahs: list[Ayah],
-        silences_ms: list[list[int] | tuple[int, int]] | None,
+        silences_ms: list[tuple[int, int]] | None,
         on_progress: Callable[[int, int], None] | None,
     ) -> list[AlignmentResult]:
         """Run DP alignment."""
@@ -191,7 +191,7 @@ class Aligner:
         self,
         segments: list[Segment],
         ayahs: list[Ayah],
-        silences_ms: list[list[int] | tuple[int, int]] | None,
+        silences_ms: list[tuple[int, int]] | None,
         on_progress: Callable[[int, int], None] | None,
     ) -> list[AlignmentResult]:
         """Run hybrid alignment (DP + fallback)."""
@@ -265,7 +265,7 @@ class Aligner:
     def _snap_to_silences(
         self,
         results: list[AlignmentResult],
-        silences_ms: list[list[int] | tuple[int, int]],
+        silences_ms: list[tuple[int, int]],
     ) -> int:
         """Snap ayah boundaries to actual silence periods to fix drift."""
         from .zone_realigner import snap_boundaries_to_silences
@@ -284,7 +284,7 @@ def align(
     audio_path: str,
     segments: list[Segment],
     ayahs: list[Ayah],
-    silences_ms: list[list[int] | tuple[int, int]] | None = None,
+    silences_ms: list[tuple[int, int]] | None = None,
     strategy: str = "auto",
     on_progress: Callable[[int, int], None] | None = None,
 ) -> list[AlignmentResult]:

@@ -688,7 +688,7 @@ def fix_overlaps(results: list[AlignmentResult], min_gap: float = 0.0) -> int:
 
 def snap_boundaries_to_silences(
     results: list[AlignmentResult],
-    silences_ms: list[list[int] | tuple[int, int]] | None,
+    silences_ms: list[tuple[int, int]] | None,
     max_snap_distance: float = 2.0,
 ) -> int:
     """
@@ -713,8 +713,7 @@ def snap_boundaries_to_silences(
     silences_sec = [(s / 1000.0, e / 1000.0) for s, e in silences_ms]
     silences_sec.sort(key=lambda x: x[0])
 
-    # Create list of silence midpoints (natural ayah boundary points)
-    [(s + e) / 2 for s, e in silences_sec]
+    # Silence midpoints used for boundary snapping below
 
     # Sort results by ayah number
     results.sort(key=lambda r: r.ayah.ayah_number)
@@ -733,6 +732,7 @@ def snap_boundaries_to_silences(
         # Find nearest silence midpoint
         best_silence_mid = None
         best_distance = float("inf")
+        best_silence: tuple[float, float] | None = None
 
         for sil_start, sil_end in silences_sec:
             sil_mid = (sil_start + sil_end) / 2
@@ -743,7 +743,7 @@ def snap_boundaries_to_silences(
                 best_silence_mid = sil_mid
                 best_silence = (sil_start, sil_end)
 
-        if best_silence_mid is not None:
+        if best_silence_mid is not None and best_silence is not None:
             # Snap curr.end to silence start, next.start to silence end
             sil_start, sil_end = best_silence
 

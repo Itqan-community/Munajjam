@@ -53,7 +53,7 @@ def remove_overlap(text1: str, text2: str) -> tuple[str, bool]:
 def apply_buffers(
     start_time: float,
     end_time: float,
-    silences: list[list[int] | tuple[int, int]],
+    silences: list[tuple[int, int]],
     prev_end: float | None = None,
     next_start: float | None = None,
     buffer: float = 0.3,
@@ -174,7 +174,7 @@ def find_silence_gap_between(
 
 
 def convert_silences_to_seconds(
-    silences_ms: list[list[int] | tuple[int, int]],
+    silences_ms: list[tuple[int, int]],
 ) -> list[tuple[float, float]]:
     """
     Convert silence periods from milliseconds to seconds.

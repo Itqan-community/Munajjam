@@ -254,7 +254,7 @@ def apply_cascade_recovery(
     segments: list[Segment],
     ayahs: list[Ayah],
     results: list[AlignmentResult],
-    silences_ms: list[list[int] | tuple[int, int]] | None = None,
+    silences_ms: list[tuple[int, int]] | None = None,
     cascade_threshold: float = 0.7,
     min_cascade_length: int = 2,
 ) -> list[AlignmentResult]:

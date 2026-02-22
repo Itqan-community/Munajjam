@@ -148,7 +148,7 @@ def _try_split_and_restitch(
     segments: list[Segment],
     ayah: Ayah,
     dp_result: AlignmentResult,
-    silences_ms: list[list[int] | tuple[int, int]] | None,
+    silences_ms: list[tuple[int, int]] | None,
 ) -> AlignmentResult | None:
     """
     Try to improve alignment for a long ayah by splitting at silences.
@@ -204,7 +204,7 @@ def _try_split_and_restitch(
 def align_segments_hybrid(
     segments: list[Segment],
     ayahs: list[Ayah],
-    silences_ms: list[list[int] | tuple[int, int]] | None = None,
+    silences_ms: list[tuple[int, int]] | None = None,
     quality_threshold: float = 0.85,
     long_ayah_words: int = 30,
     long_ayah_duration: float = 30.0,

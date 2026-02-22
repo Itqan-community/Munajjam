@@ -162,27 +162,24 @@ def detect_non_silent_chunks(
     Returns:
         List of (start_ms, end_ms) tuples for non-silent portions
     """
-    chunks = _detect_non_silent_chunks_raw(audio_path, min_silence_len, silence_thresh, use_fast)
-
-    if not adaptive or expected_chunks is None or expected_chunks <= 0:
-        return chunks
-
-    if min_chunks_ratio <= 0:
+    if adaptive and expected_chunks is not None and expected_chunks > 0 and min_chunks_ratio <= 0:
         raise ValueError(
             "detect_non_silent_chunks: min_chunks_ratio must be > 0 when "
             f"adaptive=True (got {min_chunks_ratio}). Provide a positive "
             "ratio relative to expected_chunks."
         )
 
+    chunks = _detect_non_silent_chunks_raw(audio_path, min_silence_len, silence_thresh, use_fast)
+
+    if not adaptive or expected_chunks is None or expected_chunks <= 0:
+        return chunks
+
     # Adaptive retry: relax thresholds progressively until we have enough chunks
     # Each level relaxes the dB threshold (allow quieter sounds) and shortens
     # the minimum silence length (detect shorter pauses).
     retry_levels = [
         # (silence_thresh_delta, min_silence_len_factor)
-        (
-            +5,
-            0.75,
-        ),  # level 1: slightly more sensitive (raise thresh → more silence detected)
+        (+5, 0.75),  # level 1: slightly more sensitive
         (+10, 0.5),  # level 2: moderately more sensitive
         (+15, 0.35),  # level 3: quite sensitive
         (+20, 0.25),  # level 4: very sensitive (last resort)
