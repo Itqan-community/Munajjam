@@ -202,7 +202,7 @@ def _recover_cascade_with_resync(
     old_results_range = results[extended_start:extended_end]
 
     # Conservative check: Don't accept recovery if ANY ayah degrades significantly
-    for old, new in zip(old_results_range, new_results):
+    for old, new in zip(old_results_range, new_results, strict=True):
         drop = old.similarity_score - new.similarity_score
 
         # Strict protection for good ayahs (>= 75%): max 8% drop

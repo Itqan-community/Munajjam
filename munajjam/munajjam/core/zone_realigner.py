@@ -730,7 +730,6 @@ def snap_boundaries_to_silences(
         boundary_time = (curr.end_time + next_r.start_time) / 2
 
         # Find nearest silence midpoint
-        best_silence_mid = None
         best_distance = float("inf")
         best_silence: tuple[float, float] | None = None
 
@@ -740,7 +739,6 @@ def snap_boundaries_to_silences(
 
             if distance < best_distance and distance <= max_snap_distance:
                 best_distance = distance
-                best_silence_mid = sil_mid
                 best_silence = (sil_start, sil_end)
 
         if best_silence is not None:
