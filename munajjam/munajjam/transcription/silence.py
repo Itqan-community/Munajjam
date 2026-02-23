@@ -344,7 +344,7 @@ def compute_energy_envelope(
     rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
     times = librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=hop_length)
 
-    return [(float(t), float(r)) for t, r in zip(times, rms, strict=False)]
+    return [(float(t), float(r)) for t, r in zip(times, rms)]
 
 
 def find_energy_minima(
