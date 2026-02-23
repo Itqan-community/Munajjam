@@ -21,11 +21,11 @@ Primary API:
 from munajjam.core.aligner import Aligner, AlignmentStrategy, align
 
 # Text utilities - commonly used
-from munajjam.core.arabic import normalize_arabic, detect_segment_type
-from munajjam.core.matcher import similarity
+from munajjam.core.arabic import detect_segment_type, normalize_arabic
 
 # Stats classes - for inspecting results
 from munajjam.core.hybrid import HybridStats
+from munajjam.core.matcher import similarity
 from munajjam.core.zone_realigner import ProblemZone, ZoneStats
 
 __all__ = [

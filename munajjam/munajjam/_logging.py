@@ -6,8 +6,7 @@ Provides a configured logger and helper functions for consistent logging.
 
 import logging
 import sys
-from typing import Optional
-
+from typing import Any, TextIO
 
 # Default format for Munajjam logs
 DEFAULT_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -29,9 +28,9 @@ def get_logger(name: str = "munajjam") -> logging.Logger:
 
 def configure_logging(
     level: int = logging.INFO,
-    format_string: Optional[str] = None,
-    date_format: Optional[str] = None,
-    stream: Optional[object] = None,
+    format_string: str | None = None,
+    date_format: str | None = None,
+    stream: TextIO | None = None,
 ) -> logging.Logger:
     """
     Configure logging for the Munajjam library.
@@ -116,7 +115,7 @@ def log_ayah_aligned(
     )
 
 
-def log_warning(message: str, **context) -> None:
+def log_warning(message: str, **context: Any) -> None:
     """Log a warning with optional context."""
     if context:
         ctx_str = ", ".join(f"{k}={v}" for k, v in context.items())
@@ -125,11 +124,10 @@ def log_warning(message: str, **context) -> None:
         _logger.warning(message)
 
 
-def log_error(message: str, exc_info: bool = False, **context) -> None:
+def log_error(message: str, exc_info: bool = False, **context: Any) -> None:
     """Log an error with optional context and exception info."""
     if context:
         ctx_str = ", ".join(f"{k}={v}" for k, v in context.items())
         _logger.error(f"{message} ({ctx_str})", exc_info=exc_info)
     else:
         _logger.error(message, exc_info=exc_info)
-

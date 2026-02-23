@@ -9,18 +9,21 @@ from munajjam.core.matcher import similarity
 class TestSimilarity:
     """Test similarity calculation functions."""
 
-    @pytest.mark.parametrize("text1,text2,min_score,max_score", [
-        # Identical texts
-        ("بسم الله الرحمن الرحيم", "بسم الله الرحمن الرحيم", 1.0, 1.0),
-        # Substring match
-        ("بسم الله", "بسم الله الرحمن الرحيم", 0.4, 1.0),
-        # Single character difference
-        ("الحمد لله رب العالمين", "الحمد لله رب العلمين", 0.9, 1.0),
-        # Completely different texts
-        ("الحمد لله", "قل أعوذ برب الناس", 0.0, 0.5),
-        # With diacritics
-        ("بِسْمِ اللَّهِ", "بسم الله", 0.9, 1.0),
-    ])
+    @pytest.mark.parametrize(
+        "text1,text2,min_score,max_score",
+        [
+            # Identical texts
+            ("بسم الله الرحمن الرحيم", "بسم الله الرحمن الرحيم", 1.0, 1.0),
+            # Substring match
+            ("بسم الله", "بسم الله الرحمن الرحيم", 0.4, 1.0),
+            # Single character difference
+            ("الحمد لله رب العالمين", "الحمد لله رب العلمين", 0.9, 1.0),
+            # Completely different texts
+            ("الحمد لله", "قل أعوذ برب الناس", 0.0, 0.5),
+            # With diacritics
+            ("بِسْمِ اللَّهِ", "بسم الله", 0.9, 1.0),
+        ],
+    )
     def test_similarity_scores(self, text1, text2, min_score, max_score):
         """Test similarity produces expected score ranges."""
         score = similarity(text1, text2)

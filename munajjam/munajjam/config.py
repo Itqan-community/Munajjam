@@ -5,8 +5,8 @@ Uses Pydantic Settings for type-safe configuration with environment variable sup
 All settings can be overridden via environment variables with the MUNAJJAM_ prefix.
 """
 
-from typing import Literal
 from pathlib import Path
+from typing import Any, Literal
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -185,7 +185,7 @@ def get_settings() -> MunajjamSettings:
     return _default_settings
 
 
-def configure(**kwargs) -> MunajjamSettings:
+def configure(**kwargs: Any) -> MunajjamSettings:
     """
     Create and set new default settings.
 
@@ -198,4 +198,3 @@ def configure(**kwargs) -> MunajjamSettings:
     global _default_settings
     _default_settings = MunajjamSettings(**kwargs)
     return _default_settings
-

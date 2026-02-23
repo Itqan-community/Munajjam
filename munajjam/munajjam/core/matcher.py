@@ -38,7 +38,7 @@ def similarity(text1: str, text2: str, normalize: bool = True) -> float:
         text1 = normalize_arabic(text1)
         text2 = normalize_arabic(text2)
 
-    return _rapidfuzz_indel.normalized_similarity(text1, text2)
+    return float(_rapidfuzz_indel.normalized_similarity(text1, text2))
 
 
 def get_first_words(text: str, n: int = 1, normalize: bool = True) -> str:
@@ -79,9 +79,7 @@ def get_last_words(text: str, n: int = 1, normalize: bool = True) -> str:
     return " ".join(words[-n:]) if len(words) >= n else " ".join(words)
 
 
-def get_first_last_words(
-    text: str, n: int = 1, normalize: bool = True
-) -> tuple[str, str]:
+def get_first_last_words(text: str, n: int = 1, normalize: bool = True) -> tuple[str, str]:
     """
     Get both first n and last n words from text.
 
@@ -162,4 +160,3 @@ def check_boundary_match(
 
     sim = similarity(seg_words, ayah_words_str, normalize=False)  # Already normalized
     return sim >= threshold
-

@@ -5,9 +5,9 @@ Detects sequences of consecutive low-scoring ayahs and attempts
 to re-align them using silence boundaries for better sync.
 """
 
-from ..models import Segment, Ayah, AlignmentResult
-from .matcher import similarity
+from ..models import AlignmentResult, Ayah, Segment
 from .dp_core import compute_alignment_cost
+from .matcher import similarity
 
 
 def find_cascade_sequences(
@@ -101,14 +101,14 @@ def _recover_cascade_with_resync(
     n_sub_seg = len(sub_segments)
     n_sub_ayah = len(sub_ayahs)
 
-    INF = float('inf')
+    INF = float("inf")
     dp: dict[tuple[int, int], tuple[float, str, int, tuple | None]] = {}
     dp[(0, 0)] = (0.0, "", 0, None)
 
     # Build set of segment indices that align with silences
     silence_aligned_ends = set()
     for idx, seg in enumerate(sub_segments):
-        for sil_start, sil_end in relevant_silences:
+        for sil_start, _sil_end in relevant_silences:
             if abs(seg.end - sil_start) < 0.3:
                 silence_aligned_ends.add(idx + 1)
 
@@ -159,16 +159,17 @@ def _recover_cascade_with_resync(
 
     # Backtrack and build new results
     path = []
-    current = best_end
+    current: tuple[int, int] | None = best_end
 
-    while current and current in dp:
+    while current is not None and current in dp:
         cost, merged_text, seg_start, parent = dp[current]
         i, j = current
 
         if parent is not None:
             path.append((seg_start, i, j, merged_text))
-
-        current = parent
+            current = parent
+        else:
+            current = None
 
     path.reverse()
 
@@ -201,7 +202,7 @@ def _recover_cascade_with_resync(
     old_results_range = results[extended_start:extended_end]
 
     # Conservative check: Don't accept recovery if ANY ayah degrades significantly
-    for old, new in zip(old_results_range, new_results):
+    for old, new in zip(old_results_range, new_results, strict=True):
         drop = old.similarity_score - new.similarity_score
 
         # Strict protection for good ayahs (>= 75%): max 8% drop
@@ -228,8 +229,12 @@ def _recover_cascade_with_resync(
     cascade_new_start = cascade_old_start
     cascade_new_end = cascade_old_end
 
-    old_cascade_sim = sum(r.similarity_score for r in old_results_range[cascade_old_start:cascade_old_end])
-    new_cascade_sim = sum(r.similarity_score for r in new_results[cascade_new_start:cascade_new_end])
+    old_cascade_sim = sum(
+        r.similarity_score for r in old_results_range[cascade_old_start:cascade_old_end]
+    )
+    new_cascade_sim = sum(
+        r.similarity_score for r in new_results[cascade_new_start:cascade_new_end]
+    )
 
     cascade_len = cascade_old_end - cascade_old_start
     if cascade_len == 0:
@@ -303,10 +308,6 @@ def apply_cascade_recovery(
             ext_start = max(0, cascade_start - context)
             ext_end = min(len(improved_results), cascade_end + context)
 
-            improved_results = (
-                improved_results[:ext_start] +
-                recovery +
-                improved_results[ext_end:]
-            )
+            improved_results = improved_results[:ext_start] + recovery + improved_results[ext_end:]
 
     return improved_results
