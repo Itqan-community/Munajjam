@@ -77,14 +77,15 @@ FAKE_SEGMENTS = [
 class TestAdvancedAlignmentSmoke:
     """Smoke tests mirroring examples/02_advanced_alignment.py logic."""
 
-    def test_aligner_class_usage(self, surah_1_ayahs: list[Ayah]) -> None:
+    def test_aligner_class_usage(self, sample_ayahs: list[Ayah]) -> None:
         """Verify Aligner class and its methods used in example 02."""
-        aligner = Aligner()
+        # Aligner requires audio_path in this version
+        aligner = Aligner(audio_path="fake_audio.mp3")
         assert hasattr(aligner, "align")
 
         # Mock segments for a subset of ayahs
         segments = [FAKE_SEGMENTS[0], FAKE_SEGMENTS[1]]
-        results = aligner.align(segments, surah_1_ayahs[:2])
+        results = aligner.align(segments, sample_ayahs[:2])
 
         assert len(results) == 2
         assert all(isinstance(r, AlignmentResult) for r in results)
