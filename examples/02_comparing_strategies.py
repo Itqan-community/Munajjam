@@ -1,12 +1,10 @@
 """
 Comparing Alignment Strategies
 
-This example demonstrates the differences between the six alignment strategies:
+This example demonstrates the differences between the four alignment strategies:
 - Greedy: Fast, simple linear matching
 - DP: Optimal alignment using dynamic programming
 - Hybrid: DP with greedy fallback
-- Word-level DP: Sub-segment precision using per-word timestamps
-- CTC Segmentation: Acoustic-based alignment (requires audio_path)
 - Auto: Automatically picks the best strategy (recommended)
 """
 
@@ -71,7 +69,7 @@ def main():
     print(f"Loaded {len(ayahs)} ayahs")
 
     # Step 3: Test each strategy
-    strategies = ["greedy", "dp", "hybrid", "word_dp"]
+    strategies = ["greedy", "dp", "hybrid", "auto"]
     results_map = {}
 
     for strategy in strategies:
@@ -81,18 +79,6 @@ def main():
             "time": elapsed,
             "avg_similarity": avg_sim
         }
-
-    # Step 3b: Test CTC segmentation (requires torchaudio)
-    try:
-        results, elapsed, avg_sim = align_with_strategy(segments, ayahs, "ctc_seg", audio_path=audio_path)
-        results_map["ctc_seg"] = {
-            "results": results,
-            "time": elapsed,
-            "avg_similarity": avg_sim
-        }
-        strategies.append("ctc_seg")
-    except Exception as e:
-        print(f"\nSkipping CTC segmentation: {e}")
 
     # Step 4: Compare results
     print(f"\n{'=' * 80}")
@@ -124,19 +110,12 @@ For most use cases:
   • Use AUTO strategy (recommended) - Automatically picks the best approach
   • Includes automatic drift correction, overlap fixing, and zone realignment
 
-For word-level precision:
-  • Use WORD_DP strategy - Sub-segment alignment using per-word timestamps
-  • Best when faster-whisper provides word-level timing
-
-For acoustic alignment:
-  • Use CTC_SEG strategy - Frame-accurate boundaries from audio signal
-  • Requires audio_path and torchaudio
-
 For simple recordings:
   • Use GREEDY strategy - Fast and sufficient for 1:1 segment-to-ayah mapping
 
-For legacy workflows:
-  • HYBRID or DP strategies remain available for backward compatibility
+For maximum control:
+  • HYBRID strategy - DP with greedy fallback (what AUTO currently selects)
+  • DP strategy - Pure dynamic programming for optimal alignment
     """)
 
 
