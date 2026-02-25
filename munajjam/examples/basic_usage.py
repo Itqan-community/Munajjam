@@ -4,14 +4,14 @@ Basic usage example for Munajjam library.
 This example demonstrates the core workflow:
 1. Transcribe audio to segments
 2. Align segments to ayahs
-3. Output results as JSON
+3. Format and export results using the standardized JSON formatter
 """
 
-import json
 from pathlib import Path
 
 from munajjam.core import align
 from munajjam.data import load_surah_ayahs
+from munajjam.formatters import format_alignment_results
 
 # Import core components
 from munajjam.transcription import WhisperTranscriber
@@ -27,7 +27,7 @@ def process_surah(audio_path: str, surah_id: int, reciter: str = "Unknown"):
         reciter: Name of the reciter
 
     Returns:
-        List of alignment results as dictionaries
+        An AlignmentOutput instance.
     """
     print(f"Processing Surah {surah_id} from {audio_path}")
     print("=" * 50)
@@ -51,51 +51,33 @@ def process_surah(audio_path: str, surah_id: int, reciter: str = "Unknown"):
     # Step 3: Align segments to ayahs
     print("\n🔗 Step 3: Aligning segments to ayahs...")
 
-    results = align(segments, ayahs)
+    results = align(audio_path, segments, ayahs)
     print(f"   Aligned {len(results)} ayahs")
 
+    # Step 4: Format results using the standardized JSON formatter
+    print("\n📄 Step 4: Formatting results...")
+
+    output = format_alignment_results(
+        results=results,
+        surah_id=surah_id,
+        reciter=reciter,
+        audio_file=audio_path,
+    )
+
     # Show alignment results
-    print("\n📊 Alignment Results:")
-    for result in results[:5]:  # Show first 5
+    print("\n📊 Alignment Results Summary:")
+    for result in output.results[:5]:  # Show first 5
         confidence = "✅" if result.is_high_confidence else "⚠️"
         print(
-            f"   {confidence} Ayah {result.ayah.ayah_number}: "
+            f"   {confidence} Ayah {result.ayah_number}: "
             f"{result.start_time:.2f}s - {result.end_time:.2f}s "
             f"(score: {result.similarity_score:.2f})"
         )
 
-    if len(results) > 5:
-        print(f"   ... and {len(results) - 5} more")
-
-    # Step 4: Create output
-    print("\n📄 Step 4: Creating JSON output...")
-
-    output = []
-    for result in results:
-        output.append(
-            {
-                "id": result.ayah.ayah_number,
-                "sura_id": result.ayah.surah_id,
-                "ayah_index": result.ayah.ayah_number - 1,
-                "start": round(result.start_time, 2),
-                "end": round(result.end_time, 2),
-                "transcribed_text": result.transcribed_text,
-                "corrected_text": result.ayah.text,
-                "similarity_score": round(result.similarity_score, 3),
-            }
-        )
+    if len(output.results) > 5:
+        print(f"   ... and {len(output.results) - 5} more")
 
     return output
-
-
-def save_to_json(output: list, output_path: str):
-    """Save output to JSON file."""
-    print(f"\n💾 Saving to: {output_path}")
-
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
-
-    print("   ✅ Saved successfully!")
 
 
 # Example usage
@@ -119,8 +101,10 @@ if __name__ == "__main__":
     # Process the surah
     output = process_surah(audio_path, surah_id, reciter)
 
-    # Save to JSON
+    # Save to JSON using the standardized formatter's method
     output_path = f"corrected_segments_{surah_id:03d}.json"
-    save_to_json(output, output_path)
+    print(f"\n💾 Saving to: {output_path}")
+    output.to_file(output_path, ensure_ascii=False)
+    print("   ✅ Saved successfully!")
 
     print("\n🎉 Done!")

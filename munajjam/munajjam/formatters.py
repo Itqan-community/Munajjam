@@ -166,18 +166,19 @@ class AlignmentOutput(BaseModel):
         """
         return self.model_dump()
 
-    def to_file(self, path: str, indent: int = 2) -> None:
+    def to_file(self, path: str, indent: int = 2, ensure_ascii: bool = False) -> None:
         """Write JSON output to a file.
 
         Args:
             path: File path to write to.
             indent: Number of spaces for indentation.
+            ensure_ascii: If True, escape non-ASCII characters.
         """
         from pathlib import Path as P
 
         p = P(path)
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(self.to_json(indent=indent), encoding="utf-8")
+        p.write_text(self.to_json(indent=indent, ensure_ascii=ensure_ascii), encoding="utf-8")
 
 
 def _format_single_result(result: AlignmentResult) -> FormattedAyahResult:
@@ -189,9 +190,11 @@ def _format_single_result(result: AlignmentResult) -> FormattedAyahResult:
     Returns:
         A FormattedAyahResult instance.
     """
+    # Fix duration rounding inconsistency:
+    # Calculate duration from raw values first, then round.
     rounded_start = round(result.start_time, 2)
     rounded_end = round(result.end_time, 2)
-    duration = round(rounded_end - rounded_start, 2)
+    duration = round(result.end_time - result.start_time, 2)
 
     return FormattedAyahResult(
         id=result.ayah.id,
