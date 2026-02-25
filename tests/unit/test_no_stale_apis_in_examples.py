@@ -15,14 +15,15 @@ from pathlib import Path
 
 EXAMPLES_DIR: Path = Path(__file__).resolve().parent.parent.parent / "examples"
 
-# These are removed PUBLIC strategy names that should NOT appear in examples
-REMOVED_STRATEGIES: list[str] = [
+# Removed PUBLIC APIs that should NOT appear in examples
+REMOVED_API_PATTERNS: list[str] = [
     r"\bword_dp\b",
     r"\bctc_seg\b",
     r"\bctc_refine\b",
     r"\bWORD_DP\b",
     r"\bCTC_SEG\b",
     r"\bCTC_REFINE\b",
+    r"\brefine_low_confidence_zones_with_ctc\b",
 ]
 
 
@@ -30,7 +31,11 @@ def _discover_example_files() -> list[str]:
     """Dynamically discover all .py and .md files in the examples directory."""
     if not EXAMPLES_DIR.is_dir():
         return []
-    return sorted(p.name for p in EXAMPLES_DIR.iterdir() if p.suffix in (".py", ".md"))
+    return sorted(
+        str(p.relative_to(EXAMPLES_DIR))
+        for p in EXAMPLES_DIR.rglob("*")
+        if p.is_file() and p.suffix in (".py", ".md")
+    )
 
 
 class TestNoStaleApisInExamples:
@@ -49,7 +54,7 @@ class TestNoStaleApisInExamples:
         for filename in example_files:
             filepath = EXAMPLES_DIR / filename
             content = filepath.read_text()
-            for pattern in REMOVED_STRATEGIES:
+            for pattern in REMOVED_API_PATTERNS:
                 matches = list(re.finditer(pattern, content))
                 for match in matches:
                     line_num = content[: match.start()].count("\n") + 1
@@ -76,7 +81,12 @@ class TestNoStaleApisInExamples:
         found_strategies = set(re.findall(r'["\'](\w+)["\']', strategies_str))
 
         invalid = found_strategies - valid_strategies
+        missing = valid_strategies - found_strategies
         assert not invalid, (
             f"02_comparing_strategies.py contains invalid strategies: {invalid}. "
             f"Valid strategies are: {valid_strategies}"
+        )
+        assert not missing, (
+            f"02_comparing_strategies.py is missing strategies: {missing}. "
+            f"Expected exactly: {valid_strategies}"
         )
