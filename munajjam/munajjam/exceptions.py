@@ -96,4 +96,3 @@ class QuranDataError(MunajjamError):
 
     def __init__(self, message: str = "Failed to load Quran reference data.") -> None:
         super().__init__(message)
-

@@ -5,8 +5,8 @@ This module defines the interface that all transcriber implementations must foll
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
-from typing import AsyncIterator, Iterator
 
 from munajjam.models import Segment
 
@@ -71,9 +71,7 @@ class BaseTranscriber(ABC):
         segments = self.transcribe(audio_path)
         yield from segments
 
-    async def transcribe_stream_async(
-        self, audio_path: str | Path
-    ) -> AsyncIterator[Segment]:
+    async def transcribe_stream_async(self, audio_path: str | Path) -> AsyncIterator[Segment]:
         """
         Asynchronously transcribe and yield segments.
 
@@ -123,4 +121,3 @@ class BaseTranscriber(ABC):
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """Context manager exit - unloads the model."""
         self.unload()
-

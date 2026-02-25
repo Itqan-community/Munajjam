@@ -3,13 +3,13 @@ Audio segment data model.
 """
 
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
 
 class WordTimestamp(BaseModel):
     """Per-word timestamp from CTC/attention-based decoding (e.g. faster-whisper)."""
+
     word: str
     start: float
     end: float
@@ -69,7 +69,7 @@ class Segment(BaseModel):
         default=SegmentType.AYAH,
         description="Type of segment",
     )
-    confidence: Optional[float] = Field(
+    confidence: float | None = Field(
         default=None,
         description="Confidence score from transcription (0.0-1.0)",
         ge=0.0,
@@ -116,4 +116,3 @@ class Segment(BaseModel):
 
     def __str__(self) -> str:
         return f"Segment({self.start:.2f}s-{self.end:.2f}s, {self.type.value})"
-

@@ -79,9 +79,7 @@ def get_last_words(text: str, n: int = 1, normalize: bool = True) -> str:
     return " ".join(words[-n:]) if len(words) >= n else " ".join(words)
 
 
-def get_first_last_words(
-    text: str, n: int = 1, normalize: bool = True
-) -> tuple[str, str]:
+def get_first_last_words(text: str, n: int = 1, normalize: bool = True) -> tuple[str, str]:
     """
     Get both first n and last n words from text.
 
@@ -162,4 +160,3 @@ def check_boundary_match(
 
     sim = similarity(seg_words, ayah_words_str, normalize=False)  # Already normalized
     return sim >= threshold
-
