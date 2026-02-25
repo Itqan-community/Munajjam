@@ -1,8 +1,14 @@
 """Tests for the munajjam CLI entry point."""
 
 import pytest
-from unittest.mock import MagicMock
-from munajjam.cli import create_parser, main, _infer_surah_number, _format_results
+from unittest.mock import patch, MagicMock
+from munajjam.cli import (
+    create_parser,
+    main,
+    _infer_surah_number,
+    _format_results,
+    _validate_surah_number,
+)
 
 
 class TestCreateParser:
@@ -94,6 +100,41 @@ class TestCreateParser:
         with pytest.raises(SystemExit):
             parser.parse_args(["align", "001.mp3", "--format", "xml"])
 
+    def test_model_flag_removed(self):
+        """Ensure --model flag is no longer accepted."""
+        parser = create_parser()
+        with pytest.raises(SystemExit):
+            parser.parse_args(["align", "001.mp3", "--model", "some-model"])
+
+
+class TestValidateSurahNumber:
+    """Tests for surah number validation."""
+
+    def test_valid_surah_min(self):
+        _validate_surah_number(1)  # Should not raise
+
+    def test_valid_surah_max(self):
+        _validate_surah_number(114)  # Should not raise
+
+    def test_valid_surah_middle(self):
+        _validate_surah_number(36)  # Should not raise
+
+    def test_invalid_surah_zero(self):
+        with pytest.raises(ValueError, match="Invalid surah number: 0"):
+            _validate_surah_number(0)
+
+    def test_invalid_surah_negative(self):
+        with pytest.raises(ValueError, match="Invalid surah number: -1"):
+            _validate_surah_number(-1)
+
+    def test_invalid_surah_too_high(self):
+        with pytest.raises(ValueError, match="Invalid surah number: 200"):
+            _validate_surah_number(200)
+
+    def test_invalid_surah_115(self):
+        with pytest.raises(ValueError, match="Invalid surah number: 115"):
+            _validate_surah_number(115)
+
 
 class TestInferSurahNumber:
     """Tests for surah number inference from filenames."""
@@ -122,11 +163,22 @@ class TestInferSurahNumber:
         with pytest.raises(ValueError, match="Cannot infer surah number"):
             _infer_surah_number("000.mp3")
 
+    def test_filename_with_multiple_numbers(self):
+        """Regression: 'surah_1_v2.mp3' should infer surah 1, not 12."""
+        assert _infer_surah_number("surah_1_v2.mp3") == 1
+
+    def test_filename_reciter_prefix(self):
+        """Regression: 'reciter_3_v5.mp3' should infer surah 3, not 35."""
+        assert _infer_surah_number("reciter_3_v5.mp3") == 3
+
+    def test_filename_with_path(self):
+        assert _infer_surah_number("/path/to/audio/001.mp3") == 1
+
 
 class TestFormatResults:
     """Tests for result formatting."""
 
-    def _make_mock_result(self, ayah_num, start, end, text=""):
+    def _make_mock_result(self, ayah_num, start, end, text="بسم الله"):
         result = MagicMock()
         result.ayah.ayah_number = ayah_num
         result.ayah.text = text
@@ -144,17 +196,25 @@ class TestFormatResults:
         assert data[0]["ayah_number"] == 1
         assert data[0]["start_time"] == 5.62
         assert data[0]["end_time"] == 9.57
+        assert data[0]["text"] == "بسم الله"
 
-    def test_csv_format(self):
+    def test_json_format_preserves_arabic(self):
+        """Ensure Arabic text is not escaped in JSON output."""
+        results = [self._make_mock_result(1, 0.0, 1.0, "بسم الله")]
+        output = _format_results(results, "json")
+        assert "بسم الله" in output
+
+    def test_csv_format_includes_text(self):
+        """CSV format should include the text column."""
         results = [
-            self._make_mock_result(1, 5.62, 9.57),
-            self._make_mock_result(2, 10.51, 14.72),
+            self._make_mock_result(1, 5.62, 9.57, "بسم الله"),
+            self._make_mock_result(2, 10.51, 14.72, "الحمد لله"),
         ]
         output = _format_results(results, "csv")
         lines = output.strip().split("\n")
-        assert lines[0] == "ayah_number,start_time,end_time"
-        assert lines[1] == "1,5.62,9.57"
-        assert lines[2] == "2,10.51,14.72"
+        assert lines[0] == "ayah_number,start_time,end_time,text"
+        assert "5.62" in lines[1]
+        assert "بسم الله" in lines[1]
 
     def test_text_format(self):
         results = [self._make_mock_result(1, 5.62, 9.57)]
@@ -176,3 +236,39 @@ class TestMainFunction:
     def test_batch_missing_directory(self):
         result = main(["batch", "/nonexistent/dir"])
         assert result == 1
+
+    def test_align_invalid_surah_zero(self, capsys):
+        """Surah 0 should produce a clean error, not a traceback."""
+        result = main(["align", "nonexistent.mp3", "--surah", "0"])
+        assert result == 1
+
+    def test_align_invalid_surah_200(self, capsys):
+        """Surah 200 should produce a clean error, not a traceback."""
+        result = main(["align", "nonexistent.mp3", "--surah", "200"])
+        assert result == 1
+
+
+class TestWriteOutput:
+    """Tests for output writing."""
+
+    def test_write_to_stderr(self, capsys, tmp_path):
+        """Status message 'Results written to...' should go to stderr, not stdout."""
+        from munajjam.cli import _write_output
+
+        output_file = tmp_path / "output.json"
+        _write_output("test content", str(output_file))
+
+        captured = capsys.readouterr()
+        # stdout should be empty
+        assert captured.out == ""
+        # stderr should contain the status message
+        assert "Results written to" in captured.err
+
+    def test_write_to_stdout(self, capsys):
+        """When no output path, content should go to stdout."""
+        from munajjam.cli import _write_output
+
+        _write_output("test content", None)
+
+        captured = capsys.readouterr()
+        assert "test content" in captured.out
