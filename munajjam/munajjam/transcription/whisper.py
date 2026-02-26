@@ -14,9 +14,11 @@ from munajjam.exceptions import TranscriptionError, ModelNotLoadedError, AudioFi
 from munajjam.models import Segment, SegmentType, WordTimestamp
 from munajjam.transcription.base import BaseTranscriber
 from munajjam.transcription.silence import (
+    AdaptiveSilenceConfig,
     detect_non_silent_chunks,
-    load_audio_waveform,
+    detect_non_silent_chunks_adaptive,
     extract_segment_audio,
+    load_audio_waveform,
 )
 
 
@@ -196,13 +198,20 @@ class WhisperTranscriber(BaseTranscriber):
         self,
         audio_path: str | Path,
         progress_callback: Callable[[int, int, str], None] | None = None,
+        expected_ayah_count: int | None = None,
     ) -> list[Segment]:
         """
         Transcribe an audio file to segments.
 
         Args:
             audio_path: Path to the audio file (WAV)
-            progress_callback: Optional callback function(current, total, text) for progress updates
+            progress_callback: Optional callback function(current, total, text)
+                for progress updates
+            expected_ayah_count: If provided (and settings.adaptive_silence_enabled
+                is True), adaptive silence detection is used. The detector retries
+                with progressively relaxed thresholds until at least
+                settings.adaptive_silence_min_ratio * expected_ayah_count chunks
+                are found.
 
         Returns:
             List of transcribed Segment objects
@@ -217,12 +226,32 @@ class WhisperTranscriber(BaseTranscriber):
         # Extract surah ID from filename
         surah_id = int(audio_path.stem)
 
-        # Detect non-silent chunks
-        chunks = detect_non_silent_chunks(
-            audio_path,
-            min_silence_len=self._settings.min_silence_ms,
-            silence_thresh=self._settings.silence_threshold_db,
-        )
+        # Detect non-silent chunks, with optional adaptive retry
+        if (
+            expected_ayah_count is not None
+            and self._settings.adaptive_silence_enabled
+        ):
+            _defaults = AdaptiveSilenceConfig()
+            adaptive_cfg = AdaptiveSilenceConfig(
+                min_chunks_ratio=self._settings.adaptive_silence_min_ratio,
+                thresh_steps=_defaults.thresh_steps[
+                    : self._settings.adaptive_silence_max_steps
+                ],
+                len_steps=_defaults.len_steps[
+                    : self._settings.adaptive_silence_max_steps
+                ],
+            )
+            chunks, _step = detect_non_silent_chunks_adaptive(
+                audio_path,
+                expected_ayah_count=expected_ayah_count,
+                config=adaptive_cfg,
+            )
+        else:
+            chunks = detect_non_silent_chunks(
+                audio_path,
+                min_silence_len=self._settings.min_silence_ms,
+                silence_thresh=self._settings.silence_threshold_db,
+            )
 
         # Load audio waveform
         waveform, sr = load_audio_waveform(
