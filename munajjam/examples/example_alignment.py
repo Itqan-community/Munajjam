@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Test script for Munajjam library.
+Example script for Munajjam library.
 
 Usage:
-    python test_alignment.py <audio_path> <surah_id>
+    python example_alignment.py <audio_path> <surah_id>
 
 Examples:
-    python test_alignment.py ../Quran/badr_alturki_audio/114.wav 114
-    python test_alignment.py ../Quran/badr_alturki_audio/001.wav 1
+    python example_alignment.py ../Quran/badr_alturki_audio/114.wav 114
+    python example_alignment.py ../Quran/badr_alturki_audio/001.wav 1
 """
 
 import json
@@ -25,8 +25,8 @@ from munajjam.transcription import WhisperTranscriber
 from munajjam.transcription.silence import detect_silences
 
 
-def test_with_transcription(audio_path: str, surah_id: int):
-    """Full test: transcribe audio and align."""
+def run_with_transcription(audio_path: str, surah_id: int):
+    """Full example: transcribe audio and align."""
 
     print("=" * 60)
     print(f"🧪 TESTING MUNAJJAM - SURAH {surah_id}")
@@ -55,8 +55,10 @@ def test_with_transcription(audio_path: str, surah_id: int):
     transcriber.load()
     print("   Model loaded.")
 
-    segments = transcriber.transcribe(audio_path)
-    transcriber.unload()
+    try:
+        segments = transcriber.transcribe(audio_path)
+    finally:
+        transcriber.unload()
 
     transcribe_time = time.time() - start
     print(f"   Transcribed {len(segments)} segments in {transcribe_time:.2f}s")
@@ -136,8 +138,8 @@ def test_with_transcription(audio_path: str, surah_id: int):
     print("=" * 60)
 
 
-def test_with_existing_segments(surah_id: int):
-    """Test alignment using existing segment data (skip transcription)."""
+def run_with_existing_segments(surah_id: int, audio_path: str | None = None):
+    """Example: alignment using existing segment data (skip transcription)."""
 
     print("=" * 60)
     print(f"🧪 TESTING ALIGNMENT ONLY - SURAH {surah_id}")
@@ -149,7 +151,7 @@ def test_with_existing_segments(surah_id: int):
 
     if not segments_file.exists():
         print(f"❌ Segments file not found: {segments_file}")
-        print("   Run transcription first or use test_with_transcription()")
+        print("   Run transcription first or use run_with_transcription()")
         return
 
     print(f"\n📂 Loading existing segments from: {segments_file}")
@@ -201,6 +203,9 @@ def test_with_existing_segments(surah_id: int):
     print(f"   Loaded {len(ayahs)} ayahs")
 
     # Align
+    if audio_path is None:
+        audio_path = f"../../Quran/badr_alturki_audio/{surah_id:03d}.wav"
+
     print("\n🔗 Aligning...")
     start = time.time()
     aligner = Aligner(audio_path=audio_path)
@@ -214,7 +219,9 @@ def test_with_existing_segments(surah_id: int):
     for result in results[:10]:
         conf = "✅" if result.is_high_confidence else "⚠️"
         print(
-            f"{conf} Ayah {result.ayah.ayah_number}: {result.start_time:.2f}s - {result.end_time:.2f}s (score: {result.similarity_score:.2f})"
+            f"{conf} Ayah {result.ayah.ayah_number}: "
+            f"{result.start_time:.2f}s - {result.end_time:.2f}s "
+            f"(score: {result.similarity_score:.2f})"
         )
 
     if len(results) > 10:
@@ -246,8 +253,8 @@ def test_with_existing_segments(surah_id: int):
     print("\n" + "=" * 60)
 
 
-def test_core_functions():
-    """Test core functions without audio."""
+def run_core_functions():
+    """Example: core functions without audio."""
 
     print("=" * 60)
     print("🧪 TESTING CORE FUNCTIONS")
@@ -284,40 +291,48 @@ def test_core_functions():
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Munajjam Test Script")
+        print("Munajjam Example Script")
         print()
         print("Usage:")
-        print("  python test_alignment.py <audio_path> <surah_id>  # Full test with transcription")
-        print("  python test_alignment.py --existing <surah_id>    # Test with existing segments")
-        print("  python test_alignment.py --core                   # Test core functions only")
+        print(
+            "  python example_alignment.py <audio_path> <surah_id>  # Full test with transcription"
+        )
+        print(
+            "  python example_alignment.py --existing <surah_id>    # Test with existing segments"
+        )
+        print("  python example_alignment.py --core                   # Test core functions only")
         print()
         print("Examples:")
         print(
-            "  python test_alignment.py ../../Quran/badr_alturki_audio/001.wav 1   # Al-Fatiha (7 ayahs)"
+            "  python example_alignment.py ../../Quran/badr_alturki_audio/001.wav 1"
+            "   # Al-Fatiha (7 ayahs)"
         )
         print(
-            "  python test_alignment.py ../../Quran/badr_alturki_audio/062.wav 62  # Al-Jumu'ah (11 ayahs)"
+            "  python example_alignment.py ../../Quran/badr_alturki_audio/062.wav 62"
+            "  # Al-Jumu'ah (11 ayahs)"
         )
         print(
-            "  python test_alignment.py --existing 67                               # Use existing data"
+            "  python example_alignment.py --existing 67"
+            "                               # Use existing data"
         )
         print(
-            "  python test_alignment.py --core                                      # Test core only"
+            "  python example_alignment.py --core"
+            "                                      # Test core only"
         )
         sys.exit(0)
 
     if sys.argv[1] == "--core":
-        test_core_functions()
+        run_core_functions()
     elif sys.argv[1] == "--existing":
         if len(sys.argv) < 3:
-            print("Usage: python test_alignment.py --existing <surah_id>")
+            print("Usage: python example_alignment.py --existing <surah_id>")
             sys.exit(1)
         surah_id = int(sys.argv[2])
-        test_with_existing_segments(surah_id)
+        run_with_existing_segments(surah_id)
     else:
         if len(sys.argv) < 3:
-            print("Usage: python test_alignment.py <audio_path> <surah_id>")
+            print("Usage: python example_alignment.py <audio_path> <surah_id>")
             sys.exit(1)
         audio_path = sys.argv[1]
         surah_id = int(sys.argv[2])
-        test_with_transcription(audio_path, surah_id)
+        run_with_transcription(audio_path, surah_id)
