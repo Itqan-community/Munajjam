@@ -1,0 +1,10 @@
+{
+  "name": "sample_benchmark",
+  "audio_dir": "./test_audio",
+  "ground_truth_file": "./sample_ground_truth.json",
+  "output_dir": "./benchmark_output",
+  "strategy": "hybrid",
+  "fix_drift": true,
+  "fix_overlaps": true,
+  "quality_threshold": 0.85
+}
