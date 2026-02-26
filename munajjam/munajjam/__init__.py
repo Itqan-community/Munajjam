@@ -36,6 +36,11 @@ from munajjam.exceptions import (
     ModelNotLoadedError,
     QuranDataError,
 )
+from munajjam.output import (
+    AlignmentOutput,
+    FormattedAyahResult,
+    format_alignment_results,
+)
 
 __version__ = "2.0.0a1"
 __all__ = [
@@ -47,6 +52,10 @@ __all__ = [
     "SegmentType",
     "Surah",
     "AlignmentResult",
+    # Output Formatters
+    "AlignmentOutput",
+    "FormattedAyahResult",
+    "format_alignment_results",
     # Config
     "MunajjamSettings",
     "get_settings",

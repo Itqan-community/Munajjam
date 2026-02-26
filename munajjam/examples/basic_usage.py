@@ -4,7 +4,7 @@ Basic usage example for Munajjam library.
 This example demonstrates the core workflow:
 1. Transcribe audio to segments
 2. Align segments to ayahs
-3. Output results as JSON
+3. Output results as JSON using the standardized formatter
 """
 
 import json
@@ -14,6 +14,7 @@ from pathlib import Path
 from munajjam.transcription import WhisperTranscriber
 from munajjam.core import align
 from munajjam.data import load_surah_ayahs
+from munajjam.output import format_alignment_results
 
 
 def process_surah(audio_path: str, surah_id: int, reciter: str = "Unknown"):
@@ -26,7 +27,7 @@ def process_surah(audio_path: str, surah_id: int, reciter: str = "Unknown"):
         reciter: Name of the reciter
     
     Returns:
-        List of alignment results as dictionaries
+        AlignmentOutput object with formatted results
     """
     print(f"Processing Surah {surah_id} from {audio_path}")
     print("=" * 50)
@@ -66,31 +67,28 @@ def process_surah(audio_path: str, surah_id: int, reciter: str = "Unknown"):
     if len(results) > 5:
         print(f"   ... and {len(results) - 5} more")
     
-    # Step 4: Create output
-    print("\n📄 Step 4: Creating JSON output...")
+    # Step 4: Create standardized output using the formatter
+    print("\n📄 Step 4: Creating standardized JSON output...")
     
-    output = []
-    for result in results:
-        output.append({
-            "id": result.ayah.ayah_number,
-            "sura_id": result.ayah.surah_id,
-            "ayah_index": result.ayah.ayah_number - 1,
-            "start": round(result.start_time, 2),
-            "end": round(result.end_time, 2),
-            "transcribed_text": result.transcribed_text,
-            "corrected_text": result.ayah.text,
-            "similarity_score": round(result.similarity_score, 3),
-        })
+    output = format_alignment_results(
+        results=results,
+        surah_id=surah_id,
+        reciter=reciter,
+    )
+    
+    print(f"   ✅ Formatted {output.total_ayahs} ayahs")
+    print(f"   📈 Average similarity: {output.avg_similarity:.3f}")
+    print(f"   🎯 High confidence: {output.high_confidence_count}/{output.total_ayahs}")
     
     return output
 
 
-def save_to_json(output: list, output_path: str):
+def save_to_json(output, output_path: str):
     """Save output to JSON file."""
     print(f"\n💾 Saving to: {output_path}")
     
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
+        f.write(output.to_json(indent=2))
     
     print("   ✅ Saved successfully!")
 
