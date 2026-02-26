@@ -1,17 +1,15 @@
 """
 Comparing Alignment Strategies
 
-This example demonstrates the differences between the six alignment strategies:
+This example demonstrates the differences between the four alignment strategies:
 - Greedy: Fast, simple linear matching
 - DP: Optimal alignment using dynamic programming
 - Hybrid: DP with greedy fallback
-- Word-level DP: Sub-segment precision using per-word timestamps
-- CTC Segmentation: Acoustic-based alignment (requires audio_path)
 - Auto: Automatically picks the best strategy (recommended)
 """
 
 from munajjam.transcription import WhisperTranscriber
-from munajjam.core import Aligner, AlignmentStrategy
+from munajjam.core import Aligner
 from munajjam.data import load_surah_ayahs
 import time
 
@@ -35,14 +33,14 @@ def align_with_strategy(segments, ayahs, strategy_name, audio_path):
     high_confidence = len([r for r in results if r.is_high_confidence])
     overlaps = sum(r.overlap_detected for r in results)
 
-    print(f"\nResults:")
+    print("\nResults:")
     print(f"  Time taken: {elapsed:.3f} seconds")
     print(f"  Average similarity: {avg_similarity:.2%}")
     print(f"  High confidence: {high_confidence}/{len(results)} ({high_confidence/len(results):.1%})")
     print(f"  Overlaps detected: {overlaps}")
 
     # Show first 5 results as sample
-    print(f"\n  First 5 ayahs:")
+    print("\n  First 5 ayahs:")
     for result in results[:5]:
         print(f"    Ayah {result.ayah.ayah_number:3d}: "
               f"{result.start_time:6.2f}s - {result.end_time:6.2f}s "
@@ -71,7 +69,7 @@ def main():
     print(f"Loaded {len(ayahs)} ayahs")
 
     # Step 3: Test each strategy
-    strategies = ["greedy", "dp", "hybrid", "word_dp"]
+    strategies = ["greedy", "dp", "hybrid", "auto"]
     results_map = {}
 
     for strategy in strategies:
@@ -81,18 +79,6 @@ def main():
             "time": elapsed,
             "avg_similarity": avg_sim
         }
-
-    # Step 3b: Test CTC segmentation (requires torchaudio)
-    try:
-        results, elapsed, avg_sim = align_with_strategy(segments, ayahs, "ctc_seg", audio_path=audio_path)
-        results_map["ctc_seg"] = {
-            "results": results,
-            "time": elapsed,
-            "avg_similarity": avg_sim
-        }
-        strategies.append("ctc_seg")
-    except Exception as e:
-        print(f"\nSkipping CTC segmentation: {e}")
 
     # Step 4: Compare results
     print(f"\n{'=' * 80}")
@@ -124,19 +110,14 @@ For most use cases:
   • Use AUTO strategy (recommended) - Automatically picks the best approach
   • Includes automatic drift correction, overlap fixing, and zone realignment
 
-For word-level precision:
-  • Use WORD_DP strategy - Sub-segment alignment using per-word timestamps
-  • Best when faster-whisper provides word-level timing
-
-For acoustic alignment:
-  • Use CTC_SEG strategy - Frame-accurate boundaries from audio signal
-  • Requires audio_path and torchaudio
-
 For simple recordings:
   • Use GREEDY strategy - Fast and sufficient for 1:1 segment-to-ayah mapping
 
-For legacy workflows:
-  • HYBRID or DP strategies remain available for backward compatibility
+For optimal alignment:
+  • Use DP strategy - Dynamic programming for best quality
+
+For balanced approach:
+  • Use HYBRID strategy - DP with greedy fallback for reliability
     """)
 
 

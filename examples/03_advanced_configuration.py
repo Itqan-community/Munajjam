@@ -5,7 +5,7 @@ This example demonstrates advanced usage:
 - Custom configuration settings
 - Silence detection and usage
 - Progress tracking
-- CTC refinement and energy snap
+- Energy snap for precise boundaries
 - Detailed result inspection
 """
 
@@ -85,7 +85,6 @@ def main():
         quality_threshold=0.85,  # Threshold for high-quality alignment
         fix_drift=True,          # Enable zone realignment
         fix_overlaps=True,       # Fix overlapping ayahs
-        ctc_refine=True,         # Refine boundaries with CTC forced alignment (default)
         energy_snap=True,        # Snap boundaries to energy minima (default)
     )
 
@@ -119,7 +118,7 @@ def main():
     fair = [r for r in results if 0.70 <= r.similarity_score < 0.85]
     poor = [r for r in results if r.similarity_score < 0.70]
 
-    print(f"\nQuality Distribution:")
+    print("\nQuality Distribution:")
     print(f"  Excellent (≥95%): {len(excellent)} ayahs")
     print(f"  Good (85-95%): {len(good)} ayahs")
     print(f"  Fair (70-85%): {len(fair)} ayahs")
@@ -134,7 +133,7 @@ def main():
 
     # Show poor quality ayahs for investigation
     if poor:
-        print(f"\nPoor quality ayahs (need review):")
+        print("\nPoor quality ayahs (need review):")
         for r in poor:
             print(f"  Ayah {r.ayah.ayah_number}: {r.similarity_score:.2%}")
             print(f"    Expected: {r.ayah.text[:50]}...")
