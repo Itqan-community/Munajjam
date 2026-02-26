@@ -64,6 +64,37 @@ class MunajjamSettings(BaseSettings):
         le=2000,
     )
 
+    # ============ Adaptive Silence Detection ============
+
+    adaptive_silence_enabled: bool = Field(
+        default=False,
+        description=(
+            "Enable adaptive silence detection retry. When True and "
+            "expected_ayah_count is provided to transcribe(), thresholds "
+            "are automatically relaxed if too few chunks are detected."
+        ),
+    )
+
+    adaptive_silence_min_ratio: float = Field(
+        default=0.5,
+        description=(
+            "Minimum ratio of chunks to expected ayahs before retrying. "
+            "Only used when adaptive_silence_enabled=True."
+        ),
+        ge=0.1,
+        le=1.0,
+    )
+
+    adaptive_silence_max_steps: int = Field(
+        default=4,
+        description=(
+            "Maximum number of relaxation steps to attempt. "
+            "Capped at the length of the default step sequences (5)."
+        ),
+        ge=1,
+        le=5,
+    )
+
     sample_rate: int = Field(
         default=16000,
         description="Audio sample rate for processing",

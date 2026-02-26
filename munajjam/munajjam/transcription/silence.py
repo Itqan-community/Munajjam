@@ -5,7 +5,58 @@ Provides both pydub (accurate) and librosa (fast) implementations.
 Use the fast implementation for long files (>5 minutes).
 """
 
+import logging
+from dataclasses import dataclass, field
 from pathlib import Path
+
+_log = logging.getLogger(__name__)
+
+
+@dataclass
+class AdaptiveSilenceConfig:
+    """Configuration for adaptive silence detection retry logic.
+
+    When detect_non_silent_chunks_adaptive() produces fewer chunks than
+    min_chunks_ratio * expected_ayah_count, it retries with progressively
+    relaxed thresholds until either the chunk count is sufficient or all
+    retry steps are exhausted.
+
+    Attributes:
+        min_chunks_ratio: Fraction of expected_ayah_count that constitutes
+            "enough" chunks. E.g. 0.5 means at least half as many chunks
+            as ayahs must be found before retrying stops.
+        thresh_steps: Sequence of dB values to try for silence_thresh,
+            applied in order (most strict first, most relaxed last).
+            More negative = less audio classified as silent = more chunks.
+        len_steps: Sequence of ms values to try for min_silence_len,
+            applied in order (most strict first, most relaxed last).
+            Shorter = easier to split = more chunks.
+        use_fast: Whether to use the fast librosa backend.
+    """
+
+    min_chunks_ratio: float = 0.5
+    thresh_steps: list[int] = field(
+        default_factory=lambda: [-30, -35, -40, -45, -50]
+    )
+    len_steps: list[int] = field(
+        default_factory=lambda: [300, 200, 150, 100, 50]
+    )
+    use_fast: bool = True
+
+    def __post_init__(self) -> None:
+        if not (0.0 < self.min_chunks_ratio <= 1.0):
+            raise ValueError(
+                f"min_chunks_ratio must be in (0, 1], got {self.min_chunks_ratio}"
+            )
+        if not self.thresh_steps or not self.len_steps:
+            raise ValueError(
+                "thresh_steps and len_steps must be non-empty"
+            )
+        if len(self.thresh_steps) != len(self.len_steps):
+            raise ValueError(
+                "thresh_steps and len_steps must have the same length, "
+                f"got {len(self.thresh_steps)} and {len(self.len_steps)}"
+            )
 
 
 def detect_silences(
@@ -151,6 +202,71 @@ def detect_non_silent_chunks(
             pass  # Fallback to pydub
     
     return _detect_non_silent_pydub(audio_path, min_silence_len, silence_thresh)
+
+
+def detect_non_silent_chunks_adaptive(
+    audio_path: str | Path,
+    expected_ayah_count: int,
+    config: AdaptiveSilenceConfig | None = None,
+) -> tuple[list[tuple[int, int]], int]:
+    """Detect non-silent chunks with adaptive threshold retry.
+
+    When the initial pass produces too few chunks relative to the expected
+    ayah count, automatically retries with progressively relaxed thresholds.
+
+    Args:
+        audio_path: Path to the audio file.
+        expected_ayah_count: Number of ayahs expected in the audio.
+            Used to determine whether the current chunk count is sufficient.
+        config: AdaptiveSilenceConfig controlling retry behaviour.
+            Defaults to AdaptiveSilenceConfig() if not provided.
+
+    Returns:
+        Tuple of:
+            - List of (start_ms, end_ms) tuples for non-silent portions
+            - int: index of the retry step used (0 = first attempt)
+
+    Raises:
+        ValueError: If expected_ayah_count < 1, or step lists are
+            empty or mismatched in length.
+    """
+    if expected_ayah_count < 1:
+        raise ValueError(
+            f"expected_ayah_count must be >= 1, got {expected_ayah_count}"
+        )
+
+    if config is None:
+        config = AdaptiveSilenceConfig()
+
+    min_chunks = max(1, round(config.min_chunks_ratio * expected_ayah_count))
+
+    chunks: list[tuple[int, int]] = []
+    steps_used = 0
+
+    for step_idx, (thresh, min_len) in enumerate(
+        zip(config.thresh_steps, config.len_steps)
+    ):
+        chunks = detect_non_silent_chunks(
+            audio_path,
+            min_silence_len=min_len,
+            silence_thresh=thresh,
+            use_fast=config.use_fast,
+        )
+        steps_used = step_idx
+        if len(chunks) >= min_chunks:
+            return chunks, steps_used
+
+    # All steps exhausted — return the last result
+    _log.warning(
+        "Adaptive silence detection exhausted all %d steps. "
+        "Got %d chunks, needed %d (expected_ayah_count=%d, ratio=%.2f).",
+        len(config.thresh_steps),
+        len(chunks),
+        min_chunks,
+        expected_ayah_count,
+        config.min_chunks_ratio,
+    )
+    return chunks, steps_used
 
 
 def _detect_non_silent_pydub(
