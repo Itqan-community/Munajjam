@@ -11,7 +11,7 @@ This example demonstrates the differences between the six alignment strategies:
 """
 
 from munajjam.transcription import WhisperTranscriber
-from munajjam.core import Aligner, AlignmentStrategy
+from munajjam.core import Aligner
 from munajjam.data import load_surah_ayahs
 import time
 
@@ -20,7 +20,7 @@ def align_with_strategy(segments, ayahs, strategy_name, audio_path):
     """Align segments using the specified strategy and measure time."""
     print(f"\n{'=' * 80}")
     print(f"Testing {strategy_name.upper()} Strategy")
-    print('=' * 80)
+    print("=" * 80)
 
     start_time = time.time()
 
@@ -35,18 +35,22 @@ def align_with_strategy(segments, ayahs, strategy_name, audio_path):
     high_confidence = len([r for r in results if r.is_high_confidence])
     overlaps = sum(r.overlap_detected for r in results)
 
-    print(f"\nResults:")
+    print("\nResults:")
     print(f"  Time taken: {elapsed:.3f} seconds")
     print(f"  Average similarity: {avg_similarity:.2%}")
-    print(f"  High confidence: {high_confidence}/{len(results)} ({high_confidence/len(results):.1%})")
+    print(
+        f"  High confidence: {high_confidence}/{len(results)} ({high_confidence / len(results):.1%})"
+    )
     print(f"  Overlaps detected: {overlaps}")
 
     # Show first 5 results as sample
-    print(f"\n  First 5 ayahs:")
+    print("\n  First 5 ayahs:")
     for result in results[:5]:
-        print(f"    Ayah {result.ayah.ayah_number:3d}: "
-              f"{result.start_time:6.2f}s - {result.end_time:6.2f}s "
-              f"(sim: {result.similarity_score:.2%})")
+        print(
+            f"    Ayah {result.ayah.ayah_number:3d}: "
+            f"{result.start_time:6.2f}s - {result.end_time:6.2f}s "
+            f"(sim: {result.similarity_score:.2%})"
+        )
 
     return results, elapsed, avg_similarity
 
@@ -75,20 +79,24 @@ def main():
     results_map = {}
 
     for strategy in strategies:
-        results, elapsed, avg_sim = align_with_strategy(segments, ayahs, strategy, audio_path)
+        results, elapsed, avg_sim = align_with_strategy(
+            segments, ayahs, strategy, audio_path
+        )
         results_map[strategy] = {
             "results": results,
             "time": elapsed,
-            "avg_similarity": avg_sim
+            "avg_similarity": avg_sim,
         }
 
     # Step 3b: Test CTC segmentation (requires torchaudio)
     try:
-        results, elapsed, avg_sim = align_with_strategy(segments, ayahs, "ctc_seg", audio_path=audio_path)
+        results, elapsed, avg_sim = align_with_strategy(
+            segments, ayahs, "ctc_seg", audio_path=audio_path
+        )
         results_map["ctc_seg"] = {
             "results": results,
             "time": elapsed,
-            "avg_similarity": avg_sim
+            "avg_similarity": avg_sim,
         }
         strategies.append("ctc_seg")
     except Exception as e:
@@ -97,7 +105,7 @@ def main():
     # Step 4: Compare results
     print(f"\n{'=' * 80}")
     print("COMPARISON SUMMARY")
-    print('=' * 80)
+    print("=" * 80)
     print(f"\n{'Strategy':<12} {'Time (s)':<12} {'Avg Similarity':<16} {'Winner'}")
     print("-" * 80)
 
@@ -113,12 +121,14 @@ def main():
         if strategy == most_accurate:
             winner.append("Most Accurate")
 
-        print(f"{strategy:<12} {data['time']:<12.3f} {data['avg_similarity']:<16.2%} {', '.join(winner)}")
+        print(
+            f"{strategy:<12} {data['time']:<12.3f} {data['avg_similarity']:<16.2%} {', '.join(winner)}"
+        )
 
     # Step 5: Recommendations
     print(f"\n{'=' * 80}")
     print("RECOMMENDATIONS")
-    print('=' * 80)
+    print("=" * 80)
     print("""
 For most use cases:
   • Use AUTO strategy (recommended) - Automatically picks the best approach

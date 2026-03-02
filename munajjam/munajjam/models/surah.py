@@ -2,10 +2,7 @@
 Surah metadata model.
 """
 
-from typing import Optional
-
 from pydantic import BaseModel, Field
-
 
 # Surah names in Arabic
 SURAH_NAMES: dict[int, str] = {
@@ -266,7 +263,7 @@ class Surah(BaseModel):
         ...,
         description="Arabic name of the surah",
     )
-    name_english: Optional[str] = Field(
+    name_english: str | None = Field(
         default=None,
         description="English transliteration of the surah name",
     )
@@ -275,7 +272,7 @@ class Surah(BaseModel):
         description="Total number of ayahs in this surah",
         ge=1,
     )
-    revelation_type: Optional[str] = Field(
+    revelation_type: str | None = Field(
         default=None,
         description="Revelation type: 'makki' or 'madani'",
     )
@@ -316,4 +313,3 @@ class Surah(BaseModel):
 
     def __str__(self) -> str:
         return f"Surah {self.id}: {self.name_arabic}"
-

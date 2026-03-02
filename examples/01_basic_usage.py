@@ -42,9 +42,11 @@ def main():
     print("Results:")
     print("-" * 80)
     for result in results:
-        print(f"Ayah {result.ayah.ayah_number:3d}: "
-              f"{result.start_time:6.2f}s - {result.end_time:6.2f}s "
-              f"(similarity: {result.similarity_score:.2%})")
+        print(
+            f"Ayah {result.ayah.ayah_number:3d}: "
+            f"{result.start_time:6.2f}s - {result.end_time:6.2f}s "
+            f"(similarity: {result.similarity_score:.2%})"
+        )
 
     # Step 5: Check alignment quality
     print("\n" + "=" * 80)
@@ -56,7 +58,9 @@ def main():
     avg_similarity = sum(r.similarity_score for r in results) / len(results)
 
     print(f"Average similarity: {avg_similarity:.2%}")
-    print(f"High confidence ayahs: {len(high_quality)}/{len(results)} ({len(high_quality)/len(results):.1%})")
+    print(
+        f"High confidence ayahs: {len(high_quality)}/{len(results)} ({len(high_quality) / len(results):.1%})"
+    )
     print(f"Low confidence ayahs: {len(low_quality)}/{len(results)}")
 
     if low_quality:

@@ -9,11 +9,14 @@ from munajjam.data import load_surah_ayahs, get_surah_name, get_ayah_count
 class TestLoadSurahAyahs:
     """Test loading of surah ayahs from CSV."""
 
-    @pytest.mark.parametrize("surah_id,expected_count", [
-        (1, 7),      # Al-Fatiha
-        (2, 286),    # Al-Baqarah
-        (114, 6),    # An-Nas
-    ])
+    @pytest.mark.parametrize(
+        "surah_id,expected_count",
+        [
+            (1, 7),  # Al-Fatiha
+            (2, 286),  # Al-Baqarah
+            (114, 6),  # An-Nas
+        ],
+    )
     def test_load_surah(self, surah_id, expected_count):
         """Test loading surah ayahs."""
         ayahs = load_surah_ayahs(surah_id)
@@ -42,11 +45,14 @@ class TestLoadSurahAyahs:
 class TestGetSurahName:
     """Test getting surah names."""
 
-    @pytest.mark.parametrize("surah_id,possible_names", [
-        (1, ["الفاتحة", "Fatiha", "Fātihah"]),
-        (2, ["البقرة", "Baqarah"]),
-        (114, ["الناس", "Nas"]),
-    ])
+    @pytest.mark.parametrize(
+        "surah_id,possible_names",
+        [
+            (1, ["الفاتحة", "Fatiha", "Fātihah"]),
+            (2, ["البقرة", "Baqarah"]),
+            (114, ["الناس", "Nas"]),
+        ],
+    )
     def test_get_surah_name(self, surah_id, possible_names):
         """Test getting surah names."""
         name = get_surah_name(surah_id)
@@ -61,11 +67,14 @@ class TestGetSurahName:
 class TestGetAyahCount:
     """Test getting ayah counts for surahs."""
 
-    @pytest.mark.parametrize("surah_id,expected_count", [
-        (1, 7),
-        (2, 286),
-        (114, 6),
-    ])
+    @pytest.mark.parametrize(
+        "surah_id,expected_count",
+        [
+            (1, 7),
+            (2, 286),
+            (114, 6),
+        ],
+    )
     def test_get_ayah_count(self, surah_id, expected_count):
         """Test ayah count for various surahs."""
         assert get_ayah_count(surah_id) == expected_count

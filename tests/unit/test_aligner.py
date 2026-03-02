@@ -48,9 +48,9 @@ class TestAligner:
         assert len(results) > 0
 
         for result in results:
-            assert hasattr(result, 'ayah')
-            assert hasattr(result, 'start_time')
-            assert hasattr(result, 'end_time')
+            assert hasattr(result, "ayah")
+            assert hasattr(result, "start_time")
+            assert hasattr(result, "end_time")
             assert 0.0 <= result.similarity_score <= 1.0
             assert result.start_time >= 0
             assert result.end_time > result.start_time
@@ -58,7 +58,9 @@ class TestAligner:
     def test_align_with_silences(self, sample_segments, sample_ayahs, sample_silences):
         """Test alignment with silence detection."""
         aligner = Aligner(DUMMY_AUDIO, strategy="hybrid", energy_snap=False)
-        results = aligner.align(sample_segments, sample_ayahs, silences_ms=sample_silences)
+        results = aligner.align(
+            sample_segments, sample_ayahs, silences_ms=sample_silences
+        )
 
         assert isinstance(results, list)
         assert len(results) > 0
@@ -78,7 +80,9 @@ class TestAligner:
 
     def test_high_confidence_threshold(self, sample_segments, sample_ayahs):
         """Test custom quality threshold."""
-        aligner = Aligner(DUMMY_AUDIO, strategy="hybrid", quality_threshold=0.85, energy_snap=False)
+        aligner = Aligner(
+            DUMMY_AUDIO, strategy="hybrid", quality_threshold=0.85, energy_snap=False
+        )
         results = aligner.align(sample_segments, sample_ayahs)
 
         for result in results:
