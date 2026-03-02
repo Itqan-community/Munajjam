@@ -63,6 +63,9 @@ all = [
     "munajjam[faster-whisper,dev]",
 ]
 
+[project.scripts]
+munajjam = "munajjam.cli:cli"
+
 [project.urls]
 Homepage = "https://github.com/abdullahmosaibah/munajjam"
 Documentation = "https://github.com/abdullahmosaibah/munajjam#readme"
