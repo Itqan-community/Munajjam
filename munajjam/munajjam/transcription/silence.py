@@ -243,6 +243,150 @@ def _detect_non_silent_fast(
     return chunks if chunks else [(0, duration_ms)]
 
 
+def detect_non_silent_chunks_adaptive(
+    audio_path: str | Path,
+    expected_chunks: int,
+    min_silence_len: int = 300,
+    silence_thresh: int = -30,
+    max_retries: int = 3,
+    min_chunk_ratio: float = 0.5,
+    silence_len_step: int = 50,
+    silence_thresh_step: int = 5,
+    use_fast: bool = True,
+) -> tuple[list[tuple[int, int]], dict]:
+    """
+    Adaptive non-silent chunk detection with progressive threshold relaxation.
+
+    When initial detection produces too few chunks relative to ``expected_chunks``,
+    automatically retries with relaxed thresholds until enough chunks are found
+    or ``max_retries`` is exhausted.
+
+    Args:
+        audio_path: Path to audio file.
+        expected_chunks: Expected number of non-silent chunks (e.g. ayah count).
+        min_silence_len: Initial minimum silence duration in ms.
+        silence_thresh: Initial silence threshold in dB.
+        max_retries: Maximum number of retry attempts with relaxed thresholds.
+        min_chunk_ratio: Accept result when chunks >= expected_chunks * min_chunk_ratio.
+        silence_len_step: Amount to decrease min_silence_len per retry (ms).
+        silence_thresh_step: Amount to increase silence_thresh per retry (dB).
+        use_fast: Use fast librosa-based detection.
+
+    Returns:
+        Tuple of (chunks_list, metadata_dict).
+        metadata contains: retries_used, final_silence_thresh, final_min_silence_len,
+        chunk_count.
+    """
+    current_thresh = silence_thresh
+    current_min_len = min_silence_len
+    target = max(1, int(expected_chunks * min_chunk_ratio))
+    best_chunks: list[tuple[int, int]] = []
+    best_count = 0
+
+    for attempt in range(1 + max_retries):
+        chunks = detect_non_silent_chunks(
+            audio_path,
+            min_silence_len=current_min_len,
+            silence_thresh=current_thresh,
+            use_fast=use_fast,
+        )
+
+        if len(chunks) > best_count:
+            best_chunks = chunks
+            best_count = len(chunks)
+
+        if len(chunks) >= target:
+            return chunks, {
+                "retries_used": attempt,
+                "final_silence_thresh": current_thresh,
+                "final_min_silence_len": current_min_len,
+                "chunk_count": len(chunks),
+                "adapted": attempt > 0,
+            }
+
+        # Relax thresholds for next attempt
+        current_thresh = min(current_thresh + silence_thresh_step, -5)
+        current_min_len = max(current_min_len - silence_len_step, 100)
+
+    return best_chunks, {
+        "retries_used": max_retries,
+        "final_silence_thresh": current_thresh - silence_thresh_step,
+        "final_min_silence_len": current_min_len + silence_len_step,
+        "chunk_count": best_count,
+        "adapted": True,
+    }
+
+
+def detect_silences_adaptive(
+    audio_path: str | Path,
+    expected_silences: int,
+    min_silence_len: int = 300,
+    silence_thresh: int = -30,
+    max_retries: int = 3,
+    min_silence_ratio: float = 0.5,
+    silence_len_step: int = 50,
+    silence_thresh_step: int = 5,
+    use_fast: bool = True,
+) -> tuple[list[tuple[int, int]], dict]:
+    """
+    Adaptive silence detection with progressive threshold relaxation.
+
+    When initial detection produces too few silences relative to
+    ``expected_silences``, automatically retries with relaxed thresholds.
+
+    Args:
+        audio_path: Path to audio file.
+        expected_silences: Expected number of silence regions.
+        min_silence_len: Initial minimum silence duration in ms.
+        silence_thresh: Initial silence threshold in dB.
+        max_retries: Maximum number of retry attempts.
+        min_silence_ratio: Accept when silences >= expected * ratio.
+        silence_len_step: Amount to decrease min_silence_len per retry (ms).
+        silence_thresh_step: Amount to increase silence_thresh per retry (dB).
+        use_fast: Use fast librosa-based detection.
+
+    Returns:
+        Tuple of (silences_list, metadata_dict).
+    """
+    current_thresh = silence_thresh
+    current_min_len = min_silence_len
+    target = max(1, int(expected_silences * min_silence_ratio))
+    best_silences: list[tuple[int, int]] = []
+    best_count = 0
+
+    for attempt in range(1 + max_retries):
+        silences = detect_silences(
+            audio_path,
+            min_silence_len=current_min_len,
+            silence_thresh=current_thresh,
+            use_fast=use_fast,
+        )
+
+        if len(silences) > best_count:
+            best_silences = silences
+            best_count = len(silences)
+
+        if len(silences) >= target:
+            return silences, {
+                "retries_used": attempt,
+                "final_silence_thresh": current_thresh,
+                "final_min_silence_len": current_min_len,
+                "silence_count": len(silences),
+                "adapted": attempt > 0,
+            }
+
+        current_thresh = min(current_thresh + silence_thresh_step, -5)
+        current_min_len = max(current_min_len - silence_len_step, 100)
+
+    return best_silences, {
+        "retries_used": max_retries,
+        "final_silence_thresh": current_thresh - silence_thresh_step,
+        "final_min_silence_len": current_min_len + silence_len_step,
+        "silence_count": best_count,
+        "adapted": True,
+    }
+
+
 def compute_energy_envelope(
     audio_path: str | Path,
     window_ms: int = 50,

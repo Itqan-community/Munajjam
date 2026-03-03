@@ -16,6 +16,7 @@ from munajjam.models import Segment, SegmentType, WordTimestamp
 from munajjam.transcription.base import BaseTranscriber
 from munajjam.transcription.silence import (
     detect_non_silent_chunks,
+    detect_non_silent_chunks_adaptive,
     extract_segment_audio,
     load_audio_waveform,
 )
@@ -196,6 +197,8 @@ class WhisperTranscriber(BaseTranscriber):
         self,
         audio_path: str | Path,
         progress_callback: Callable[[int, int, str], None] | None = None,
+        adaptive_silence: bool = False,
+        expected_ayah_count: int | None = None,
     ) -> list[Segment]:
         """
         Transcribe an audio file to segments.
@@ -203,6 +206,11 @@ class WhisperTranscriber(BaseTranscriber):
         Args:
             audio_path: Path to the audio file (WAV)
             progress_callback: Optional callback function(current, total, text) for progress updates
+            adaptive_silence: When True, use adaptive silence detection that retries
+                with relaxed thresholds when too few chunks are found.
+            expected_ayah_count: Expected number of ayahs (used with adaptive_silence).
+                If None and adaptive_silence is True, the count is looked up from
+                the surah number in the filename.
 
         Returns:
             List of transcribed Segment objects
@@ -218,11 +226,24 @@ class WhisperTranscriber(BaseTranscriber):
         surah_id = int(audio_path.stem)
 
         # Detect non-silent chunks
-        chunks = detect_non_silent_chunks(
-            audio_path,
-            min_silence_len=self._settings.min_silence_ms,
-            silence_thresh=self._settings.silence_threshold_db,
-        )
+        if adaptive_silence:
+            if expected_ayah_count is None:
+                from munajjam.data import get_ayah_count
+
+                expected_ayah_count = get_ayah_count(surah_id)
+
+            chunks, _meta = detect_non_silent_chunks_adaptive(
+                audio_path,
+                expected_chunks=expected_ayah_count,
+                min_silence_len=self._settings.min_silence_ms,
+                silence_thresh=self._settings.silence_threshold_db,
+            )
+        else:
+            chunks = detect_non_silent_chunks(
+                audio_path,
+                min_silence_len=self._settings.min_silence_ms,
+                silence_thresh=self._settings.silence_threshold_db,
+            )
 
         # Load audio waveform
         waveform, sr = load_audio_waveform(
