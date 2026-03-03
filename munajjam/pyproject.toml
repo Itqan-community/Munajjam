@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "munajjam"
-version = "2.0.0a1"
+version = "0.1.0"
 description = "A Python library to synchronize Quran Ayat with audio recitations"
 readme = "README.md"
 license = {text = "MIT"}
