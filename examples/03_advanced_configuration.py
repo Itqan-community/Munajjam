@@ -5,7 +5,7 @@ This example demonstrates advanced usage:
 - Custom configuration settings
 - Silence detection and usage
 - Progress tracking
-- CTC refinement and energy snap
+- Energy snap for precise boundaries
 - Detailed result inspection
 """
 
@@ -79,20 +79,19 @@ def main():
     print("\nStep 5: Aligning with advanced settings...")
 
     aligner = Aligner(
-        audio_path=audio_path,  # Audio file (required)
+        audio_path=audio_path,
         strategy="auto",
-        quality_threshold=0.85,  # Threshold for high-quality alignment
-        fix_drift=True,  # Enable zone realignment
-        fix_overlaps=True,  # Fix overlapping ayahs
-        ctc_refine=True,  # Refine boundaries with CTC forced alignment (default)
-        energy_snap=True,  # Snap boundaries to energy minima (default)
+        quality_threshold=0.85,
+        fix_drift=True,
+        fix_overlaps=True,
+        energy_snap=True,
     )
 
     results = aligner.align(
         segments=segments,
         ayahs=ayahs,
-        silences_ms=silences_ms,  # Use detected silences
-        on_progress=progress_callback,  # Track progress
+        silences_ms=silences_ms,
+        on_progress=progress_callback,
     )
 
     print(f"\n  Alignment complete: {len(results)} ayahs")
