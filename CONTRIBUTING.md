@@ -85,3 +85,14 @@ pytest tests/unit -v
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
+
+## Running tests locally
+To run tests locally you need to install the package from the internal
+`munajjam/` directory because the `pyproject.toml` file is located there.
+
+Example:
+
+cd munajjam
+pip install -e .
+cd ..
+pytest
