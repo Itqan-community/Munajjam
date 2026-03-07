@@ -28,41 +28,52 @@ import json
 from datetime import datetime, timezone
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from munajjam._version import __version__
 from munajjam.models.result import AlignmentResult
+from munajjam.models.surah import SURAH_NAMES
 
 
 class FormattedAyahResult(BaseModel):
     """Standardized representation of a single aligned ayah."""
 
+    model_config = ConfigDict(frozen=True)
+
     id: int = Field(
         ...,
+        ge=1,
         description="Unique ayah identifier (1-6236)",
     )
     surah_id: int = Field(
         ...,
+        ge=1,
+        le=114,
         description="Surah number (1-114)",
     )
     ayah_number: int = Field(
         ...,
+        ge=1,
         description="Ayah number within the surah (1-based)",
     )
     ayah_index: int = Field(
         ...,
+        ge=0,
         description="Zero-based ayah index within the surah",
     )
     start_time: float = Field(
         ...,
+        ge=0.0,
         description="Start time in seconds (rounded to 2 decimal places)",
     )
     end_time: float = Field(
         ...,
+        ge=0.0,
         description="End time in seconds (rounded to 2 decimal places)",
     )
     duration: float = Field(
         ...,
+        ge=0.0,
         description="Duration in seconds (rounded to 2 decimal places)",
     )
     transcribed_text: str = Field(
@@ -75,6 +86,8 @@ class FormattedAyahResult(BaseModel):
     )
     similarity_score: float = Field(
         ...,
+        ge=0.0,
+        le=1.0,
         description="Similarity score between transcribed and original text (0.0-1.0)",
     )
     is_high_confidence: bool = Field(
@@ -90,6 +103,12 @@ class FormattedAyahResult(BaseModel):
 class AlignmentMetadata(BaseModel):
     """Metadata about the alignment process."""
 
+    model_config = ConfigDict(frozen=True)
+
+    schema_version: str = Field(
+        default="1.0",
+        description="Schema version of this output format",
+    )
     munajjam_version: str = Field(
         ...,
         description="Version of Munajjam used for alignment",
@@ -100,7 +119,13 @@ class AlignmentMetadata(BaseModel):
     )
     surah_id: int | None = Field(
         default=None,
+        ge=1,
+        le=114,
         description="Surah number (1-114)",
+    )
+    surah_name: str | None = Field(
+        default=None,
+        description="Arabic name of the surah (auto-detected from surah_id)",
     )
     reciter: str | None = Field(
         default=None,
@@ -136,6 +161,8 @@ class AlignmentOutput(BaseModel):
     It includes metadata about the alignment process and a list of
     formatted ayah results.
     """
+
+    model_config = ConfigDict(frozen=True)
 
     metadata: AlignmentMetadata = Field(
         ...,
@@ -215,6 +242,7 @@ def _format_single_result(result: AlignmentResult) -> FormattedAyahResult:
 def format_alignment_results(
     results: list[AlignmentResult],
     surah_id: int | None = None,
+    surah_name: str | None = None,
     reciter: str | None = None,
     audio_file: str | None = None,
 ) -> AlignmentOutput:
@@ -227,6 +255,8 @@ def format_alignment_results(
     Args:
         results: List of AlignmentResult objects from the alignment process.
         surah_id: Optional surah number (1-114).
+        surah_name: Optional surah name. If None and surah_id is provided,
+            auto-detected from SURAH_NAMES.
         reciter: Optional name of the reciter.
         audio_file: Optional path or name of the audio file.
 
@@ -246,10 +276,15 @@ def format_alignment_results(
     )
     high_conf_count = sum(1 for r in formatted if r.is_high_confidence)
 
+    # Auto-detect surah name from surah_id if not provided
+    if surah_name is None and surah_id is not None and 1 <= surah_id <= 114:
+        surah_name = SURAH_NAMES.get(surah_id)
+
     metadata = AlignmentMetadata(
         munajjam_version=__version__,
         generated_at=datetime.now(timezone.utc).isoformat(),
         surah_id=surah_id,
+        surah_name=surah_name,
         reciter=reciter,
         audio_file=audio_file,
         total_ayahs=len(formatted),

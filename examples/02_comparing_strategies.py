@@ -10,10 +10,12 @@ This example demonstrates the differences between the six alignment strategies:
 - Auto: Automatically picks the best strategy (recommended)
 """
 
-from munajjam.transcription import WhisperTranscriber
+import time
+
 from munajjam.core import Aligner
 from munajjam.data import load_surah_ayahs
-import time
+from munajjam.formatters import format_alignment_results
+from munajjam.transcription import WhisperTranscriber
 
 
 def align_with_strategy(segments, ayahs, strategy_name, audio_path):
@@ -148,6 +150,21 @@ For simple recordings:
 For legacy workflows:
   • HYBRID or DP strategies remain available for backward compatibility
     """)
+
+    # Step 6: Export best strategy results using the standardized formatter
+    print(f"\n{'=' * 80}")
+    print("EXPORT")
+    print("=" * 80)
+
+    best_results = results_map[most_accurate]["results"]
+    output = format_alignment_results(
+        results=best_results,
+        surah_id=surah_number,
+        audio_file=audio_path,
+    )
+    output_path = f"surah_{surah_number:03d}_best_alignment.json"
+    output.to_file(output_path)
+    print(f"\nBest strategy ({most_accurate}) results saved to: {output_path}")
 
 
 if __name__ == "__main__":
