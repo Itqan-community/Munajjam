@@ -2,8 +2,8 @@
 Command-line interface for Munajjam.
 
 Usage:
-    munajjam align <audio_file> [--surah <number>] [--strategy <name>] [--output <file>] [--format <fmt>]
-    munajjam batch <directory> [--pattern <glob>] [--output-dir <dir>] [--format <fmt>]
+    munajjam align <audio_file> [--surah <number>] [--strategy <name>] [--output <file>] [--format <fmt>] [--whisper-backend <backend>]
+    munajjam batch <directory> [--pattern <glob>] [--output-dir <dir>] [--format <fmt>] [--whisper-backend <backend>]
     munajjam --version
     munajjam --help
 """
@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 from munajjam import __version__
+from munajjam.munajjam.transcription.whisperFactory import WhisperBackend, WhisperFactory
 
 # Valid surah range
 MIN_SURAH = 1
@@ -27,7 +28,8 @@ def create_parser() -> argparse.ArgumentParser:
         prog="munajjam",
         description="Munajjam — Synchronize Quran ayat with audio recitations.",
         epilog="For more information, visit: https://github.com/Itqan-community/Munajjam",
-    )
+    ) 
+ 
 
     parser.add_argument(
         "--version",
@@ -76,7 +78,13 @@ def create_parser() -> argparse.ArgumentParser:
         default="json",
         help="Output format (default: json)",
     )
-
+    align_parser.add_argument(
+            "--whisper-backend",
+            type=str,
+            choices=["fasterwhisper", "whisperx"],
+            default="whisperx",
+            help="Whisper backend to use (default: whisperx)",
+        )
     # --- batch subcommand ---
     batch_parser = subparsers.add_parser(
         "batch",
@@ -115,7 +123,13 @@ def create_parser() -> argparse.ArgumentParser:
         default="auto",
         help="Alignment strategy to use (default: auto)",
     )
-
+    batch_parser.add_argument(
+            "--whisper-backend",
+            type=str,   
+            choices=["fasterwhisper", "whisperx"],
+            default="whisperx",
+            help="Whisper backend to use (default: whisperx)",
+        )
     return parser
 
 
@@ -222,8 +236,9 @@ def cmd_align(args: argparse.Namespace) -> int:
     print(f"Strategy: {args.strategy}", file=sys.stderr)
 
     # Transcribe
-    with WhisperTranscriber() as transcriber:
-        segments = transcriber.transcribe(audio_path)
+    transcriber = WhisperFactory().create_whisper(backend=WhisperBackend(args.whisper_backend))
+  
+    segments = transcriber.transcribe(audio_path)
 
     # Align
     ayahs = load_surah_ayahs(surah_num)
@@ -259,33 +274,36 @@ def cmd_batch(args: argparse.Namespace) -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Found {len(audio_files)} audio files to process.", file=sys.stderr)
+    transcriber = WhisperFactory().create_whisper(backend=WhisperBackend(args.whisper_backend))
+  
+
 
     errors = 0
-    with WhisperTranscriber() as transcriber:
-        for audio_file in audio_files:
-            try:
-                surah_num = _infer_surah_number(str(audio_file))
-                _validate_surah_number(surah_num)
-                print(
-                    f"Processing surah {surah_num}: {audio_file.name}...",
-                    file=sys.stderr,
-                )
 
-                segments = transcriber.transcribe(str(audio_file))
-                ayahs = load_surah_ayahs(surah_num)
-                results = align(str(audio_file), segments, ayahs, strategy=args.strategy)
+    for audio_file in audio_files:
+        try:
+            surah_num = _infer_surah_number(str(audio_file))
+            _validate_surah_number(surah_num)
+            print(
+                f"Processing surah {surah_num}: {audio_file.name}...",
+                file=sys.stderr,
+            )
 
-                # Determine output extension
-                ext = {"json": ".json", "csv": ".csv", "text": ".txt"}[args.format]
-                output_path = output_dir / f"{audio_file.stem}{ext}"
+            segments = transcriber.transcribe(str(audio_file))
+            ayahs = load_surah_ayahs(surah_num)
+            results = align(str(audio_file), segments, ayahs, strategy=args.strategy)
 
-                content = _format_results(results, args.format)
-                output_path.write_text(content, encoding="utf-8")
-                print(f"  -> {output_path}", file=sys.stderr)
+            # Determine output extension
+            ext = {"json": ".json", "csv": ".csv", "text": ".txt"}[args.format]
+            output_path = output_dir / f"{audio_file.stem}{ext}"
 
-            except Exception as e:
-                print(f"  Error processing {audio_file.name}: {e}", file=sys.stderr)
-                errors += 1
+            content = _format_results(results, args.format)
+            output_path.write_text(content, encoding="utf-8")
+            print(f"  -> {output_path}", file=sys.stderr)
+
+        except Exception as e:
+            print(f"  Error processing {audio_file.name}: {e}", file=sys.stderr)
+            errors += 1
 
     total = len(audio_files)
     print(f"\nBatch complete: {total - errors}/{total} succeeded.", file=sys.stderr)
