@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 from munajjam import __version__
-from munajjam.munajjam.transcription.whisperFactory import WhisperBackend, WhisperFactory
+from munajjam.transcription.whisperFactory import WhisperBackend, WhisperFactory
 
 # Valid surah range
 MIN_SURAH = 1
@@ -235,8 +235,14 @@ def cmd_align(args: argparse.Namespace) -> int:
     print(f"Processing surah {surah_num} from {audio_path}...", file=sys.stderr)
     print(f"Strategy: {args.strategy}", file=sys.stderr)
 
-    # Transcribe
-    transcriber = WhisperFactory().create_whisper(backend=WhisperBackend(args.whisper_backend))
+    from munajjam.config import get_settings
+    settings = get_settings()
+    
+    transcriber = WhisperFactory().create_whisper(
+        backend=WhisperBackend(args.whisper_backend),
+        model_name=settings.model_id,
+        device=settings.device
+    )
   
     segments = transcriber.transcribe(audio_path)
 

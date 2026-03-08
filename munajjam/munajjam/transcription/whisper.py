@@ -8,6 +8,7 @@ import asyncio
 from collections.abc import Callable
 from pathlib import Path
 from typing import Literal
+import librosa
 
 from munajjam.config import MunajjamSettings, get_settings
 from munajjam.core.arabic import detect_segment_type
@@ -67,11 +68,9 @@ class WhisperTranscriber(BaseTranscriber):
         self._model = None
         self._processor = None
         self._resolved_device: str | None = None
-
-    @property
-    def is_loaded(self) -> bool:
-        """Whether the model is loaded."""
-        return self._model is not None
+        
+        # Load the model directly upon initialization
+        self._initialize_model()
 
     @property
     def model_id(self) -> str:
@@ -85,10 +84,8 @@ class WhisperTranscriber(BaseTranscriber):
             return self._resolved_device
         return self._settings.get_resolved_device()
 
-    def load(self) -> None:
+    def _initialize_model(self) -> None:
         """Load the Whisper model into memory."""
-        if self._model is not None:
-            return  # Already loaded
 
         import torch
 
@@ -166,343 +163,160 @@ class WhisperTranscriber(BaseTranscriber):
         compute_type = "float16" if device == "cuda" else "int8"
         print(f"   Loading model (compute_type: {compute_type})...")
 
-        self._model = WhisperModel(
-            self._model_id,
-            device=device,
-            compute_type=compute_type,
-        )
-        self._processor = None  # Faster Whisper doesn't use processor
-
-    def unload(self) -> None:
-        """Unload the model from memory."""
-        self._model = None
-        self._processor = None
-        self._resolved_device = None
-
-        # Force garbage collection
-        import gc
-
-        gc.collect()
-
         try:
-            import torch
-
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-        except ImportError:
-            pass
+            self._model = WhisperModel(
+                self._model_id,
+                device=device,
+                compute_type=compute_type,
+            )
+        except ValueError as e:
+            if "float16" in str(e):
+                print("   Fallback: Device does not support float16 effectively, trying float32...")
+                self._model = WhisperModel(
+                    self._model_id,
+                    device=device,
+                    compute_type="float32",
+                )
+            else:
+                raise
+        self._processor = None  # Faster Whisper doesn't use processor
 
     def transcribe(
         self,
         audio_path: str | Path,
-        progress_callback: Callable[[int, int, str], None] | None = None,
+        batch_size: int = 16,
     ) -> list[Segment]:
         """
         Transcribe an audio file to segments.
 
         Args:
             audio_path: Path to the audio file (WAV)
-            progress_callback: Optional callback function(current, total, text) for progress updates
+            batch_size: Batch size for transcribing (not currently used by standard whisper backends)
 
         Returns:
             List of transcribed Segment objects
         """
-        if not self.is_loaded:
-            raise ModelNotLoadedError()
 
         audio_path = Path(audio_path)
         if not audio_path.exists():
             raise AudioFileError(str(audio_path), "File not found")
 
-        # Extract surah ID from filename
-        surah_id = int(audio_path.stem)
+        # Extract surah ID from filename (assuming filename is '{surah_id}.wav')
+        try:
+            surah_id = int(audio_path.stem)
+        except ValueError:
+            surah_id = 1  # Default fallback if name isn't an integer
 
-        # Detect non-silent chunks
-        chunks = detect_non_silent_chunks(
-            audio_path,
-            min_silence_len=self._settings.min_silence_ms,
-            silence_thresh=self._settings.silence_threshold_db,
-        )
-
-        # Load audio waveform
-        waveform, sr = load_audio_waveform(
-            audio_path,
-            sample_rate=self._settings.sample_rate,
-        )
-
-        segments = []
-        segment_idx = 1
-        total_chunks = len(chunks)
-
-        for i, (start_ms, end_ms) in enumerate(chunks):
-            # Extract segment audio
-            segment_audio = extract_segment_audio(waveform, sr, start_ms, end_ms)
-
-            if len(segment_audio) == 0:
-                continue
-
-            # Transcribe segment
-            chunk_start_sec = start_ms / 1000.0
-            try:
-                text, word_ts = self._transcribe_segment(
-                    segment_audio,
-                    sr,
-                    chunk_offset=chunk_start_sec,
-                )
-            except Exception as e:
-                raise TranscriptionError(
-                    f"Failed to transcribe segment at {start_ms}ms-{end_ms}ms: {e}",
-                    audio_path=str(audio_path),
-                ) from e
-
-            # Detect segment type
-            seg_type, seg_id = detect_segment_type(text)
-            if seg_type == SegmentType.AYAH:
-                seg_id = segment_idx
-                segment_idx += 1
-
-            segment = Segment(
-                id=seg_id,
-                surah_id=surah_id,
-                start=round(start_ms / 1000, 2),
-                end=round(end_ms / 1000, 2),
-                text=text.strip(),
-                type=seg_type,
-                words=word_ts,
-            )
-
-            segments.append(segment)
-
-            # Call progress callback if provided
-            if progress_callback:
-                progress_callback(i + 1, total_chunks, text.strip()[:50])
-
+        if self._model_type == "faster-whisper":
+            segments = self._transcribe_faster_whisper(audio_path, surah_id)
+        else:
+            segments = self._transcribe_transformers(audio_path, surah_id)
+            
         return segments
 
-    def _transcribe_segment(
-        self,
-        segment_audio,
-        sample_rate: int,
-        chunk_offset: float = 0.0,
-    ) -> tuple[str, list[WordTimestamp] | None]:
-        """Transcribe a single audio segment.
-
-        Returns:
-            Tuple of (text, word_timestamps).  word_timestamps is None for
-            the transformers backend.
-        """
-        if self._model_type == "faster-whisper":
-            return self._transcribe_faster_whisper(
-                segment_audio,
-                sample_rate,
-                chunk_offset=chunk_offset,
-            )
-        else:
-            text = self._transcribe_transformers(segment_audio, sample_rate)
-            return text, None
-
-    def _transcribe_transformers(self, segment_audio, sample_rate: int) -> str:
+    def _transcribe_transformers(self, audio_path: Path, surah_id: int) -> list[Segment]:
         """Transcribe using Transformers."""
-        import io
-        import logging
         import warnings
-        from contextlib import redirect_stderr
-
         import torch
-        from transformers import GenerationConfig
         from transformers.utils import logging as transformers_logging
 
-        # Suppress transformers warnings comprehensively
-        # These warnings are informational and don't affect functionality
-        transformers_loggers = [
-            logging.getLogger("transformers"),
-            logging.getLogger("transformers.generation"),
-            logging.getLogger("transformers.generation.utils"),
-        ]
-        original_levels = [logger.level for logger in transformers_loggers]
-        for logger in transformers_loggers:
-            logger.setLevel(logging.ERROR)
-
-        # Set transformers verbosity to error
         transformers_logging.set_verbosity_error()
 
-        # Suppress Python warnings
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
 
-            # Create a null device to suppress stderr output for warnings
-            # (Some transformers warnings are printed directly via print/warning)
-            null_stream = io.StringIO()
+            # Load full audio
+            waveform, sr = load_audio_waveform(
+                audio_path,
+                sample_rate=self._settings.sample_rate,
+            )
+            
+            inputs = self._processor(
+                waveform,
+                sampling_rate=sr,
+                return_tensors="pt",
+            ).to(self._resolved_device)
 
-            try:
-                inputs = self._processor(
-                    segment_audio,
-                    sampling_rate=sample_rate,
-                    return_tensors="pt",
-                ).to(self._resolved_device)
+            input_features = inputs["input_features"]
+            model_dtype = next(self._model.parameters()).dtype
+            input_features = input_features.to(dtype=model_dtype)
 
-                # Extract input features and attention mask
-                input_features = inputs["input_features"]
-                attention_mask = inputs.get("attention_mask")
+            with torch.no_grad():
+                # NOTE: Transformers backend doesn't output word timestamps natively without complex 
+                # logits/attention extraction. We output a single segment.
+                ids = self._model.generate(input_features)
 
-                # Convert input features to model's dtype (float16 on CUDA, float32 on CPU)
-                model_dtype = next(self._model.parameters()).dtype
-                input_features = input_features.to(dtype=model_dtype)
-
-                # Create attention mask if it doesn't exist
-                # Whisper models need attention_mask because pad_token == eos_token
-                if attention_mask is None:
-                    # For Whisper, input_features shape is [batch, n_mels, time_frames]
-                    # Attention mask should be [batch, time_frames]
-                    batch_size = input_features.shape[0]
-                    time_frames = input_features.shape[2]
-                    attention_mask = torch.ones(
-                        (batch_size, time_frames), dtype=torch.long, device=self._resolved_device
-                    )
-
-                # Use model's generation config and explicitly set parameters
-                # Get the model's default generation config and copy it
-                generation_config = GenerationConfig.from_dict(
-                    self._model.generation_config.to_dict()
+            text = self._processor.batch_decode(ids, skip_special_tokens=True)[0]
+            
+            # Since Transformers doesn't easily give chunk timestamps out-of-the-box like faster-whisper,
+            # we simply return a single segment representing the whole audio. 
+            # (Note: In production for large files, pipeline() is preferred)
+            duration = librosa.get_duration(y=waveform, sr=sr)
+            seg_type, _ = detect_segment_type(text)
+            
+            return [
+                Segment(
+                    id=1,
+                    surah_id=surah_id,
+                    start=0.0,
+                    end=round(duration, 2),
+                    text=text.strip(),
+                    type=seg_type,
                 )
-                generation_config.max_new_tokens = 128
-                generation_config.num_beams = 1
-
-                # Redirect stderr during generate to suppress warnings
-                with redirect_stderr(null_stream):
-                    with torch.no_grad():
-                        ids = self._model.generate(
-                            input_features=input_features,
-                            attention_mask=attention_mask,
-                            generation_config=generation_config,
-                        )
-
-                text = self._processor.batch_decode(ids, skip_special_tokens=True)[0]
-                return text
-            finally:
-                # Restore original logging levels
-                for logger, original_level in zip(
-                    transformers_loggers, original_levels, strict=False
-                ):
-                    logger.setLevel(original_level)
-                # Restore transformers verbosity
-                transformers_logging.set_verbosity_warning()
+            ]
 
     def _transcribe_faster_whisper(
         self,
-        segment_audio,
-        sample_rate: int,
-        chunk_offset: float = 0.0,
-    ) -> tuple[str, list[WordTimestamp] | None]:
-        """Transcribe using Faster Whisper.
-
-        Returns:
-            Tuple of (combined_text, word_timestamps).
-        """
-        import os
-        import tempfile
-
-        try:
-            import soundfile as sf
-        except ImportError as e:
-            raise TranscriptionError(
-                "soundfile not installed. Install with: pip install munajjam[faster-whisper]"
-            ) from e
-
-        # Save to temp file (Faster Whisper needs file path)
-        # On Windows, we need to close the file before another process can read it
-        tmp_path = None
-        try:
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-                tmp_path = tmp.name
-
-            # Write audio to the temp file (file is closed now)
-            sf.write(tmp_path, segment_audio, sample_rate)
-
-            # Two-pass transcription:
-            # 1. Get text without word_timestamps (preserves original decoding quality)
-            # 2. Get word timestamps separately (word_timestamps=True can alter text)
-            segments_result, _ = self._model.transcribe(
-                tmp_path,
-                beam_size=1,
-                language="ar",
-            )
-
-            text = ""
-            for seg in segments_result:
-                text = seg.text.strip()
-                break
-
-            # Second pass: get word-level timestamps
-            segments_result2, _ = self._model.transcribe(
-                tmp_path,
-                beam_size=1,
-                language="ar",
-                word_timestamps=True,
-            )
-
-            word_timestamps: list[WordTimestamp] = []
-            for seg in segments_result2:
-                if seg.words:
-                    for w in seg.words:
-                        word_timestamps.append(
-                            WordTimestamp(
-                                word=w.word.strip(),
-                                start=round(w.start + chunk_offset, 3),
-                                end=round(w.end + chunk_offset, 3),
-                                probability=round(w.probability, 4),
-                            )
-                        )
-                break  # First segment only, matches text pass
-
-            return text, word_timestamps if word_timestamps else None
-
-        finally:
-            # Clean up temp file
-            if tmp_path and os.path.exists(tmp_path):
-                try:
-                    os.unlink(tmp_path)
-                except (PermissionError, OSError):
-                    pass  # Ignore cleanup errors on Windows
-
-    def transcribe_segment(self, audio_path: str | Path) -> str:
-        """
-        Transcribe a single audio file and return the combined text.
-
-        This is a simplified interface for reprocessing where we just
-        need the text, not the full segment information.
-
-        Args:
-            audio_path: Path to the audio file
-
-        Returns:
-            Transcribed text as a single string
-        """
-        if not self.is_loaded:
-            raise ModelNotLoadedError()
-
-        audio_path = Path(audio_path)
-        if not audio_path.exists():
-            raise AudioFileError(str(audio_path), "File not found")
-
-        # Load audio waveform
-        waveform, sr = load_audio_waveform(
-            audio_path,
-            sample_rate=self._settings.sample_rate,
+        audio_path: Path,
+        surah_id: int
+    ) -> list[Segment]:
+        """Transcribe an audio file using Faster Whisper (whisper.cpp)."""
+        
+        # We pass string to faster-whisper directly
+        segments_result, _ = self._model.transcribe(
+            str(audio_path),
+            beam_size=5,
+            language="ar",
+            word_timestamps=True,
         )
 
-        if len(waveform) == 0:
-            return ""
+        segments = []
+        ayah_idx = 1
+        
+        for i, seg in enumerate(segments_result):
+            text = seg.text.strip()
+            if not text:
+                continue
 
-        # Transcribe the whole file as one segment
-        text, _ = self._transcribe_segment(waveform, sr)
-        return text.strip()
+            word_timestamps: list[WordTimestamp] = []
+            if seg.words:
+                for w in seg.words:
+                    word_timestamps.append(
+                        WordTimestamp(
+                            word=w.word.strip(),
+                            start=round(w.start, 3),
+                            end=round(w.end, 3),
+                            probability=round(w.probability, 4),
+                        )
+                    )
 
-    async def transcribe_async(self, audio_path: str | Path) -> list[Segment]:
-        """
-        Asynchronously transcribe an audio file.
+            seg_type, _ = detect_segment_type(text)
+            # Default ID to incremental i+1, override if it's an ayah type
+            seg_id = i + 1 
+            if seg_type == SegmentType.AYAH:
+                seg_id = ayah_idx
+                ayah_idx += 1
 
-        Uses run_in_executor to avoid blocking the event loop.
-        """
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self.transcribe, audio_path)
+            segments.append(Segment(
+                id=seg_id,
+                surah_id=surah_id,
+                start=round(seg.start, 2),
+                end=round(seg.end, 2),
+                text=text,
+                type=seg_type,
+                words=word_timestamps if word_timestamps else None,
+            ))
+
+        return segments
+
+
