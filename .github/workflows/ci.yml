@@ -48,8 +48,7 @@ jobs:
           ruff format --check .
 
       - name: Type check with mypy
-        working-directory: ./munajjam
-        run: mypy munajjam --ignore-missing-imports
+        run: mypy ./munajjam/munajjam --ignore-missing-imports
 
       - name: Run tests
         run: pytest tests/unit/ -v --tb=short
