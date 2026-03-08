@@ -127,6 +127,7 @@ See the [examples](./examples) directory for more usage patterns:
 
 - [Website](https://munajjam.itqan.dev)
 - [ITQAN Community](https://community.itqan.dev)
+- [pyquran-modern](https://github.com/mmzerda/pyquran-modern): A modern fork of pyquran supporting Python 3.13 and 114 Surahs.
 
 ## Acknowledgments
 
