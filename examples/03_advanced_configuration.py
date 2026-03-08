@@ -5,7 +5,7 @@ This example demonstrates advanced usage:
 - Custom configuration settings
 - Silence detection and usage
 - Progress tracking
-- CTC refinement and energy snap
+- Energy snap for precise boundaries
 - Detailed result inspection
 """
 
@@ -23,18 +23,16 @@ def progress_callback(current, total):
 
 
 def main():
-    # Configuration
     audio_path = "Quran/badr_alturki_audio/114.wav"
     surah_number = 114
 
     print("Advanced Munajjam Configuration Example")
     print("=" * 80)
 
-    # Step 1: Configure global settings
     print("\nStep 1: Configuring Munajjam...")
     configure(
         model_id="OdyAsh/faster-whisper-base-ar-quran",
-        device="auto",  # Auto-detect GPU/CPU
+        device="auto",
         model_type="faster-whisper",
         silence_threshold_db=-30,
         min_silence_ms=300,
@@ -42,7 +40,6 @@ def main():
     )
     print("  Configuration complete")
 
-    # Step 2: Detect silences in audio (optional but recommended)
     print("\nStep 2: Detecting silences in audio...")
 
     silences_ms = detect_silences(
@@ -53,14 +50,12 @@ def main():
     total_silence = sum(end - start for start, end in silences_ms) / 1000
     print(f"  Total silence duration: {total_silence:.2f} seconds")
 
-    # Step 3: Transcribe with custom settings
     print("\nStep 3: Transcribing audio...")
     with WhisperTranscriber() as transcriber:
         segments = transcriber.transcribe(audio_path)
 
     print(f"  Found {len(segments)} segments")
 
-    # Inspect segment types
     from munajjam.models import SegmentType
 
     ayah_segments = [s for s in segments if s.type == SegmentType.AYAH]
@@ -71,34 +66,30 @@ def main():
     print(f"    - Istiadha segments: {len(istiadha_segments)}")
     print(f"    - Basmala segments: {len(basmala_segments)}")
 
-    # Step 4: Load reference ayahs
     print("\nStep 4: Loading reference ayahs...")
     ayahs = load_surah_ayahs(surah_number)
     print(f"  Loaded {len(ayahs)} ayahs")
 
-    # Step 5: Align with advanced configuration
     print("\nStep 5: Aligning with advanced settings...")
 
     aligner = Aligner(
-        audio_path=audio_path,  # Audio file (required)
+        audio_path=audio_path,
         strategy="auto",
-        quality_threshold=0.85,  # Threshold for high-quality alignment
-        fix_drift=True,  # Enable zone realignment
-        fix_overlaps=True,  # Fix overlapping ayahs
-        ctc_refine=True,  # Refine boundaries with CTC forced alignment (default)
-        energy_snap=True,  # Snap boundaries to energy minima (default)
+        quality_threshold=0.85,
+        fix_drift=True,
+        fix_overlaps=True,
+        energy_snap=True,
     )
 
     results = aligner.align(
         segments=segments,
         ayahs=ayahs,
-        silences_ms=silences_ms,  # Use detected silences
-        on_progress=progress_callback,  # Track progress
+        silences_ms=silences_ms,
+        on_progress=progress_callback,
     )
 
     print(f"\n  Alignment complete: {len(results)} ayahs")
 
-    # Step 6: Inspect hybrid stats (if available)
     if aligner.last_stats:
         print("\nHybrid Strategy Statistics:")
         stats = aligner.last_stats
@@ -108,33 +99,29 @@ def main():
         print(f"  Split-and-restitch improved: {stats.split_improved}")
         print(f"  Still low quality: {stats.still_low}")
 
-    # Step 7: Detailed result inspection
     print("\n" + "=" * 80)
     print("DETAILED RESULTS")
     print("=" * 80)
 
-    # Group results by quality
     excellent = [r for r in results if r.similarity_score >= 0.95]
     good = [r for r in results if 0.85 <= r.similarity_score < 0.95]
     fair = [r for r in results if 0.70 <= r.similarity_score < 0.85]
     poor = [r for r in results if r.similarity_score < 0.70]
 
     print("\nQuality Distribution:")
-    print(f"  Excellent (≥95%): {len(excellent)} ayahs")
+    print(f"  Excellent (>=95%): {len(excellent)} ayahs")
     print(f"  Good (85-95%): {len(good)} ayahs")
     print(f"  Fair (70-85%): {len(fair)} ayahs")
     print(f"  Poor (<70%): {len(poor)} ayahs")
 
-    # Show overlaps
     overlaps = [r for r in results if r.overlap_detected]
     if overlaps:
         print(f"\nOverlaps detected: {len(overlaps)} ayahs")
-        for r in overlaps[:5]:  # Show first 5
+        for r in overlaps[:5]:
             print(
                 f"  Ayah {r.ayah.ayah_number}: {r.start_time:.2f}s - {r.end_time:.2f}s"
             )
 
-    # Show poor quality ayahs for investigation
     if poor:
         print("\nPoor quality ayahs (need review):")
         for r in poor:
@@ -142,7 +129,6 @@ def main():
             print(f"    Expected: {r.ayah.text[:50]}...")
             print(f"    Got: {r.transcribed_text[:50]}...")
 
-    # Step 8: Export to JSON using the standardized formatter
     print("\nStep 8: Exporting results...")
 
     output = format_alignment_results(
