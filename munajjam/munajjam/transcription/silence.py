@@ -132,6 +132,10 @@ def detect_non_silent_chunks(
     min_silence_len: int = 300,
     silence_thresh: int = -30,
     use_fast: bool = True,
+    *,
+    adaptive: bool = False,
+    expected_chunks: int | None = None,
+    min_chunk_ratio: float = 0.5,
 ) -> list[tuple[int, int]]:
     """
     Detect non-silent (speech) portions in an audio file.
@@ -141,10 +145,37 @@ def detect_non_silent_chunks(
         min_silence_len: Minimum silence length in milliseconds
         silence_thresh: Silence threshold in dB
         use_fast: Use fast librosa-based detection (recommended for long files)
+        adaptive: When True, retry with relaxed thresholds if too few chunks found
+        expected_chunks: Expected number of chunks (e.g. number of ayahs).
+            Required when adaptive=True.
+        min_chunk_ratio: Minimum ratio of found/expected chunks before retrying.
+            Defaults to 0.5 (retry if fewer than 50% of expected chunks found).
 
     Returns:
         List of (start_ms, end_ms) tuples for non-silent portions
     """
+    chunks = _run_non_silent_detection(audio_path, min_silence_len, silence_thresh, use_fast)
+
+    if not adaptive or expected_chunks is None:
+        return chunks
+
+    return _adaptive_retry(
+        audio_path=audio_path,
+        initial_chunks=chunks,
+        initial_min_silence_len=min_silence_len,
+        initial_silence_thresh=silence_thresh,
+        use_fast=use_fast,
+        expected_chunks=expected_chunks,
+        min_chunk_ratio=min_chunk_ratio,
+    )
+
+
+def _run_non_silent_detection(
+    audio_path: str | Path,
+    min_silence_len: int,
+    silence_thresh: int,
+    use_fast: bool,
+) -> list[tuple[int, int]]:
     if use_fast:
         try:
             return _detect_non_silent_fast(audio_path, min_silence_len, silence_thresh)
@@ -152,6 +183,47 @@ def detect_non_silent_chunks(
             pass  # Fallback to pydub
 
     return _detect_non_silent_pydub(audio_path, min_silence_len, silence_thresh)
+
+
+_RELAXATION_STEPS = [
+    {"min_silence_len_factor": 0.7, "silence_thresh_offset": 5},
+    {"min_silence_len_factor": 0.5, "silence_thresh_offset": 10},
+    {"min_silence_len_factor": 0.3, "silence_thresh_offset": 15},
+]
+
+
+def _adaptive_retry(
+    audio_path: str | Path,
+    initial_chunks: list[tuple[int, int]],
+    initial_min_silence_len: int,
+    initial_silence_thresh: int,
+    use_fast: bool,
+    expected_chunks: int,
+    min_chunk_ratio: float,
+) -> list[tuple[int, int]]:
+    best_chunks = initial_chunks
+    target = int(expected_chunks * min_chunk_ratio)
+
+    if len(best_chunks) >= target:
+        return best_chunks
+
+    for step in _RELAXATION_STEPS:
+        relaxed_silence_len = max(
+            50, int(initial_min_silence_len * step["min_silence_len_factor"])
+        )
+        relaxed_thresh = initial_silence_thresh + step["silence_thresh_offset"]
+
+        chunks = _run_non_silent_detection(
+            audio_path, relaxed_silence_len, relaxed_thresh, use_fast
+        )
+
+        if len(chunks) > len(best_chunks):
+            best_chunks = chunks
+
+        if len(best_chunks) >= target:
+            break
+
+    return best_chunks
 
 
 def _detect_non_silent_pydub(
