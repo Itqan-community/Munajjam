@@ -7,6 +7,7 @@ split-and-restitch for long ayahs.
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import cast
 
 from ..models import AlignmentResult, Ayah, Segment
 from .matcher import similarity
@@ -276,10 +277,11 @@ def align_segments_hybrid(
 
     # Edge case: If DP completely fails (rare), fall back entirely to greedy
     if not dp_results:
+        greedy_silences = cast(list[list[int] | tuple[int, int]] | None, silences_ms)
         old_results = align_segments_greedy(
             segments=segments,
             ayahs=ayahs,
-            silences_ms=silences_ms,
+            silences_ms=greedy_silences,
         )
         stats.old_fallback = len(old_results)
         return old_results, stats
@@ -290,10 +292,11 @@ def align_segments_hybrid(
     # Greedy aligner uses simple linear matching. It's less optimal but more
     # robust to edge cases. We run it now so we can compare results later.
 
+    greedy_silences = cast(list[list[int] | tuple[int, int]] | None, silences_ms)
     old_results = align_segments_greedy(
         segments=segments,
         ayahs=ayahs,
-        silences_ms=silences_ms,
+        silences_ms=greedy_silences,
     )
 
     # Build lookup table for quick access to greedy results by ayah number

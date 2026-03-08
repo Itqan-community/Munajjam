@@ -331,8 +331,8 @@ def align_words_dp(
     # backtrack[a] = dict mapping w -> prev_w
     backtrack: list[dict[int, int]] = []
 
-    # Similarity cache keyed by (merged_text_hash, ayah_index)
-    _cost_cache: dict[tuple[int, int], float] = {}
+    # Similarity cache keyed by (merged_text_hash, ayah_index, duration_bucket)
+    _cost_cache: dict[tuple[int, int, float], float] = {}
 
     # Pre-compute normalised ayah texts for context matching
     ayah_norm_texts = [normalize_arabic(a.text) for a in ayahs]
@@ -487,11 +487,11 @@ def align_words_dp(
     assignments: list[tuple[int, int, int]] = []
     w = best_w
     for a in range(n_ayahs - 1, -1, -1):
-        prev_w = backtrack[a].get(w)
-        if prev_w is None:
+        prev_word_idx = backtrack[a].get(w)
+        if prev_word_idx is None:
             break
-        assignments.append((prev_w, w, a))
-        w = prev_w
+        assignments.append((prev_word_idx, w, a))
+        w = prev_word_idx
 
     assignments.reverse()
     return assignments

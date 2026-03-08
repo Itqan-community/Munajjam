@@ -6,6 +6,7 @@ Use the fast implementation for long files (>5 minutes).
 """
 
 from pathlib import Path
+from typing import Any
 
 
 def detect_silences(
@@ -326,11 +327,11 @@ def load_audio_waveform(
 
 
 def extract_segment_audio(
-    waveform,
+    waveform: Any,
     sample_rate: int,
     start_ms: int,
     end_ms: int,
-):
+) -> Any:
     """
     Extract a segment from a waveform.
 

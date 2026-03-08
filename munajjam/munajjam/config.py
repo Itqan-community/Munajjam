@@ -6,7 +6,7 @@ All settings can be overridden via environment variables with the MUNAJJAM_ pref
 """
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -185,7 +185,7 @@ def get_settings() -> MunajjamSettings:
     return _default_settings
 
 
-def configure(**kwargs) -> MunajjamSettings:
+def configure(**kwargs: Any) -> MunajjamSettings:
     """
     Create and set new default settings.
 

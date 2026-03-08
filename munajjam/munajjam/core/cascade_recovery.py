@@ -102,7 +102,7 @@ def _recover_cascade_with_resync(
     n_sub_ayah = len(sub_ayahs)
 
     INF = float("inf")
-    dp: dict[tuple[int, int], tuple[float, str, int, tuple | None]] = {}
+    dp: dict[tuple[int, int], tuple[float, str, int, tuple[int, int] | None]] = {}
     dp[(0, 0)] = (0.0, "", 0, None)
 
     # Build set of segment indices that align with silences
@@ -158,11 +158,11 @@ def _recover_cascade_with_resync(
         return None
 
     # Backtrack and build new results
-    path = []
-    current = best_end
+    path: list[tuple[int, int, int, str]] = []
+    current: tuple[int, int] | None = best_end
 
     while current and current in dp:
-        cost, merged_text, seg_start, parent = dp[current]
+        _cost, merged_text, seg_start, parent = dp[current]
         i, j = current
 
         if parent is not None:

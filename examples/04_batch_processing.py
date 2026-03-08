@@ -8,12 +8,14 @@ This example demonstrates how to process multiple surahs efficiently:
 - Generate summary reports
 """
 
-from munajjam.transcription import WhisperTranscriber
-from munajjam.core import Aligner
-from munajjam.data import load_surah_ayahs
-from pathlib import Path
 import json
 import time
+from pathlib import Path
+
+from munajjam.core import Aligner
+from munajjam.data import load_surah_ayahs
+from munajjam.formatters import format_alignment_results
+from munajjam.transcription import WhisperTranscriber
 
 
 def process_surah(transcriber, audio_path, surah_number):
@@ -102,26 +104,15 @@ def main():
             # Process surah
             results, stats = process_surah(transcriber, audio_file, surah_number)
 
-            # Save results
+            # Save results using the standardized formatter
             output_file = output_directory / f"surah_{surah_number:03d}_alignment.json"
 
-            output_data = {
-                "surah_number": surah_number,
-                "stats": stats,
-                "results": [
-                    {
-                        "ayah_number": r.ayah.ayah_number,
-                        "start_time": round(r.start_time, 3),
-                        "end_time": round(r.end_time, 3),
-                        "similarity_score": round(r.similarity_score, 3),
-                        "overlap_detected": r.overlap_detected,
-                    }
-                    for r in results
-                ],
-            }
-
-            with open(output_file, "w", encoding="utf-8") as f:
-                json.dump(output_data, f, ensure_ascii=False, indent=2)
+            output = format_alignment_results(
+                results=results,
+                surah_id=surah_number,
+                audio_file=str(audio_file),
+            )
+            output.to_file(str(output_file))
 
             all_stats.append(stats)
 

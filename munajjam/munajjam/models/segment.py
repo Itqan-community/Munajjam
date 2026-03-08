@@ -4,7 +4,7 @@ Audio segment data model.
 
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 
 class WordTimestamp(BaseModel):
@@ -82,7 +82,7 @@ class Segment(BaseModel):
 
     @field_validator("end")
     @classmethod
-    def end_after_start(cls, v: float, info) -> float:
+    def end_after_start(cls, v: float, info: ValidationInfo) -> float:
         """Ensure end time is after start time."""
         if "start" in info.data and v < info.data["start"]:
             raise ValueError("end time must be >= start time")

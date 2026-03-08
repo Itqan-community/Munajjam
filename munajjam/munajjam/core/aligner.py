@@ -14,6 +14,7 @@ Usage:
 
 from collections.abc import Callable
 from enum import Enum
+from typing import cast
 
 from ..models import AlignmentResult, Ayah, Segment
 from .hybrid import HybridStats
@@ -164,10 +165,11 @@ class Aligner:
         """Run greedy alignment."""
         from .aligner_greedy import align_segments
 
+        greedy_silences = cast(list[list[int] | tuple[int, int]] | None, silences_ms)
         return align_segments(
             segments=segments,
             ayahs=ayahs,
-            silences_ms=silences_ms,
+            silences_ms=greedy_silences,
         )
 
     def _align_dp(
