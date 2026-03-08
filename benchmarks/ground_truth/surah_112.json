@@ -1,0 +1,32 @@
+{
+  "surah_id": 112,
+  "reciter": "synthetic",
+  "audio_filename": "surah_112_synthetic.wav",
+  "notes": "Synthetic ground truth for benchmarking. Not derived from real audio.",
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "start_time": 1.0,
+      "end_time": 4.2,
+      "text": "قُلْ هُوَ اللَّهُ أَحَدٌ"
+    },
+    {
+      "ayah_number": 2,
+      "start_time": 4.5,
+      "end_time": 7.3,
+      "text": "اللَّهُ الصَّمَدُ"
+    },
+    {
+      "ayah_number": 3,
+      "start_time": 7.6,
+      "end_time": 11.0,
+      "text": "لَمْ يَلِدْ وَلَمْ يُولَدْ"
+    },
+    {
+      "ayah_number": 4,
+      "start_time": 11.3,
+      "end_time": 15.5,
+      "text": "وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ"
+    }
+  ]
+}

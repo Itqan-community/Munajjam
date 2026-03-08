@@ -115,9 +115,10 @@ output_*/
 cache/
 
 # Generated JSON files (alignment outputs)
-# Allow example outputs in munajjam/examples
+# Allow example outputs and benchmark ground truth
 *.json
 !munajjam/examples/*.json
+!benchmarks/ground_truth/*.json
 
 # Generated HTML/CSV (analysis outputs)
 *.html
