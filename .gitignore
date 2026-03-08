@@ -118,6 +118,8 @@ cache/
 # Allow example outputs in munajjam/examples
 *.json
 !munajjam/examples/*.json
+!benchmarks/ground_truth/*.json
+!benchmarks/results/*.json
 
 # Generated HTML/CSV (analysis outputs)
 *.html

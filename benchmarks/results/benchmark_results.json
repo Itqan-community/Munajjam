@@ -1,0 +1,91 @@
+{
+  "surahs": {
+    "1": {
+      "name": "Al-Fatiha",
+      "strategies": {
+        "greedy": {
+          "mae_seconds": 0.0014,
+          "avg_similarity": 0.9864,
+          "high_confidence_pct": 100.0,
+          "aligned_count": 7,
+          "expected_count": 7,
+          "runtime_seconds": 0.0056,
+          "strategy": "greedy"
+        },
+        "dp": {
+          "mae_seconds": 0.0014,
+          "avg_similarity": 0.9864,
+          "high_confidence_pct": 100.0,
+          "aligned_count": 7,
+          "expected_count": 7,
+          "runtime_seconds": 0.0043,
+          "strategy": "dp"
+        },
+        "hybrid": {
+          "mae_seconds": 0.0014,
+          "avg_similarity": 0.9864,
+          "high_confidence_pct": 100.0,
+          "aligned_count": 7,
+          "expected_count": 7,
+          "runtime_seconds": 0.0072,
+          "strategy": "hybrid"
+        }
+      }
+    },
+    "112": {
+      "name": "Al-Ikhlas",
+      "strategies": {
+        "greedy": {
+          "mae_seconds": 6.15,
+          "avg_similarity": 0.3929,
+          "high_confidence_pct": 0.0,
+          "aligned_count": 1,
+          "expected_count": 4,
+          "runtime_seconds": 0.0004,
+          "strategy": "greedy"
+        },
+        "dp": {
+          "mae_seconds": 0.0,
+          "avg_similarity": 0.9936,
+          "high_confidence_pct": 100.0,
+          "aligned_count": 4,
+          "expected_count": 4,
+          "runtime_seconds": 0.0006,
+          "strategy": "dp"
+        },
+        "hybrid": {
+          "mae_seconds": 0.0,
+          "avg_similarity": 0.9936,
+          "high_confidence_pct": 100.0,
+          "aligned_count": 4,
+          "expected_count": 4,
+          "runtime_seconds": 0.0007,
+          "strategy": "hybrid"
+        }
+      }
+    }
+  },
+  "summary": {
+    "greedy": {
+      "avg_mae_seconds": 3.0757,
+      "avg_similarity": 0.6897,
+      "avg_high_confidence_pct": 50.0,
+      "avg_runtime_seconds": 0.003,
+      "surahs_tested": 2
+    },
+    "dp": {
+      "avg_mae_seconds": 0.0007,
+      "avg_similarity": 0.99,
+      "avg_high_confidence_pct": 100.0,
+      "avg_runtime_seconds": 0.0024,
+      "surahs_tested": 2
+    },
+    "hybrid": {
+      "avg_mae_seconds": 0.0007,
+      "avg_similarity": 0.99,
+      "avg_high_confidence_pct": 100.0,
+      "avg_runtime_seconds": 0.0039,
+      "surahs_tested": 2
+    }
+  }
+}

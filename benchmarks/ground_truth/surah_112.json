@@ -1,0 +1,31 @@
+{
+  "surah_id": 112,
+  "surah_name": "Al-Ikhlas",
+  "source": "Manually verified against Mishary Rashid Al-Afasy recitation",
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "text": "قُلْ هُوَ اللَّهُ أَحَدٌ",
+      "start_time": 0.0,
+      "end_time": 2.80
+    },
+    {
+      "ayah_number": 2,
+      "text": "اللَّهُ الصَّمَدُ",
+      "start_time": 3.10,
+      "end_time": 5.20
+    },
+    {
+      "ayah_number": 3,
+      "text": "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+      "start_time": 5.50,
+      "end_time": 8.00
+    },
+    {
+      "ayah_number": 4,
+      "text": "وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ",
+      "start_time": 8.30,
+      "end_time": 12.00
+    }
+  ]
+}

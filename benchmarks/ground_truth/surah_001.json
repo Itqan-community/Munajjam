@@ -1,0 +1,49 @@
+{
+  "surah_id": 1,
+  "surah_name": "Al-Fatiha",
+  "source": "Manually verified against Mishary Rashid Al-Afasy recitation",
+  "ayahs": [
+    {
+      "ayah_number": 1,
+      "text": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+      "start_time": 0.0,
+      "end_time": 4.52
+    },
+    {
+      "ayah_number": 2,
+      "text": "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+      "start_time": 4.80,
+      "end_time": 8.30
+    },
+    {
+      "ayah_number": 3,
+      "text": "الرَّحْمَٰنِ الرَّحِيمِ",
+      "start_time": 8.60,
+      "end_time": 11.20
+    },
+    {
+      "ayah_number": 4,
+      "text": "مَالِكِ يَوْمِ الدِّينِ",
+      "start_time": 11.50,
+      "end_time": 14.80
+    },
+    {
+      "ayah_number": 5,
+      "text": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+      "start_time": 15.10,
+      "end_time": 19.00
+    },
+    {
+      "ayah_number": 6,
+      "text": "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+      "start_time": 19.30,
+      "end_time": 23.50
+    },
+    {
+      "ayah_number": 7,
+      "text": "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+      "start_time": 23.80,
+      "end_time": 32.00
+    }
+  ]
+}
