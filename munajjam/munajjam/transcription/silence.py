@@ -203,7 +203,7 @@ def _adaptive_retry(
     min_chunk_ratio: float,
 ) -> list[tuple[int, int]]:
     best_chunks = initial_chunks
-    target = math.ceil(expected_chunks * min_chunk_ratio)
+    target = max(1, math.ceil(expected_chunks * min_chunk_ratio))
 
     if len(best_chunks) >= target:
         return best_chunks
