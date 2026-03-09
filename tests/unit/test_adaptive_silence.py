@@ -166,3 +166,105 @@ class TestDetectNonSilentChunksAdaptive:
 
         for call in mock_detect.call_args_list:
             assert call.args[1] >= 50
+
+
+class TestAdaptiveEdgeCases:
+    """Regression tests for odd/single-chunk edge cases."""
+
+    def test_single_chunk_below_target_triggers_retry(self):
+        single = [(0, 10000)]
+        result = _adaptive_retry(
+            audio_path="dummy.wav",
+            initial_chunks=single,
+            initial_min_silence_len=300,
+            initial_silence_thresh=-30,
+            use_fast=True,
+            expected_chunks=1,
+            min_chunk_ratio=0.5,
+        )
+        assert result == single
+
+    @patch("munajjam.transcription.silence._run_non_silent_detection")
+    def test_single_expected_chunk_no_retry(self, mock_detect):
+        single = [(0, 10000)]
+        result = _adaptive_retry(
+            audio_path="dummy.wav",
+            initial_chunks=single,
+            initial_min_silence_len=300,
+            initial_silence_thresh=-30,
+            use_fast=True,
+            expected_chunks=1,
+            min_chunk_ratio=0.5,
+        )
+        assert result == single
+        mock_detect.assert_not_called()
+
+    @patch("munajjam.transcription.silence._run_non_silent_detection")
+    def test_odd_expected_chunks_ceil_target(self, mock_detect):
+        initial = [(0, 5000)]
+        relaxed = [(0, 2000), (2500, 4000), (4500, 5000)]
+        mock_detect.return_value = relaxed
+
+        result = _adaptive_retry(
+            audio_path="dummy.wav",
+            initial_chunks=initial,
+            initial_min_silence_len=300,
+            initial_silence_thresh=-30,
+            use_fast=True,
+            expected_chunks=5,
+            min_chunk_ratio=0.5,
+        )
+        # math.ceil(5 * 0.5) = 3, relaxed has 3 chunks -> should meet target
+        assert result == relaxed
+        assert mock_detect.call_count == 1
+
+    @patch("munajjam.transcription.silence._run_non_silent_detection")
+    def test_three_expected_chunks_needs_two(self, mock_detect):
+        initial = [(0, 5000)]
+        two_chunks = [(0, 2000), (3000, 5000)]
+        mock_detect.return_value = two_chunks
+
+        result = _adaptive_retry(
+            audio_path="dummy.wav",
+            initial_chunks=initial,
+            initial_min_silence_len=300,
+            initial_silence_thresh=-30,
+            use_fast=True,
+            expected_chunks=3,
+            min_chunk_ratio=0.5,
+        )
+        # math.ceil(3 * 0.5) = 2, two_chunks has 2 -> meets target
+        assert result == two_chunks
+        assert mock_detect.call_count == 1
+
+    @patch("munajjam.transcription.silence._run_non_silent_detection")
+    def test_empty_initial_chunks_retries(self, mock_detect):
+        mock_detect.return_value = []
+
+        result = _adaptive_retry(
+            audio_path="dummy.wav",
+            initial_chunks=[],
+            initial_min_silence_len=300,
+            initial_silence_thresh=-30,
+            use_fast=True,
+            expected_chunks=1,
+            min_chunk_ratio=0.5,
+        )
+        assert result == []
+        assert mock_detect.call_count == len(_RELAXATION_STEPS)
+
+    @patch("munajjam.transcription.silence._run_non_silent_detection")
+    def test_empty_initial_retries_when_expected_nonzero(self, mock_detect):
+        better = [(0, 3000), (4000, 6000)]
+        mock_detect.return_value = better
+
+        result = _adaptive_retry(
+            audio_path="dummy.wav",
+            initial_chunks=[],
+            initial_min_silence_len=300,
+            initial_silence_thresh=-30,
+            use_fast=True,
+            expected_chunks=4,
+            min_chunk_ratio=0.5,
+        )
+        assert result == better

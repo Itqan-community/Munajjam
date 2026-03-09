@@ -11,6 +11,7 @@ from typing import Any, Literal, cast
 
 from munajjam.config import MunajjamSettings, get_settings
 from munajjam.core.arabic import detect_segment_type
+from munajjam.data import get_ayah_count
 from munajjam.exceptions import AudioFileError, ModelNotLoadedError, TranscriptionError
 from munajjam.models import Segment, SegmentType, WordTimestamp
 from munajjam.transcription.base import BaseTranscriber
@@ -217,11 +218,19 @@ class WhisperTranscriber(BaseTranscriber):
         # Extract surah ID from filename
         surah_id = int(audio_path.stem)
 
-        # Detect non-silent chunks
+        # Look up expected ayah count for adaptive silence detection
+        try:
+            expected_ayahs = get_ayah_count(surah_id)
+        except (ValueError, KeyError):
+            expected_ayahs = None
+
+        # Detect non-silent chunks with adaptive retry when ayah count is known
         chunks = detect_non_silent_chunks(
             audio_path,
             min_silence_len=self._settings.min_silence_ms,
             silence_thresh=self._settings.silence_threshold_db,
+            adaptive=expected_ayahs is not None,
+            expected_chunks=expected_ayahs,
         )
 
         # Load audio waveform
