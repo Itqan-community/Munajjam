@@ -14,7 +14,6 @@ import time
 from pathlib import Path
 
 from munajjam.core import Aligner, AlignmentStrategy
-from munajjam.core.matcher import similarity
 from munajjam.data import load_surah_ayahs
 from munajjam.models import Segment, SegmentType
 
