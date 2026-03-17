@@ -16,9 +16,6 @@ from munajjam.formatters import format_alignment_results
 # Import core components
 from munajjam.transcription import WhisperTranscriber
 
-# Import core components
-from munajjam.transcription import WhisperTranscriber
-
 
 def process_surah(audio_path: str, surah_id: int, reciter: str = "Unknown"):
     """
