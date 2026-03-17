@@ -8,17 +8,19 @@ This example demonstrates the differences between the four alignment strategies:
 - Auto: Automatically picks the best strategy (recommended)
 """
 
-from munajjam.transcription import WhisperTranscriber
-from munajjam.core import Aligner, AlignmentStrategy
-from munajjam.data import load_surah_ayahs
 import time
+
+from munajjam.core import Aligner
+from munajjam.data import load_surah_ayahs
+from munajjam.formatters import format_alignment_results
+from munajjam.transcription import WhisperTranscriber
 
 
 def align_with_strategy(segments, ayahs, strategy_name, audio_path):
     """Align segments using the specified strategy and measure time."""
     print(f"\n{'=' * 80}")
     print(f"Testing {strategy_name.upper()} Strategy")
-    print('=' * 80)
+    print("=" * 80)
 
     start_time = time.time()
 
@@ -33,18 +35,22 @@ def align_with_strategy(segments, ayahs, strategy_name, audio_path):
     high_confidence = len([r for r in results if r.is_high_confidence])
     overlaps = sum(r.overlap_detected for r in results)
 
-    print(f"\nResults:")
+    print("\nResults:")
     print(f"  Time taken: {elapsed:.3f} seconds")
     print(f"  Average similarity: {avg_similarity:.2%}")
-    print(f"  High confidence: {high_confidence}/{len(results)} ({high_confidence/len(results):.1%})")
+    print(
+        f"  High confidence: {high_confidence}/{len(results)} ({high_confidence / len(results):.1%})"
+    )
     print(f"  Overlaps detected: {overlaps}")
 
     # Show first 5 results as sample
-    print(f"\n  First 5 ayahs:")
+    print("\n  First 5 ayahs:")
     for result in results[:5]:
-        print(f"    Ayah {result.ayah.ayah_number:3d}: "
-              f"{result.start_time:6.2f}s - {result.end_time:6.2f}s "
-              f"(sim: {result.similarity_score:.2%})")
+        print(
+            f"    Ayah {result.ayah.ayah_number:3d}: "
+            f"{result.start_time:6.2f}s - {result.end_time:6.2f}s "
+            f"(sim: {result.similarity_score:.2%})"
+        )
 
     return results, elapsed, avg_similarity
 
@@ -73,17 +79,19 @@ def main():
     results_map = {}
 
     for strategy in strategies:
-        results, elapsed, avg_sim = align_with_strategy(segments, ayahs, strategy, audio_path)
+        results, elapsed, avg_sim = align_with_strategy(
+            segments, ayahs, strategy, audio_path
+        )
         results_map[strategy] = {
             "results": results,
             "time": elapsed,
-            "avg_similarity": avg_sim
+            "avg_similarity": avg_sim,
         }
 
     # Step 4: Compare results
     print(f"\n{'=' * 80}")
     print("COMPARISON SUMMARY")
-    print('=' * 80)
+    print("=" * 80)
     print(f"\n{'Strategy':<12} {'Time (s)':<12} {'Avg Similarity':<16} {'Winner'}")
     print("-" * 80)
 
@@ -99,12 +107,14 @@ def main():
         if strategy == most_accurate:
             winner.append("Most Accurate")
 
-        print(f"{strategy:<12} {data['time']:<12.3f} {data['avg_similarity']:<16.2%} {', '.join(winner)}")
+        print(
+            f"{strategy:<12} {data['time']:<12.3f} {data['avg_similarity']:<16.2%} {', '.join(winner)}"
+        )
 
     # Step 5: Recommendations
     print(f"\n{'=' * 80}")
     print("RECOMMENDATIONS")
-    print('=' * 80)
+    print("=" * 80)
     print("""
 For most use cases:
   • Use AUTO strategy (recommended) - Automatically picks the best approach
@@ -117,6 +127,21 @@ For maximum control:
   • HYBRID strategy - DP with greedy fallback (what AUTO currently selects)
   • DP strategy - Pure dynamic programming for optimal alignment
     """)
+
+    # Step 6: Export best strategy results using the standardized formatter
+    print(f"\n{'=' * 80}")
+    print("EXPORT")
+    print("=" * 80)
+
+    best_results = results_map[most_accurate]["results"]
+    output = format_alignment_results(
+        results=best_results,
+        surah_id=surah_number,
+        audio_file=audio_path,
+    )
+    output_path = f"surah_{surah_number:03d}_best_alignment.json"
+    output.to_file(output_path)
+    print(f"\nBest strategy ({most_accurate}) results saved to: {output_path}")
 
 
 if __name__ == "__main__":

@@ -5,16 +5,18 @@ Combines DP alignment with fallback to greedy alignment and
 split-and-restitch for long ayahs.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
+from typing import cast
 
-from ..models import Segment, Ayah, AlignmentResult
+from ..models import AlignmentResult, Ayah, Segment
 from .matcher import similarity
 
 
 @dataclass
 class HybridStats:
     """Statistics from hybrid alignment."""
+
     total_ayahs: int = 0
     dp_kept: int = 0  # High quality from DP, kept as-is
     old_fallback: int = 0  # Fell back to old aligner
@@ -91,8 +93,7 @@ def _split_segments_at_silences(
     """
     # Step 1: Filter to only segments within the ayah's time range (with small buffer)
     range_segments = [
-        s for s in segments
-        if s.start >= start_time - 0.5 and s.end <= end_time + 0.5
+        s for s in segments if s.start >= start_time - 0.5 and s.end <= end_time + 0.5
     ]
 
     if not range_segments:
@@ -168,10 +169,7 @@ def _try_split_and_restitch(
     silences_sec = [(s / 1000.0, e / 1000.0) for s, e in silences_ms]
 
     chunks = _split_segments_at_silences(
-        segments,
-        silences_sec,
-        dp_result.start_time,
-        dp_result.end_time
+        segments, silences_sec, dp_result.start_time, dp_result.end_time
     )
 
     if len(chunks) <= 1:
@@ -279,10 +277,11 @@ def align_segments_hybrid(
 
     # Edge case: If DP completely fails (rare), fall back entirely to greedy
     if not dp_results:
+        greedy_silences = cast(list[list[int] | tuple[int, int]] | None, silences_ms)
         old_results = align_segments_greedy(
             segments=segments,
             ayahs=ayahs,
-            silences_ms=silences_ms,
+            silences_ms=greedy_silences,
         )
         stats.old_fallback = len(old_results)
         return old_results, stats
@@ -293,10 +292,11 @@ def align_segments_hybrid(
     # Greedy aligner uses simple linear matching. It's less optimal but more
     # robust to edge cases. We run it now so we can compare results later.
 
+    greedy_silences = cast(list[list[int] | tuple[int, int]] | None, silences_ms)
     old_results = align_segments_greedy(
         segments=segments,
         ayahs=ayahs,
-        silences_ms=silences_ms,
+        silences_ms=greedy_silences,
     )
 
     # Build lookup table for quick access to greedy results by ayah number
@@ -318,10 +318,7 @@ def align_segments_hybrid(
         ayah_duration = dp_r.end_time - dp_r.start_time
 
         # Identify "long" ayahs which benefit from split-and-restitch
-        is_long_ayah = (
-            ayah_word_count > long_ayah_words or
-            ayah_duration > long_ayah_duration
-        )
+        is_long_ayah = ayah_word_count > long_ayah_words or ayah_duration > long_ayah_duration
 
         # --- Decision Point 1: Is DP result good enough? ---
         if dp_r.similarity_score >= quality_threshold:
@@ -339,9 +336,7 @@ def align_segments_hybrid(
         # Long ayahs often have timing drift. By splitting at silences and
         # realigning each chunk, we can often get much better results.
         if is_long_ayah:
-            split_result = _try_split_and_restitch(
-                segments, ayah, dp_r, silences_ms
-            )
+            split_result = _try_split_and_restitch(segments, ayah, dp_r, silences_ms)
             if split_result and split_result.similarity_score > best_result.similarity_score:
                 best_result = split_result
                 best_source = "split"

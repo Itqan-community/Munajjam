@@ -14,10 +14,13 @@ from munajjam.models import Segment, SegmentType
 class TestRealDataAlignment:
     """Integration tests with real Quran data."""
 
-    @pytest.mark.parametrize("surah_id,expected_count", [
-        (1, 7),
-        (114, 6),
-    ])
+    @pytest.mark.parametrize(
+        "surah_id,expected_count",
+        [
+            (1, 7),
+            (114, 6),
+        ],
+    )
     def test_load_real_surah(self, surah_id, expected_count):
         """Test loading real surah ayahs."""
         ayahs = load_surah_ayahs(surah_id)
@@ -40,8 +43,12 @@ class TestRealDataAlignment:
 
         segments = [
             Segment(
-                id=i, surah_id=1, start=i * 5.0, end=(i + 1) * 5.0,
-                text=ayah.text[:30], type=SegmentType.AYAH
+                id=i,
+                surah_id=1,
+                start=i * 5.0,
+                end=(i + 1) * 5.0,
+                text=ayah.text[:30],
+                type=SegmentType.AYAH,
             )
             for i, ayah in enumerate(ayahs[:3])
         ]
@@ -59,8 +66,12 @@ class TestRealDataAlignment:
 
         segments = [
             Segment(
-                id=i, surah_id=114, start=i * 5.0, end=(i + 1) * 5.0,
-                text=ayah.text[:20], type=SegmentType.AYAH
+                id=i,
+                surah_id=114,
+                start=i * 5.0,
+                end=(i + 1) * 5.0,
+                text=ayah.text[:20],
+                type=SegmentType.AYAH,
             )
             for i, ayah in enumerate(ayahs)
         ]
