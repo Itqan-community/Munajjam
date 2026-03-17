@@ -63,7 +63,6 @@ def process_surah(audio_path: str, surah_id: int, reciter: str = "Unknown"):
         reciter=reciter,
         audio_file=audio_path,
     )
-
     # Show alignment results
     print("\n📊 Alignment Results Summary:")
     for result in output.results[:5]:  # Show first 5
