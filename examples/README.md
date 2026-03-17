@@ -28,12 +28,10 @@ python 01_basic_usage.py
 
 **Difficulty:** Intermediate
 
-Compare the six alignment strategies side-by-side. Demonstrates:
+Compare the four alignment strategies side-by-side. Demonstrates:
 - Greedy strategy (fast, simple)
 - DP strategy (optimal, slower)
 - Hybrid strategy (balanced)
-- Word-level DP strategy (sub-segment precision)
-- CTC Segmentation strategy (acoustic-based, optional)
 - Auto strategy (recommended — picks the best approach)
 - Performance metrics and trade-offs
 
@@ -57,8 +55,7 @@ Deep dive into configuration options. Demonstrates:
 - Custom configuration settings
 - Silence detection and usage
 - Progress tracking callbacks
-- CTC refinement for boundary accuracy
-- Energy snap for precise transitions
+- Energy snap for precise boundary placement
 - Detailed result inspection
 - Strategy statistics
 - Exporting results to JSON
@@ -161,16 +158,10 @@ for audio_file in audio_files:
 # Auto (recommended) - full pipeline by default
 aligner = Aligner("001.mp3")
 
-# Word-level DP - sub-segment precision using per-word timestamps
-aligner = Aligner("001.mp3", strategy="word_dp")
-
-# CTC Segmentation - acoustic-based alignment
-aligner = Aligner("001.mp3", strategy="ctc_seg")
-
 # For speed (simple recordings)
 aligner = Aligner("001.mp3", strategy="greedy")
 
-# Legacy strategies
+# For maximum control
 aligner = Aligner("001.mp3", strategy="hybrid")  # DP with greedy fallback
 aligner = Aligner("001.mp3", strategy="dp")      # Full dynamic programming
 ```

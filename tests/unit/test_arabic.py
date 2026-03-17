@@ -9,11 +9,16 @@ from munajjam.core.arabic import normalize_arabic
 class TestArabicNormalization:
     """Test Arabic text normalization functions."""
 
-    @pytest.mark.parametrize("input_text,should_contain,should_not_contain", [
-        ("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", ["بسم", "الله", "الرحمن"], ["بِسْمِ", "اللَّهِ"]),
-        ("ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَالَمِينَ", ["الحمد", "العالمين"], ["ٱلْحَمْدُ", "ٱلْعَالَمِينَ"]),
-    ])
-    def test_normalize_diacritics_and_alif(self, input_text, should_contain, should_not_contain):
+    @pytest.mark.parametrize(
+        "input_text,should_contain,should_not_contain",
+        [
+            ("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", ["بسم", "الله", "الرحمن"], ["بِسْمِ", "اللَّهِ"]),
+            ("ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَالَمِينَ", ["الحمد", "العالمين"], ["ٱلْحَمْدُ", "ٱلْعَالَمِينَ"]),
+        ],
+    )
+    def test_normalize_diacritics_and_alif(
+        self, input_text, should_contain, should_not_contain
+    ):
         """Test removal of diacritics and alif normalization."""
         normalized = normalize_arabic(input_text)
 

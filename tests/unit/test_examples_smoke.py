@@ -19,6 +19,8 @@ import pytest
 from munajjam.core.aligner import AlignmentStrategy
 from munajjam.models import AlignmentResult, Ayah, Segment, SegmentType
 
+pytestmark = pytest.mark.smoke
+
 # --------------- Path constants ---------------
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -144,7 +146,7 @@ class TestExampleImportsStatic:
             EXAMPLES_ROOT / "03_advanced_configuration.py",
             EXAMPLES_ROOT / "04_batch_processing.py",
             MUNAJJAM_EXAMPLES / "basic_usage.py",
-            MUNAJJAM_EXAMPLES / "test_alignment.py",
+            MUNAJJAM_EXAMPLES / "example_alignment.py",
         ],
         ids=lambda p: p.name,
     )
@@ -494,43 +496,39 @@ class TestMunajjamExampleBasicUsage:
                     "/fake/audio.wav", 1, "Test Reciter",
                 )
 
-                assert isinstance(output, list)
-                assert len(output) > 0
-                for item in output:
-                    assert "id" in item
-                    assert "sura_id" in item
-                    assert "ayah_index" in item
-                    assert "start" in item
-                    assert "end" in item
-                    assert "transcribed_text" in item
-                    assert "similarity_score" in item
+                assert hasattr(output, "results")
+                assert len(output.results) > 0
+                first = output.results[0]
+                assert first.ayah_number >= 1
+                assert first.surah_id == 1
+                assert first.transcribed_text
             finally:
                 if "basic_usage" in sys.modules:
                     del sys.modules["basic_usage"]
 
 
 class TestMunajjamExampleAlignment:
-    """Smoke tests for munajjam/examples/test_alignment.py."""
+    """Smoke tests for munajjam/examples/example_alignment.py."""
 
     def test_core_functions_runs(
         self, monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        """test_core_functions() runs without error (pure computation)."""
+        """run_core_functions() runs without error (pure computation)."""
         monkeypatch.syspath_prepend(str(MUNAJJAM_EXAMPLES))
 
-        if "test_alignment" in sys.modules:
-            del sys.modules["test_alignment"]
+        if "example_alignment" in sys.modules:
+            del sys.modules["example_alignment"]
         try:
-            import test_alignment  # type: ignore[import-not-found]
+            import example_alignment  # type: ignore[import-not-found]
 
             # Uses only normalize_arabic() and similarity() — no mocking needed
-            test_alignment.test_core_functions()
+            example_alignment.run_core_functions()
         finally:
-            if "test_alignment" in sys.modules:
-                del sys.modules["test_alignment"]
+            if "example_alignment" in sys.modules:
+                del sys.modules["example_alignment"]
 
     def test_segment_types_valid(self) -> None:
-        """test_alignment.py uses valid SegmentType enum values."""
+        """example_alignment.py uses valid SegmentType enum values."""
         assert hasattr(SegmentType, "AYAH")
         assert hasattr(SegmentType, "ISTIADHA")
         assert hasattr(SegmentType, "BASMALA")

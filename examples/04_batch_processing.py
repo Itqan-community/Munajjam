@@ -8,12 +8,14 @@ This example demonstrates how to process multiple surahs efficiently:
 - Generate summary reports
 """
 
-from munajjam.transcription import WhisperTranscriber
-from munajjam.core import Aligner
-from munajjam.data import load_surah_ayahs, get_all_surahs
-from pathlib import Path
 import json
 import time
+from pathlib import Path
+
+from munajjam.core import Aligner
+from munajjam.data import load_surah_ayahs
+from munajjam.formatters import format_alignment_results
+from munajjam.transcription import WhisperTranscriber
 
 
 def process_surah(transcriber, audio_path, surah_number):
@@ -100,32 +102,17 @@ def main():
 
         try:
             # Process surah
-            results, stats = process_surah(
-                transcriber,
-                audio_file,
-                surah_number
-            )
+            results, stats = process_surah(transcriber, audio_file, surah_number)
 
-            # Save results
+            # Save results using the standardized formatter
             output_file = output_directory / f"surah_{surah_number:03d}_alignment.json"
 
-            output_data = {
-                "surah_number": surah_number,
-                "stats": stats,
-                "results": [
-                    {
-                        "ayah_number": r.ayah.ayah_number,
-                        "start_time": round(r.start_time, 3),
-                        "end_time": round(r.end_time, 3),
-                        "similarity_score": round(r.similarity_score, 3),
-                        "overlap_detected": r.overlap_detected,
-                    }
-                    for r in results
-                ]
-            }
-
-            with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(output_data, f, ensure_ascii=False, indent=2)
+            output = format_alignment_results(
+                results=results,
+                surah_id=surah_number,
+                audio_file=str(audio_file),
+            )
+            output.to_file(str(output_file))
 
             all_stats.append(stats)
 
@@ -152,11 +139,15 @@ def main():
     if all_stats:
         # Aggregate statistics
         total_ayahs = sum(s["total_ayahs"] for s in all_stats)
-        avg_similarity_overall = sum(s["avg_similarity"] for s in all_stats) / len(all_stats)
+        avg_similarity_overall = sum(s["avg_similarity"] for s in all_stats) / len(
+            all_stats
+        )
         total_overlaps = sum(s["overlaps"] for s in all_stats)
-        avg_processing_time = sum(s["processing_time"] for s in all_stats) / len(all_stats)
+        avg_processing_time = sum(s["processing_time"] for s in all_stats) / len(
+            all_stats
+        )
 
-        print(f"\nOverall Statistics:")
+        print("\nOverall Statistics:")
         print(f"  Total ayahs processed: {total_ayahs}")
         print(f"  Overall avg similarity: {avg_similarity_overall:.2%}")
         print(f"  Total overlaps detected: {total_overlaps}")
@@ -166,8 +157,12 @@ def main():
         best_surah = max(all_stats, key=lambda s: s["avg_similarity"])
         worst_surah = min(all_stats, key=lambda s: s["avg_similarity"])
 
-        print(f"\nBest alignment: Surah {best_surah['surah_number']} ({best_surah['avg_similarity']:.2%})")
-        print(f"Worst alignment: Surah {worst_surah['surah_number']} ({worst_surah['avg_similarity']:.2%})")
+        print(
+            f"\nBest alignment: Surah {best_surah['surah_number']} ({best_surah['avg_similarity']:.2%})"
+        )
+        print(
+            f"Worst alignment: Surah {worst_surah['surah_number']} ({worst_surah['avg_similarity']:.2%})"
+        )
 
         # Save summary report
         summary_file = output_directory / "batch_summary.json"
@@ -184,7 +179,7 @@ def main():
             "per_surah_stats": all_stats,
         }
 
-        with open(summary_file, 'w', encoding='utf-8') as f:
+        with open(summary_file, "w", encoding="utf-8") as f:
             json.dump(summary_data, f, indent=2)
 
         print(f"\nSummary saved to: {summary_file}")

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "munajjam"
-version = "2.0.0a1"
+version = "0.1.0"
 description = "A Python library to synchronize Quran Ayat with audio recitations"
 readme = "README.md"
 license = {text = "MIT"}
@@ -62,6 +62,9 @@ dev = [
 all = [
     "munajjam[faster-whisper,dev]",
 ]
+
+[project.scripts]
+munajjam = "munajjam.cli:cli"
 
 [project.urls]
 Homepage = "https://github.com/abdullahmosaibah/munajjam"

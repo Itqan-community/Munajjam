@@ -2,7 +2,6 @@
 Unit tests for phonetic similarity scoring.
 """
 
-import pytest
 from munajjam.core.phonetic import phonetic_word_similarity, phonetic_similarity
 
 
@@ -47,10 +46,7 @@ class TestPhoneticSimilarity:
 
     def test_different_text(self):
         """Different texts should return a score between 0 and 1."""
-        score = phonetic_similarity(
-            "بسم الله الرحمن الرحيم",
-            "الحمد لله رب العالمين"
-        )
+        score = phonetic_similarity("بسم الله الرحمن الرحيم", "الحمد لله رب العالمين")
         assert 0.0 <= score <= 1.0
 
     def test_returns_float(self):

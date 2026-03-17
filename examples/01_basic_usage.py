@@ -5,12 +5,13 @@ This example demonstrates the simplest way to use Munajjam:
 1. Transcribe an audio file
 2. Load reference ayahs
 3. Align segments to ayahs
-4. Access results
+4. Format and export results using the standardized JSON formatter
 """
 
 from munajjam.transcription import WhisperTranscriber
 from munajjam.core import align
 from munajjam.data import load_surah_ayahs
+from munajjam.formatters import format_alignment_results
 
 
 def main():
@@ -24,7 +25,6 @@ def main():
     print("Step 1: Transcribing audio...")
     with WhisperTranscriber() as transcriber:
         segments = transcriber.transcribe(audio_path)
-
     print(f"  Found {len(segments)} segments")
     print(f"  Total duration: {segments[-1].end:.2f} seconds\n")
 
@@ -33,36 +33,37 @@ def main():
     ayahs = load_surah_ayahs(surah_number)
     print(f"  Loaded {len(ayahs)} ayahs\n")
 
-    # Step 3: Align segments to ayahs (auto strategy by default, or pass strategy="word_dp" etc.)
+    # Step 3: Align segments to ayahs (auto strategy by default, or pass strategy="dp" etc.)
     print("Step 3: Aligning segments to ayahs...")
     results = align(audio_path, segments, ayahs)
     print(f"  Aligned {len(results)} ayahs\n")
 
-    # Step 4: Display results
-    print("Results:")
-    print("-" * 80)
-    for result in results:
-        print(f"Ayah {result.ayah.ayah_number:3d}: "
-              f"{result.start_time:6.2f}s - {result.end_time:6.2f}s "
-              f"(similarity: {result.similarity_score:.2%})")
+    # Step 4: Format results using the standardized JSON formatter
+    print("Step 4: Formatting results...")
+    output = format_alignment_results(
+        results=results,
+        surah_id=surah_number,
+        reciter="Badr Al-Turki",
+        audio_file=audio_path,
+    )
 
-    # Step 5: Check alignment quality
+    # Display formatted JSON output
+    print("\nFormatted JSON Output:")
+    print("=" * 80)
+    print(output.to_json())
+
+    # Save to file
+    output.to_file("output/surah_114.json")
+    print("\nResults saved to output/surah_114.json")
+
+    # Step 5: Check alignment quality from metadata
     print("\n" + "=" * 80)
     print("Quality Metrics:")
     print("=" * 80)
-
-    high_quality = [r for r in results if r.is_high_confidence]
-    low_quality = [r for r in results if not r.is_high_confidence]
-    avg_similarity = sum(r.similarity_score for r in results) / len(results)
-
-    print(f"Average similarity: {avg_similarity:.2%}")
-    print(f"High confidence ayahs: {len(high_quality)}/{len(results)} ({len(high_quality)/len(results):.1%})")
-    print(f"Low confidence ayahs: {len(low_quality)}/{len(results)}")
-
-    if low_quality:
-        print("\nLow confidence ayahs:")
-        for r in low_quality:
-            print(f"  Ayah {r.ayah.ayah_number}: {r.similarity_score:.2%}")
+    meta = output.metadata
+    print(f"Average similarity: {meta.average_confidence:.2%}")
+    print(f"High confidence ayahs: {meta.high_confidence_count}/{meta.total_ayahs}")
+    print(f"Total duration: {meta.total_duration:.2f}s")
 
 
 if __name__ == "__main__":

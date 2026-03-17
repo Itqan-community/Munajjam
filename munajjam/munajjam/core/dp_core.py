@@ -5,16 +5,17 @@ Contains the fundamental DP components for aligning transcribed segments
 to reference Quran ayahs.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
-from ..models import Ayah, Segment, AlignmentResult, SegmentType
-from .matcher import similarity, compute_coverage_ratio
+from ..models import AlignmentResult, Ayah, Segment, SegmentType
+from .matcher import compute_coverage_ratio, similarity
 
 
 @dataclass
 class DPCell:
     """A cell in the DP matrix."""
+
     cost: float  # Accumulated cost to reach this cell
     merged_text: str  # Text merged so far for current ayah
     seg_start_idx: int  # Index of first segment in current ayah
@@ -100,9 +101,9 @@ def _align_greedy_multi_ayah(
     ayah_idx = 0
 
     while seg_idx < len(segments) and ayah_idx < len(ayahs):
-        best_match_ayahs = None
-        best_match_segs = None
-        best_score = 0
+        best_match_ayahs: list[Ayah] | None = None
+        best_match_segs: list[Segment] | None = None
+        best_score = 0.0
         best_seg_end = seg_idx
         best_ayah_end = ayah_idx
 
@@ -111,17 +112,17 @@ def _align_greedy_multi_ayah(
         seg_search_limit = min(seg_idx + 4, len(segments))
 
         for num_segs in range(1, seg_search_limit - seg_idx + 1):
-            merged_segs = segments[seg_idx:seg_idx + num_segs]
+            merged_segs = segments[seg_idx : seg_idx + num_segs]
             merged_seg_text = " ".join(s.text for s in merged_segs)
 
             for num_ayahs in range(1, ayah_search_limit - ayah_idx + 1):
-                concat_ayahs = ayahs[ayah_idx:ayah_idx + num_ayahs]
+                concat_ayahs = ayahs[ayah_idx : ayah_idx + num_ayahs]
                 concat_text = " ".join(a.text for a in concat_ayahs)
 
                 score = similarity(merged_seg_text, concat_text)
 
                 # Prefer matches that consume more content
-                ratio_penalty = 0
+                ratio_penalty = 0.0
                 if num_segs > 1 and num_ayahs > 1:
                     ratio_penalty = 0.05
 
@@ -136,6 +137,7 @@ def _align_greedy_multi_ayah(
 
         # Apply match if score is acceptable
         if best_match_ayahs and best_score > 0.35:
+            assert best_match_segs is not None
             start_time = best_match_segs[0].start
             end_time = best_match_segs[-1].end
             merged_text = " ".join(s.text for s in best_match_segs)
@@ -156,7 +158,9 @@ def _align_greedy_multi_ayah(
                     ayah=a,
                     start_time=round(current_time, 2),
                     end_time=round(current_time + ayah_duration, 2),
-                    transcribed_text=merged_text if len(best_match_ayahs) == 1 else f"[{len(best_match_segs)} segs -> {len(best_match_ayahs)} ayahs]",
+                    transcribed_text=merged_text
+                    if len(best_match_ayahs) == 1
+                    else f"[{len(best_match_segs)} segs -> {len(best_match_ayahs)} ayahs]",
                     similarity_score=best_score,
                     overlap_detected=len(best_match_ayahs) > 1 or len(best_match_segs) > 1,
                 )
@@ -200,7 +204,7 @@ def align_segments_dp(
     n_seg = len(segments)
     n_ayah = len(ayahs)
 
-    INF = float('inf')
+    INF = float("inf")
     dp: dict[tuple[int, int], DPCell] = {}
     dp[(0, 0)] = DPCell(cost=0, merged_text="", seg_start_idx=0, parent=None)
 
@@ -243,7 +247,7 @@ def align_segments_dp(
                 dp[(i, j)] = best_cell
 
     # Find best ending point
-    best_end = None
+    best_end: tuple[int, int] | None = None
     best_end_cost = INF
 
     for i in range(n_ayah, n_seg + 1):
@@ -265,8 +269,8 @@ def align_segments_dp(
         return []
 
     # Backtrack to reconstruct alignment
-    path = []
-    current = best_end
+    path: list[tuple[int, int, int, str]] = []
+    current: tuple[int, int] | None = best_end
 
     while current and current in dp:
         cell = dp[current]
@@ -363,7 +367,7 @@ def align_segments_dp_with_constraints(
             sim_cache[cache_key] = compute_alignment_cost(merged_text, ayahs[ayah_idx].text)
         return sim_cache[cache_key]
 
-    INF = float('inf')
+    INF = float("inf")
     dp: dict[tuple[int, int], DPCell] = {}
     dp[(0, 0)] = DPCell(cost=0, merged_text="", seg_start_idx=0, parent=None)
 
@@ -414,7 +418,7 @@ def align_segments_dp_with_constraints(
                 dp[(i, j)] = best_cell
 
     # Find best ending
-    best_end = None
+    best_end: tuple[int, int] | None = None
     best_end_cost = INF
 
     for i in range(n_ayah, n_seg + 1):
@@ -436,8 +440,8 @@ def align_segments_dp_with_constraints(
         return []
 
     # Backtrack
-    path = []
-    current = best_end
+    path: list[tuple[int, int, int, str]] = []
+    current: tuple[int, int] | None = best_end
 
     while current and current in dp:
         cell = dp[current]
