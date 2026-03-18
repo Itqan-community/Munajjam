@@ -56,7 +56,7 @@ def run_with_transcription(audio_path: str, surah_id: int):
     print("   Model loaded.")
 
     try:
-        segments = transcriber.transcribe(audio_path)
+        segments = transcriber.transcribe(audio_path, surah_id=surah_id)
     finally:
         transcriber.unload()
 

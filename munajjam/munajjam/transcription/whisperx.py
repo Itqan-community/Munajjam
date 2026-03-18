@@ -16,6 +16,7 @@ class Whisperx(BaseTranscriber):
     def transcribe(
         self,
         audio_path: str | Path,
+        *,
         surah_id: int,
         batch_size: int = 16,
     ) -> list[Segment]:

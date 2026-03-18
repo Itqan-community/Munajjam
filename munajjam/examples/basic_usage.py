@@ -36,7 +36,7 @@ def process_surah(audio_path: str, surah_id: int, reciter: str = "Unknown"):
     print("\n📝 Step 1: Transcribing audio...")
 
     with WhisperTranscriber() as transcriber:
-        segments = transcriber.transcribe(audio_path)
+        segments = transcriber.transcribe(audio_path, surah_id=surah_id)
 
     print(f"   Transcribed {len(segments)} segments")
     for seg in segments[:3]:  # Show first 3

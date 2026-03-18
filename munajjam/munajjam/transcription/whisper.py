@@ -4,6 +4,7 @@ Whisper-based transcription implementation.
 Uses Tarteel AI's Whisper models fine-tuned for Quran recitation.
 """
 
+import logging
 from pathlib import Path
 from typing import Any, Literal
 
@@ -17,6 +18,8 @@ from munajjam.transcription.base import BaseTranscriber
 from munajjam.transcription.silence import (
     load_audio_waveform,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class WhisperTranscriber(BaseTranscriber):
@@ -97,16 +100,16 @@ class WhisperTranscriber(BaseTranscriber):
         else:
             self._resolved_device = self._device
 
-        print(f"Loading model: {self._model_id}")
-        print(f"   Backend: {self._model_type}")
-        print(f"   Device: {self._resolved_device}")
+        logger.info(f"Loading model: {self._model_id}")
+        logger.info(f"   Backend: {self._model_type}")
+        logger.info(f"   Device: {self._resolved_device}")
 
         if self._model_type == "faster-whisper":
             self._load_faster_whisper()
         else:
             self._load_transformers()
 
-        print("Model loaded successfully")
+        logger.info("Model loaded successfully")
 
     def _load_transformers(self) -> None:
         """Load Transformers-based Whisper model."""
@@ -121,7 +124,7 @@ class WhisperTranscriber(BaseTranscriber):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
 
-            print("   Loading processor...")
+            logger.info("   Loading processor...")
             self._processor = AutoProcessor.from_pretrained(self._model_id)
 
             # Determine dtype
@@ -130,7 +133,7 @@ class WhisperTranscriber(BaseTranscriber):
             else:
                 torch_dtype = torch.float32
 
-            print(f"   Loading model weights (dtype: {torch_dtype})...")
+            logger.info(f"   Loading model weights (dtype: {torch_dtype})...")
             self._model = AutoModelForSpeechSeq2Seq.from_pretrained(
                 self._model_id,
                 dtype=torch_dtype,
@@ -155,10 +158,10 @@ class WhisperTranscriber(BaseTranscriber):
         device = self._resolved_device
         if device == "mps":
             device = "cpu"  # Faster Whisper doesn't support MPS
-            print("   Note: Faster Whisper doesn't support MPS, using CPU instead")
+            logger.info("   Note: Faster Whisper doesn't support MPS, using CPU instead")
 
         compute_type = "float16" if device == "cuda" else "int8"
-        print(f"   Loading model (compute_type: {compute_type})...")
+        logger.info(f"   Loading model (compute_type: {compute_type})...")
 
         try:
             self._model = WhisperModel(
@@ -168,7 +171,9 @@ class WhisperTranscriber(BaseTranscriber):
             )
         except ValueError as e:
             if "float16" in str(e):
-                print("   Fallback: Device does not support float16 effectively, trying float32...")
+                logger.warning(
+                    "   Fallback: Device does not support float16 effectively, trying float32..."
+                )
                 self._model = WhisperModel(
                     self._model_id,
                     device=device,
@@ -181,6 +186,7 @@ class WhisperTranscriber(BaseTranscriber):
     def transcribe(
         self,
         audio_path: str | Path,
+        *,
         surah_id: int,
         batch_size: int = 16,
     ) -> list[Segment]:
@@ -199,14 +205,18 @@ class WhisperTranscriber(BaseTranscriber):
         audio_path = Path(audio_path)
 
         if self._model_type == "faster-whisper":
-            segments = self._transcribe_faster_whisper(audio_path, surah_id, batch_size)
+            segments = self._transcribe_faster_whisper(
+                audio_path, surah_id=surah_id, batch_size=batch_size
+            )
         else:
-            segments = self._transcribe_transformers(audio_path, surah_id, batch_size)
+            segments = self._transcribe_transformers(
+                audio_path, surah_id=surah_id, batch_size=batch_size
+            )
 
         return segments
 
     def _transcribe_transformers(
-        self, audio_path: Path, surah_id: int, batch_size: int = 16
+        self, audio_path: Path, *, surah_id: int, batch_size: int = 16
     ) -> list[Segment]:
         """Transcribe using Transformers."""
         import warnings
@@ -262,6 +272,7 @@ class WhisperTranscriber(BaseTranscriber):
     def _transcribe_faster_whisper(
         self,
         audio_path: Path,
+        *,
         surah_id: int,
         batch_size: int = 16,
     ) -> list[Segment]:
