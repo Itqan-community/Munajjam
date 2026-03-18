@@ -52,13 +52,13 @@ class AlignmentResult(BaseModel):
         description="Whether overlap with adjacent segment was detected and removed",
     )
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def duration(self) -> float:
         """Duration of the aligned segment in seconds."""
         return self.end_time - self.start_time
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def is_high_confidence(self) -> bool:
         """Whether the alignment has high confidence (>0.8 similarity)."""

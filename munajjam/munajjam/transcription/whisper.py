@@ -65,8 +65,8 @@ class WhisperTranscriber(BaseTranscriber):
         self._model_type = model_type or self._settings.model_type
 
         # Model state
-        self._model = None
-        self._processor = None
+        self._model: Any = None
+        self._processor: Any = None
         self._resolved_device: str | None = None
         
         # Load the model directly upon initialization

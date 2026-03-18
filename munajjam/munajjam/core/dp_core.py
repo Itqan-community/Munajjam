@@ -101,9 +101,9 @@ def _align_greedy_multi_ayah(
     ayah_idx = 0
 
     while seg_idx < len(segments) and ayah_idx < len(ayahs):
-        best_match_ayahs = None
-        best_match_segs = None
-        best_score = 0
+        best_match_ayahs: list[Ayah] | None = None
+        best_match_segs: list[Segment] | None = None
+        best_score = 0.0
         best_seg_end = seg_idx
         best_ayah_end = ayah_idx
 
@@ -122,7 +122,7 @@ def _align_greedy_multi_ayah(
                 score = similarity(merged_seg_text, concat_text)
 
                 # Prefer matches that consume more content
-                ratio_penalty = 0
+                ratio_penalty = 0.0
                 if num_segs > 1 and num_ayahs > 1:
                     ratio_penalty = 0.05
 
@@ -137,6 +137,7 @@ def _align_greedy_multi_ayah(
 
         # Apply match if score is acceptable
         if best_match_ayahs and best_score > 0.35:
+            assert best_match_segs is not None
             start_time = best_match_segs[0].start
             end_time = best_match_segs[-1].end
             merged_text = " ".join(s.text for s in best_match_segs)
@@ -246,7 +247,7 @@ def align_segments_dp(
                 dp[(i, j)] = best_cell
 
     # Find best ending point
-    best_end = None
+    best_end: tuple[int, int] | None = None
     best_end_cost = INF
 
     for i in range(n_ayah, n_seg + 1):
@@ -268,8 +269,8 @@ def align_segments_dp(
         return []
 
     # Backtrack to reconstruct alignment
-    path = []
-    current = best_end
+    path: list[tuple[int, int, int, str]] = []
+    current: tuple[int, int] | None = best_end
 
     while current and current in dp:
         cell = dp[current]
@@ -417,7 +418,7 @@ def align_segments_dp_with_constraints(
                 dp[(i, j)] = best_cell
 
     # Find best ending
-    best_end = None
+    best_end: tuple[int, int] | None = None
     best_end_cost = INF
 
     for i in range(n_ayah, n_seg + 1):
@@ -439,8 +440,8 @@ def align_segments_dp_with_constraints(
         return []
 
     # Backtrack
-    path = []
-    current = best_end
+    path: list[tuple[int, int, int, str]] = []
+    current: tuple[int, int] | None = best_end
 
     while current and current in dp:
         cell = dp[current]

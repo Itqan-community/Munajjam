@@ -5,14 +5,15 @@ This example demonstrates advanced usage:
 - Custom configuration settings
 - Silence detection and usage
 - Progress tracking
-- CTC refinement and energy snap
+- Energy snap for precise boundary placement
 - Detailed result inspection
 """
 
-from munajjam.transcription import WhisperTranscriber, detect_silences
+from munajjam.config import configure
 from munajjam.core import Aligner
 from munajjam.data import load_surah_ayahs
-from munajjam.config import configure
+from munajjam.formatters import format_alignment_results
+from munajjam.transcription import WhisperTranscriber, detect_silences
 
 
 def progress_callback(current, total):
@@ -82,10 +83,9 @@ def main():
         audio_path=audio_path,  # Audio file (required)
         strategy="auto",
         quality_threshold=0.85,  # Threshold for high-quality alignment
-        fix_drift=True,  # Enable zone realignment
-        fix_overlaps=True,  # Fix overlapping ayahs
-        ctc_refine=True,  # Refine boundaries with CTC forced alignment (default)
-        energy_snap=True,  # Snap boundaries to energy minima (default)
+        fix_drift=True,          # Enable zone realignment
+        fix_overlaps=True,       # Fix overlapping ayahs
+        energy_snap=True,        # Snap boundaries to energy minima (default)
     )
 
     results = aligner.align(
@@ -141,27 +141,17 @@ def main():
             print(f"    Expected: {r.ayah.text[:50]}...")
             print(f"    Got: {r.transcribed_text[:50]}...")
 
-    # Step 8: Export to JSON
+    # Step 8: Export to JSON using the standardized formatter
     print("\nStep 8: Exporting results...")
-    import json
 
-    output = []
-    for r in results:
-        output.append(
-            {
-                "ayah_number": r.ayah.ayah_number,
-                "start_time": round(r.start_time, 3),
-                "end_time": round(r.end_time, 3),
-                "duration": round(r.duration, 3),
-                "similarity_score": round(r.similarity_score, 3),
-                "overlap_detected": r.overlap_detected,
-                "transcribed_text": r.transcribed_text,
-            }
-        )
+    output = format_alignment_results(
+        results=results,
+        surah_id=surah_number,
+        audio_file=audio_path,
+    )
 
     output_path = f"surah_{surah_number:03d}_alignment.json"
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
+    output.to_file(output_path)
 
     print(f"  Results saved to: {output_path}")
 
