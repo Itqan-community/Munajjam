@@ -9,15 +9,14 @@ Usage:
 """
 
 import argparse
-import io
 import json
-import re
 import sys
 from pathlib import Path
 
 from munajjam import __version__
+from munajjam.core.arabic import infer_surah_number
 from munajjam.transcription.whisperFactory import WhisperBackend, WhisperFactory
-from munajjam.core.arabic import infer_surah_number 
+
 # Valid surah range
 MIN_SURAH = 1
 MAX_SURAH = 114
@@ -29,8 +28,7 @@ def create_parser() -> argparse.ArgumentParser:
         prog="munajjam",
         description="Munajjam — Synchronize Quran ayat with audio recitations.",
         epilog="For more information, visit: https://github.com/Itqan-community/Munajjam",
-    ) 
- 
+    )
 
     parser.add_argument(
         "--version",
@@ -146,11 +144,6 @@ def _validate_surah_number(surah_num: int) -> None:
         )
 
 
-
-
-
-
-
 def _format_results(results: list, fmt: str) -> str:
     """Format alignment results to the specified format."""
     if fmt == "json":
@@ -190,19 +183,22 @@ def _write_output(content: str, output_path: str | None) -> None:
             print(content)
         except UnicodeEncodeError:
             # Fallback for Windows console with restricted encoding
-            if hasattr(sys.stdout, 'buffer'):
-                sys.stdout.buffer.write(content.encode('utf-8'))
-                sys.stdout.buffer.write(b'\n')
+            if hasattr(sys.stdout, "buffer"):
+                sys.stdout.buffer.write(content.encode("utf-8"))
+                sys.stdout.buffer.write(b"\n")
             else:
                 # Last resort: replace unencodable characters
-                print(content.encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
+                print(
+                    content.encode(sys.stdout.encoding, errors="replace").decode(
+                        sys.stdout.encoding
+                    )
+                )
 
 
 def cmd_align(args: argparse.Namespace) -> int:
     """Execute the align command."""
     from munajjam.core import align
     from munajjam.data import load_surah_ayahs
-    from munajjam.transcription import WhisperTranscriber
 
     audio_path = args.audio_file
     if not Path(audio_path).exists():
@@ -229,14 +225,15 @@ def cmd_align(args: argparse.Namespace) -> int:
     print(f"Strategy: {args.strategy}", file=sys.stderr)
 
     from munajjam.config import get_settings
+
     settings = get_settings()
-    
+
     transcriber = WhisperFactory().create_whisper(
         backend=WhisperBackend(args.whisper_backend),
         model_name=settings.model_id,
-        device=settings.device
+        device=settings.device,
     )
-  
+
     segments = transcriber.transcribe(audio_path, surah_id=surah_num)
 
     # Align
@@ -252,10 +249,10 @@ def cmd_align(args: argparse.Namespace) -> int:
 
 def cmd_batch(args: argparse.Namespace) -> int:
     """Execute the batch command."""
+    from munajjam.config import get_settings
     from munajjam.core import align
     from munajjam.data import load_surah_ayahs
-    from munajjam.transcription import WhisperTranscriber
-    from munajjam.config import get_settings
+
     input_dir = Path(args.directory)
     if not input_dir.is_dir():
         print(f"Error: Directory not found: {args.directory}", file=sys.stderr)
@@ -278,8 +275,6 @@ def cmd_batch(args: argparse.Namespace) -> int:
         model_name=settings.model_id,
         device=settings.device,
     )
-  
-
 
     errors = 0
 
@@ -343,11 +338,12 @@ def cli() -> None:
             else:
                 # Legacy or restricted environments
                 import io
+
                 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
                 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
         except Exception:
             pass
-            
+
     sys.exit(main())
 
 

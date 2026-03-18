@@ -4,24 +4,21 @@ Whisper-based transcription implementation.
 Uses Tarteel AI's Whisper models fine-tuned for Quran recitation.
 """
 
-import asyncio
-from collections.abc import Callable
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
+
 import librosa
 
 from munajjam.config import MunajjamSettings, get_settings
 from munajjam.core.arabic import detect_segment_type
-from munajjam.exceptions import AudioFileError, ModelNotLoadedError, TranscriptionError
-from munajjam.models import Segment, SegmentType, WordTimestamp
+from munajjam.exceptions import ModelNotLoadedError, TranscriptionError
+from munajjam.models import Segment
 from munajjam.transcription.base import BaseTranscriber
 from munajjam.transcription.silence import (
-    detect_non_silent_chunks,
-    extract_segment_audio,
     load_audio_waveform,
 )
 
-from munajjam.core.arabic import infer_surah_number
+
 class WhisperTranscriber(BaseTranscriber):
     """
     Whisper-based transcriber for Quran audio.
@@ -68,7 +65,7 @@ class WhisperTranscriber(BaseTranscriber):
         self._model: Any = None
         self._processor: Any = None
         self._resolved_device: str | None = None
-        
+
         # Load the model directly upon initialization
         self._initialize_model()
 
@@ -213,9 +210,12 @@ class WhisperTranscriber(BaseTranscriber):
 
         return segments
 
-    def _transcribe_transformers(self, audio_path: Path, surah_id: int, batch_size: int = 16) -> list[Segment]:
+    def _transcribe_transformers(
+        self, audio_path: Path, surah_id: int, batch_size: int = 16
+    ) -> list[Segment]:
         """Transcribe using Transformers."""
         import warnings
+
         import torch
         from transformers.utils import logging as transformers_logging
 
@@ -229,7 +229,7 @@ class WhisperTranscriber(BaseTranscriber):
                 audio_path,
                 sample_rate=self._settings.sample_rate,
             )
-            
+
             inputs = self._processor(
                 waveform,
                 sampling_rate=sr,
@@ -241,18 +241,18 @@ class WhisperTranscriber(BaseTranscriber):
             input_features = input_features.to(dtype=model_dtype)
 
             with torch.no_grad():
-                # NOTE: Transformers backend doesn't output word timestamps natively without complex 
+                # NOTE: Transformers backend doesn't output word timestamps natively without complex
                 # logits/attention extraction. We output a single segment.
                 ids = self._model.generate(input_features)
 
             text = self._processor.batch_decode(ids, skip_special_tokens=True)[0]
-            
+
             # Since Transformers doesn't easily give chunk timestamps out-of-the-box like faster-whisper,
-            # we simply return a single segment representing the whole audio. 
+            # we simply return a single segment representing the whole audio.
             # (Note: In production for large files, pipeline() is preferred)
             duration = librosa.get_duration(y=waveform, sr=sr)
             seg_type, _ = detect_segment_type(text)
-            
+
             return [
                 Segment(
                     id=1,
@@ -271,14 +271,15 @@ class WhisperTranscriber(BaseTranscriber):
         batch_size: int = 16,
     ) -> list[Segment]:
         """Transcribe an audio file using Faster Whisper (whisper.cpp)."""
-        
+
         if self._model is None:
-             raise ModelNotLoadedError("Faster Whisper model not loaded.")
-             
+            raise ModelNotLoadedError("Faster Whisper model not loaded.")
+
         # We pass string to faster-whisper directly
         if batch_size > 1:
             try:
                 from faster_whisper import BatchedInferencePipeline
+
                 pipeline = BatchedInferencePipeline(self._model)
                 segments_result, _ = pipeline.transcribe(
                     str(audio_path),
@@ -317,7 +318,5 @@ class WhisperTranscriber(BaseTranscriber):
                     type=seg_type,
                 )
             )
-        
+
         return segments
-
-

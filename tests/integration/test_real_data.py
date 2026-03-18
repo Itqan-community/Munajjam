@@ -5,21 +5,26 @@ Integration tests for Munajjam library using real Quran data.
 import pytest
 import torch
 from pathlib import Path
-from munajjam.data import load_surah_ayahs, get_ayah_count
+from munajjam.data import load_surah_ayahs
 from munajjam.core import Aligner
 from munajjam.transcription.whisperFactory import WhisperFactory, WhisperBackend
+
 
 @pytest.fixture
 def factory():
     return WhisperFactory()
+
 
 @pytest.fixture
 def real_audio():
     """Returns path to real Surah 1 audio fixture."""
     path = Path(__file__).parent.parent / "fixtures" / "surah_001.mp3"
     if not path.exists():
-        pytest.skip(f"Real audio fixture not found at {path}. Run download_fixtures.py first.")
+        pytest.skip(
+            f"Real audio fixture not found at {path}. Run download_fixtures.py first."
+        )
     return path
+
 
 @pytest.mark.integration
 @pytest.mark.slow
@@ -44,17 +49,18 @@ class TestRealDataAlignment:
     def test_alignment_whisperx_end_to_end(self, factory, real_audio):
         """Test alignment with real data using WhisperX backend."""
         import shutil
+
         if shutil.which("ffmpeg") is None:
             pytest.skip("ffmpeg is required for WhisperX but not found in PATH.")
-             
+
         device = "cuda" if torch.cuda.is_available() else "cpu"
         compute_type = "float32"
 
         transcriber = factory.create_whisper(
-            backend=WhisperBackend.WHISPERX, 
+            backend=WhisperBackend.WHISPERX,
             model_name="OdyAsh/faster-whisper-base-ar-quran",
             device=device,
-            compute_type=compute_type
+            compute_type=compute_type,
         )
 
         ayahs = load_surah_ayahs(1)
@@ -72,11 +78,11 @@ class TestRealDataAlignment:
     def test_strategies_end_to_end(self, strategy, factory, real_audio):
         """Test all strategies produce results with real data through FasterWhisper."""
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        
+
         transcriber = factory.create_whisper(
-            backend=WhisperBackend.FASTERWHISPER, 
+            backend=WhisperBackend.FASTERWHISPER,
             model_name="OdyAsh/faster-whisper-base-ar-quran",
-            device=device
+            device=device,
         )
 
         ayahs = load_surah_ayahs(1)
