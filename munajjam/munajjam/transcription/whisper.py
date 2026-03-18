@@ -21,7 +21,7 @@ from munajjam.transcription.silence import (
     load_audio_waveform,
 )
 
-
+from munajjam.core.arabic import infer_surah_number
 class WhisperTranscriber(BaseTranscriber):
     """
     Whisper-based transcriber for Quran audio.
@@ -100,7 +100,7 @@ class WhisperTranscriber(BaseTranscriber):
         else:
             self._resolved_device = self._device
 
-        print(f"📦 Loading model: {self._model_id}")
+        print(f"Loading model: {self._model_id}")
         print(f"   Backend: {self._model_type}")
         print(f"   Device: {self._resolved_device}")
 
@@ -109,7 +109,7 @@ class WhisperTranscriber(BaseTranscriber):
         else:
             self._load_transformers()
 
-        print("✅ Model loaded successfully")
+        print("Model loaded successfully")
 
     def _load_transformers(self) -> None:
         """Load Transformers-based Whisper model."""
@@ -201,9 +201,10 @@ class WhisperTranscriber(BaseTranscriber):
         if not audio_path.exists():
             raise AudioFileError(str(audio_path), "File not found")
 
-        # Extract surah ID from filename (assuming filename is '{surah_id}.wav')
+        # Extract surah ID from filename
+  
         try:
-            surah_id = int(audio_path.stem)
+            surah_id = infer_surah_number(audio_path)
         except ValueError:
             surah_id = 1  # Default fallback if name isn't an integer
 
@@ -272,6 +273,9 @@ class WhisperTranscriber(BaseTranscriber):
     ) -> list[Segment]:
         """Transcribe an audio file using Faster Whisper (whisper.cpp)."""
         
+        if self._model is None:
+             raise ModelNotLoadedError("Faster Whisper model not loaded.")
+             
         # We pass string to faster-whisper directly
         segments_result, _ = self._model.transcribe(
             str(audio_path),
@@ -281,42 +285,20 @@ class WhisperTranscriber(BaseTranscriber):
         )
 
         segments = []
-        ayah_idx = 1
-        
-        for i, seg in enumerate(segments_result):
-            text = seg.text.strip()
-            if not text:
-                continue
-
-            word_timestamps: list[WordTimestamp] = []
-            if seg.words:
-                for w in seg.words:
-                    word_timestamps.append(
-                        WordTimestamp(
-                            word=w.word.strip(),
-                            start=round(w.start, 3),
-                            end=round(w.end, 3),
-                            probability=round(w.probability, 4),
-                        )
-                    )
-
+        for i, s in enumerate(segments_result):
+            text = s.text.strip()
             seg_type, _ = detect_segment_type(text)
-            # Default ID to incremental i+1, override if it's an ayah type
-            seg_id = i + 1 
-            if seg_type == SegmentType.AYAH:
-                seg_id = ayah_idx
-                ayah_idx += 1
-
-            segments.append(Segment(
-                id=seg_id,
-                surah_id=surah_id,
-                start=round(seg.start, 2),
-                end=round(seg.end, 2),
-                text=text,
-                type=seg_type,
-                words=word_timestamps if word_timestamps else None,
-            ))
-
+            segments.append(
+                Segment(
+                    id=i,
+                    surah_id=surah_id,
+                    start=round(s.start, 2),
+                    end=round(s.end, 2),
+                    text=text,
+                    type=seg_type,
+                )
+            )
+        
         return segments
 
 

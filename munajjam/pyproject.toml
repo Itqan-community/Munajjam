@@ -46,16 +46,13 @@ dependencies = [
     "pydub>=0.25.1",
     "pandas>=2.0.0",
     "rapidfuzz>=3.0.0",
+    "faster-whisper>=1.0.0",
+    "soundfile>=0.12.0",
+    "whisperx",
 ]
 
 [project.optional-dependencies]
-faster-whisper = [
-    "faster-whisper>=1.0.0",
-    "soundfile>=0.12.0",
-]
-whisperx = [
-    "whisperx",
-]
+
 dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
@@ -63,7 +60,7 @@ dev = [
     "mypy>=1.0.0",
 ]
 all = [
-    "munajjam[faster-whisper,whisperx,dev]",
+    "munajjam[dev]",
 ]
 
 [project.scripts]

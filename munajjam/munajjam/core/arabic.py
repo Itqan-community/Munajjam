@@ -6,6 +6,7 @@ for accurate comparison between transcribed audio and reference Quran text.
 """
 
 import re
+from pathlib import Path
 from typing import Literal
 
 from munajjam.models.segment import Segment, SegmentType
@@ -191,3 +192,35 @@ def detect_segment_type(text: str) -> tuple[SegmentType, int]:
         return SegmentType.BASMALA, 0
 
     return SegmentType.AYAH, 1
+
+
+def infer_surah_number(audio_path: str | Path) -> int:
+    """
+    Infer surah number from the audio filename.
+
+    Extracts the first contiguous sequence of digits from the filename stem.
+    Expects filenames like '001.mp3', '114.mp3', 'surah_001.mp3', etc.
+
+    Args:
+        audio_path: Path to the audio file
+
+    Returns:
+        The inferred surah number (1-114)
+
+    Raises:
+        ValueError: If surah number cannot be inferred or is out of range.
+    """
+    from pathlib import Path
+
+    stem = Path(audio_path).stem
+    # Find the first contiguous group of digits in the filename
+    match = re.search(r"\d+", stem)
+    if match:
+        num = int(match.group())
+        if 1 <= num <= 114:
+            return num
+
+    raise ValueError(
+        f"Cannot infer surah number from filename '{audio_path}'. "
+        "Please provide surah number explicitly."
+    )

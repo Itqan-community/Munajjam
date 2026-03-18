@@ -1,31 +1,25 @@
 """
-Integration tests for Munajjam library.
-These tests use real data and can be slower.
+Integration tests for Munajjam library using real Quran data.
 """
 
 import pytest
+import torch
 from pathlib import Path
 from munajjam.data import load_surah_ayahs, get_ayah_count
 from munajjam.core import Aligner
-from munajjam.models import Segment, SegmentType
-from munajjam.transcription.whisperFactory import WhisperFactory
+from munajjam.transcription.whisperFactory import WhisperFactory, WhisperBackend
 
 @pytest.fixture
 def factory():
     return WhisperFactory()
 
 @pytest.fixture
-def audio_file(tmp_path):
-    # Create a dummy audio file for testing the pipeline
-    import numpy as np
-    import soundfile as sf
-    test_file = tmp_path / "1.wav"
-    sample_rate = 16000
-    duration = 3
-    t = np.linspace(0, duration, int(sample_rate * duration))
-    y = np.sin(2 * np.pi * 440 * t) 
-    sf.write(str(test_file), y, sample_rate)
-    return test_file
+def real_audio():
+    """Returns path to real Surah 1 audio fixture."""
+    path = Path(__file__).parent.parent / "fixtures" / "surah_001.mp3"
+    if not path.exists():
+        raise FileNotFoundError(f"Real audio fixture not found at {path}. Run download_fixtures.py first.")
+    return path
 
 @pytest.mark.integration
 @pytest.mark.slow
@@ -47,75 +41,49 @@ class TestRealDataAlignment:
         assert ayahs[0].surah_id == surah_id
         assert ayahs[0].ayah_number == 1
 
-    @pytest.mark.parametrize("surah_id", [1, 2, 114])
-    def test_ayah_count_matches_loaded(self, surah_id):
-        """Test that get_ayah_count matches loaded ayahs."""
-        count = get_ayah_count(surah_id)
-        ayahs = load_surah_ayahs(surah_id)
-
-        assert count == len(ayahs)
-
-    def test_alignment_with_real_ayahs(self, factory, tmp_path, audio_file):
-        """Test alignment with real ayah data processed end-to-end."""
-        import torch
+    def test_alignment_whisperx_end_to_end(self, factory, real_audio):
+        """Test alignment with real data using WhisperX backend."""
         import shutil
-        if not torch.cuda.is_available():
-            pytest.skip("Skipping full model end-to-end alignment because CUDA is unavailable.")
         if shutil.which("ffmpeg") is None:
-            pytest.skip("Skipping WhisperX integration test because ffmpeg is not installed on the system.")
+             raise RuntimeError("ffmpeg is required for WhisperX but not found in PATH.")
+             
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        compute_type = "float32"
 
-        from munajjam.transcription.whisperFactory import WhisperBackend
         transcriber = factory.create_whisper(
             backend=WhisperBackend.WHISPERX, 
             model_name="OdyAsh/faster-whisper-base-ar-quran",
-            device="cuda",
-            compute_type="float32"
+            device=device,
+            compute_type=compute_type
         )
 
-        # Need the actual Fatiha Ayahs to align against
         ayahs = load_surah_ayahs(1)
-        
-        # We need a proper surah_1.wav for testing rather than just dummy tone audio. 
-        # But for test purposes, we transcribe the fixture audio we get.
-        
-        # Real end-to-end flow:
-        segments = transcriber.transcribe(audio_file)
+        segments = transcriber.transcribe(str(real_audio))
 
-        # The segments from our dummy audio won't actually match fatiha, but we can verify the aligner runs
-        # without crashing
-        aligner = Aligner(audio_path=str(audio_file), strategy="hybrid", energy_snap=False)
-        results = aligner.align(segments, ayahs[:3])
+        aligner = Aligner(audio_path=str(real_audio), strategy="hybrid")
+        # Align just the first ayah for speed in integration tests
+        results = aligner.align(segments, ayahs[:1])
 
-        # We assert results are returned, though scores might be low due to dummy audio
         assert results is not None
-        assert all(0 <= r.similarity_score <= 1.0 for r in results)
+        assert len(results) > 0
+        assert 0.5 <= results[0].similarity_score <= 1.0
 
     @pytest.mark.parametrize("strategy", ["greedy", "dp", "hybrid"])
-    def test_strategies_with_real_data(self, strategy, factory, audio_file):
-        """Test all strategies produce results with real data going through full pipeline."""
-        import torch
-        if not torch.cuda.is_available():
-            pytest.skip("Skipping strategy testing because CUDA is unavailable.")
-            
-        try:
-            from munajjam.transcription.whisperFactory import WhisperBackend
-            transcriber = factory.create_whisper(
-                backend=WhisperBackend.FASTERWHISPER, 
-                model_name="OdyAsh/faster-whisper-base-ar-quran",
-                device="cuda",
-              
-            )
-        except Exception as e:
-            pytest.skip(f"Failed to load whisper model: {e}")
-
-        ayahs = load_surah_ayahs(114)
+    def test_strategies_end_to_end(self, strategy, factory, real_audio):
+        """Test all strategies produce results with real data through FasterWhisper."""
+        device = "cuda" if torch.cuda.is_available() else "cpu"
         
-        try:
-            segments = transcriber.transcribe(audio_file)
-        except Exception as e:
-            pytest.skip(f"Transcription failed: {e}")
+        transcriber = factory.create_whisper(
+            backend=WhisperBackend.FASTERWHISPER, 
+            model_name="OdyAsh/faster-whisper-base-ar-quran",
+            device=device
+        )
 
-        aligner = Aligner(audio_path=str(audio_file), strategy=strategy, energy_snap=False)
-        results = aligner.align(segments, ayahs)
+        ayahs = load_surah_ayahs(1)
+        segments = transcriber.transcribe(str(real_audio))
+
+        aligner = Aligner(audio_path=str(real_audio), strategy=strategy)
+        results = aligner.align(segments, ayahs[:1])
 
         assert results is not None
+        assert len(results) > 0

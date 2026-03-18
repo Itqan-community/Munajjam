@@ -9,6 +9,7 @@ Usage:
 """
 
 import argparse
+import io
 import json
 import re
 import sys
@@ -16,7 +17,7 @@ from pathlib import Path
 
 from munajjam import __version__
 from munajjam.transcription.whisperFactory import WhisperBackend, WhisperFactory
-
+from munajjam.core.arabic import infer_surah_number 
 # Valid surah range
 MIN_SURAH = 1
 MAX_SURAH = 114
@@ -145,26 +146,9 @@ def _validate_surah_number(surah_num: int) -> None:
         )
 
 
-def _infer_surah_number(audio_path: str) -> int:
-    """Infer surah number from the audio filename.
 
-    Extracts the first contiguous sequence of digits from the filename stem.
-    This avoids false results from filenames like 'surah_1_v2.mp3' where
-    joining all digits would produce '12' instead of '1'.
 
-    Expects filenames like '001.mp3', '114.mp3', 'surah_001.mp3', etc.
-    """
-    stem = Path(audio_path).stem
-    # Find the first contiguous group of digits in the filename
-    match = re.search(r"\d+", stem)
-    if match:
-        num = int(match.group())
-        if MIN_SURAH <= num <= MAX_SURAH:
-            return num
-    raise ValueError(
-        f"Cannot infer surah number from filename '{audio_path}'. "
-        "Please provide --surah explicitly."
-    )
+
 
 
 def _format_results(results: list, fmt: str) -> str:
@@ -202,7 +186,16 @@ def _write_output(content: str, output_path: str | None) -> None:
         Path(output_path).write_text(content, encoding="utf-8")
         print(f"Results written to {output_path}", file=sys.stderr)
     else:
-        print(content)
+        try:
+            print(content)
+        except UnicodeEncodeError:
+            # Fallback for Windows console with restricted encoding
+            if hasattr(sys.stdout, 'buffer'):
+                sys.stdout.buffer.write(content.encode('utf-8'))
+                sys.stdout.buffer.write(b'\n')
+            else:
+                # Last resort: replace unencodable characters
+                print(content.encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding))
 
 
 def cmd_align(args: argparse.Namespace) -> int:
@@ -220,7 +213,7 @@ def cmd_align(args: argparse.Namespace) -> int:
     surah_num = args.surah
     if surah_num is None:
         try:
-            surah_num = _infer_surah_number(audio_path)
+            surah_num = infer_surah_number(audio_path)
         except ValueError as e:
             print(f"Error: {e}", file=sys.stderr)
             return 1
@@ -262,7 +255,7 @@ def cmd_batch(args: argparse.Namespace) -> int:
     from munajjam.core import align
     from munajjam.data import load_surah_ayahs
     from munajjam.transcription import WhisperTranscriber
-
+    from munajjam.config import get_settings
     input_dir = Path(args.directory)
     if not input_dir.is_dir():
         print(f"Error: Directory not found: {args.directory}", file=sys.stderr)
@@ -278,9 +271,9 @@ def cmd_batch(args: argparse.Namespace) -> int:
 
     output_dir = Path(args.output_dir) if args.output_dir else input_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-
+    settings = get_settings()
     print(f"Found {len(audio_files)} audio files to process.", file=sys.stderr)
-    transcriber = WhisperFactory().create_whisper(backend=WhisperBackend(args.whisper_backend))
+    transcriber = WhisperFactory().create_whisper(backend=WhisperBackend(args.whisper_backend),model_name=settings.model_id,device=settings.devic )
   
 
 
@@ -288,7 +281,7 @@ def cmd_batch(args: argparse.Namespace) -> int:
 
     for audio_file in audio_files:
         try:
-            surah_num = _infer_surah_number(str(audio_file))
+            surah_num = infer_surah_number(str(audio_file))
             _validate_surah_number(surah_num)
             print(
                 f"Processing surah {surah_num}: {audio_file.name}...",
@@ -336,6 +329,21 @@ def main(argv: list[str] | None = None) -> int:
 
 def cli() -> None:
     """Entry point for the console_scripts."""
+    # Ensure UTF-8 output based on platform and environment
+    if sys.platform == "win32":
+        try:
+            # Python 3.7+ approach for reconfiguring standard streams
+            if hasattr(sys.stdout, "reconfigure"):
+                sys.stdout.reconfigure(encoding="utf-8")
+                sys.stderr.reconfigure(encoding="utf-8")
+            else:
+                # Legacy or restricted environments
+                import io
+                sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+                sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
+        except Exception:
+            pass
+            
     sys.exit(main())
 
 
