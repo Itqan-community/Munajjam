@@ -17,12 +17,17 @@ class BaseTranscriber(ABC):
     All transcriber implementations (Whisper, custom models, etc.)
     must implement this interface.
 
-    Example:
-        class MyTranscriber(BaseTranscriber):
-            def transcribe(self, audio_path: str) -> list[Segment]:
-                # Custom implementation
-                ...
+        with WhisperTranscriber() as transcriber:
+            segments = transcriber.transcribe("surah_1.wav", surah_id=1)
     """
+
+    def __enter__(self):
+        """Context manager support."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager support."""
+        pass
 
     @abstractmethod
     def transcribe(

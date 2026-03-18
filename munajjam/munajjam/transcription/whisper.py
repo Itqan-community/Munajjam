@@ -31,15 +31,11 @@ class WhisperTranscriber(BaseTranscriber):
 
     Example:
         transcriber = WhisperTranscriber()
-        transcriber.load()
-
-        segments = transcriber.transcribe("surah_1.wav")
-
-        transcriber.unload()
+        segments = transcriber.transcribe("surah_1.wav", surah_id=1)
 
     Or using context manager:
         with WhisperTranscriber() as transcriber:
-            segments = transcriber.transcribe("surah_1.wav")
+            segments = transcriber.transcribe("surah_1.wav", surah_id=1)
     """
 
     def __init__(

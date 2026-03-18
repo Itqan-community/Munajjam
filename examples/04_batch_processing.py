@@ -25,7 +25,7 @@ def process_surah(transcriber, audio_path, surah_number):
     start_time = time.time()
 
     # Transcribe
-    segments = transcriber.transcribe(str(audio_path))
+    segments = transcriber.transcribe(str(audio_path), surah_id=surah_number)
 
     # Load ayahs
     ayahs = load_surah_ayahs(surah_number)
@@ -79,7 +79,6 @@ def main():
     # Initialize transcriber and aligner (reused across all surahs)
     print("\nInitializing models...")
     transcriber = WhisperTranscriber()
-    transcriber.load()
 
     print("  ✓ Models loaded")
 
@@ -123,7 +122,7 @@ def main():
     total_elapsed = time.time() - total_start
 
     # Cleanup
-    transcriber.unload()
+    # No explicit unload needed
 
     # Generate summary report
     print("\n" + "=" * 80)

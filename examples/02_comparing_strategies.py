@@ -66,7 +66,7 @@ def main():
     # Step 1: Transcribe once (shared across all strategies)
     print("\nTranscribing audio...")
     with WhisperTranscriber() as transcriber:
-        segments = transcriber.transcribe(audio_path)
+        segments = transcriber.transcribe(audio_path, surah_id=surah_number)
 
     print(f"Found {len(segments)} segments")
 

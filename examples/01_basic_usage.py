@@ -24,7 +24,7 @@ def main():
     # Step 1: Transcribe the audio
     print("Step 1: Transcribing audio...")
     with WhisperTranscriber() as transcriber:
-        segments = transcriber.transcribe(audio_path)
+        segments = transcriber.transcribe(audio_path, surah_id=surah_number)
     print(f"  Found {len(segments)} segments")
     print(f"  Total duration: {segments[-1].end:.2f} seconds\n")
 
