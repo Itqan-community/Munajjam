@@ -190,7 +190,7 @@ class WhisperTranscriber(BaseTranscriber):
         Args:
             audio_path: Path to the audio file (WAV)
             batch_size: Batch size for transcribing
-            surah_id: Optional surah number (inferred from filename if not provided)
+            surah_id: surah number
 
         Returns:
             List of transcribed Segment objects
