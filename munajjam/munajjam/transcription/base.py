@@ -28,9 +28,10 @@ class BaseTranscriber(ABC):
     def transcribe(
         self,
         audio_path: str | Path,
+        surah_id: int,
         batch_size: int = 16,
-        surah_id: int | None = None,
     ) -> list[Segment]:
+        ...
         """
         Transcribe an audio file to segments.
 
@@ -46,4 +47,3 @@ class BaseTranscriber(ABC):
             TranscriptionError: If transcription fails
             AudioFileError: If audio file cannot be read
         """
-        pass

@@ -333,8 +333,8 @@ def cli() -> None:
         try:
             # Python 3.7+ approach for reconfiguring standard streams
             if hasattr(sys.stdout, "reconfigure"):
-                sys.stdout.reconfigure(encoding="utf-8")
-                sys.stderr.reconfigure(encoding="utf-8")
+                sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+                sys.stderr.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
             else:
                 # Legacy or restricted environments
                 import io

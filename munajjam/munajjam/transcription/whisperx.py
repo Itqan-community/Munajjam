@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import whisperx
 
 from munajjam.core.arabic import detect_segment_type
@@ -13,24 +15,20 @@ class Whisperx(BaseTranscriber):
 
     def transcribe(
         self,
-        audio_path: str,
+        audio_path: str | Path,
+        surah_id: int,
         batch_size: int = 16,
-        surah_id: int | None = None,
     ) -> list[Segment]:
-        if surah_id is None:
-            raise ValueError(
-                "surah_id is required. Please provide it or ensure it's inferred in the caller."
-            )
         audio = whisperx.load_audio(audio_path)
         result = self.model.transcribe(audio, batch_size=batch_size)
 
         segments = []
-        for i, s in enumerate(result["segments"], start=1):
+        for s in result["segments"]:
             text = s["text"].strip()
-            seg_type, _ = detect_segment_type(text)
+            seg_type, seg_id = detect_segment_type(text)
             segments.append(
                 Segment(
-                    id=i,
+                    id=seg_id,
                     surah_id=surah_id,
                     start=round(s["start"], 2),
                     end=round(s["end"], 2),

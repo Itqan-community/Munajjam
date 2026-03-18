@@ -181,8 +181,8 @@ class WhisperTranscriber(BaseTranscriber):
     def transcribe(
         self,
         audio_path: str | Path,
+        surah_id: int,
         batch_size: int = 16,
-        surah_id: int | None = None,
     ) -> list[Segment]:
         """
         Transcribe an audio file to segments.
@@ -197,11 +197,6 @@ class WhisperTranscriber(BaseTranscriber):
         """
 
         audio_path = Path(audio_path)
-        # Use surah_id if provided, otherwise raise
-        if surah_id is None:
-            raise ValueError(
-                "surah_id is required. Please provide it or ensure it's inferred in the caller."
-            )
 
         if self._model_type == "faster-whisper":
             segments = self._transcribe_faster_whisper(audio_path, surah_id, batch_size)
@@ -251,11 +246,11 @@ class WhisperTranscriber(BaseTranscriber):
             # we simply return a single segment representing the whole audio.
             # (Note: In production for large files, pipeline() is preferred)
             duration = librosa.get_duration(y=waveform, sr=sr)
-            seg_type, _ = detect_segment_type(text)
+            seg_type, seg_id = detect_segment_type(text)
 
             return [
                 Segment(
-                    id=1,
+                    id=seg_id,
                     surah_id=surah_id,
                     start=0.0,
                     end=round(duration, 2),
@@ -305,12 +300,12 @@ class WhisperTranscriber(BaseTranscriber):
             )
 
         segments = []
-        for i, s in enumerate(segments_result, start=1):
+        for s in segments_result:
             text = s.text.strip()
-            seg_type, _ = detect_segment_type(text)
+            seg_type, seg_id = detect_segment_type(text)
             segments.append(
                 Segment(
-                    id=i,
+                    id=seg_id,
                     surah_id=surah_id,
                     start=round(s.start, 2),
                     end=round(s.end, 2),
