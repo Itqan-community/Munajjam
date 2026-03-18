@@ -1,25 +1,29 @@
 from munajjam.models import Segment
-import os
-
 from munajjam.transcription.base import BaseTranscriber
 import whisperx
 from whisperx.schema import TranscriptionResult 
 from munajjam.core.arabic import detect_segment_type, infer_surah_number
-from typing import List
+from typing import List, Optional
 class Whisperx(BaseTranscriber):
     def __init__(self, model_name:str, device:str="cuda",compute_type:str="float16"):
         self.model_name = model_name
         self.device = device
         self.model = whisperx.load_model(model_name, device=device,compute_type=compute_type)
 
-    def transcribe(self, audio_path: str, batch_size: int = 16) -> List[Segment]: 
-        
+    def transcribe(
+        self,
+        audio_path: str,
+        batch_size: int = 16,
+        surah_id: Optional[int] = None,
+    ) -> List[Segment]:
+        if surah_id is None:
+            raise ValueError("surah_id is required. Please provide it or ensure it's inferred in the caller.")
         audio = whisperx.load_audio(audio_path)
         result = self.model.transcribe(audio, batch_size=batch_size)
-        
-        surah_id = infer_surah_number(audio_path)
+
+   
         segments = []
-        for i, s in enumerate(result["segments"]):
+        for i, s in enumerate(result["segments"], start=1):
             text = s["text"].strip()
             seg_type, _ = detect_segment_type(text)
             segments.append(

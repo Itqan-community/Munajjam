@@ -18,7 +18,7 @@ def real_audio():
     """Returns path to real Surah 1 audio fixture."""
     path = Path(__file__).parent.parent / "fixtures" / "surah_001.mp3"
     if not path.exists():
-        raise FileNotFoundError(f"Real audio fixture not found at {path}. Run download_fixtures.py first.")
+        pytest.skip(f"Real audio fixture not found at {path}. Run download_fixtures.py first.")
     return path
 
 @pytest.mark.integration
@@ -45,7 +45,7 @@ class TestRealDataAlignment:
         """Test alignment with real data using WhisperX backend."""
         import shutil
         if shutil.which("ffmpeg") is None:
-             raise RuntimeError("ffmpeg is required for WhisperX but not found in PATH.")
+            pytest.skip("ffmpeg is required for WhisperX but not found in PATH.")
              
         device = "cuda" if torch.cuda.is_available() else "cpu"
         compute_type = "float32"
@@ -58,7 +58,7 @@ class TestRealDataAlignment:
         )
 
         ayahs = load_surah_ayahs(1)
-        segments = transcriber.transcribe(str(real_audio))
+        segments = transcriber.transcribe(str(real_audio), surah_id=1)
 
         aligner = Aligner(audio_path=str(real_audio), strategy="hybrid")
         # Align just the first ayah for speed in integration tests
@@ -80,7 +80,7 @@ class TestRealDataAlignment:
         )
 
         ayahs = load_surah_ayahs(1)
-        segments = transcriber.transcribe(str(real_audio))
+        segments = transcriber.transcribe(str(real_audio), surah_id=1)
 
         aligner = Aligner(audio_path=str(real_audio), strategy=strategy)
         results = aligner.align(segments, ayahs[:1])

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 from munajjam.cli import (
     create_parser,
     main,
-    _infer_surah_number,
+    infer_surah_number,
     _format_results,
     _validate_surah_number,
 )
@@ -140,39 +140,39 @@ class TestInferSurahNumber:
     """Tests for surah number inference from filenames."""
 
     def test_simple_number(self):
-        assert _infer_surah_number("001.mp3") == 1
+        assert infer_surah_number("001.mp3") == 1
 
     def test_three_digit_number(self):
-        assert _infer_surah_number("114.mp3") == 114
+        assert infer_surah_number("114.mp3") == 114
 
     def test_with_prefix(self):
-        assert _infer_surah_number("surah_001.mp3") == 1
+        assert infer_surah_number("surah_001.mp3") == 1
 
     def test_two_digit(self):
-        assert _infer_surah_number("36.mp3") == 36
+        assert infer_surah_number("36.mp3") == 36
 
     def test_invalid_number(self):
         with pytest.raises(ValueError, match="Cannot infer surah number"):
-            _infer_surah_number("no_number.mp3")
+            infer_surah_number("no_number.mp3")
 
     def test_number_out_of_range(self):
         with pytest.raises(ValueError, match="Cannot infer surah number"):
-            _infer_surah_number("200.mp3")
+            infer_surah_number("200.mp3")
 
     def test_zero(self):
         with pytest.raises(ValueError, match="Cannot infer surah number"):
-            _infer_surah_number("000.mp3")
+            infer_surah_number("000.mp3")
 
     def test_filename_with_multiple_numbers(self):
         """Regression: 'surah_1_v2.mp3' should infer surah 1, not 12."""
-        assert _infer_surah_number("surah_1_v2.mp3") == 1
+        assert infer_surah_number("surah_1_v2.mp3") == 1
 
     def test_filename_reciter_prefix(self):
         """Regression: 'reciter_3_v5.mp3' should infer surah 3, not 35."""
-        assert _infer_surah_number("reciter_3_v5.mp3") == 3
+        assert infer_surah_number("reciter_3_v5.mp3") == 3
 
     def test_filename_with_path(self):
-        assert _infer_surah_number("/path/to/audio/001.mp3") == 1
+        assert infer_surah_number("/path/to/audio/001.mp3") == 1
 
 
 class TestFormatResults:

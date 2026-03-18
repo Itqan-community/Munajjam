@@ -80,12 +80,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="Output format (default: json)",
     )
     align_parser.add_argument(
-            "--whisper-backend",
-            type=str,
-            choices=["fasterwhisper", "whisperx"],
-            default="whisperx",
-            help="Whisper backend to use (default: whisperx)",
-        )
+        "--whisper-backend",
+        type=str,
+        choices=[b.value for b in WhisperBackend],
+        default=WhisperBackend.OPENAI.value,
+        help=f"Whisper backend to use (default: {WhisperBackend.OPENAI.value})",
+    )
     # --- batch subcommand ---
     batch_parser = subparsers.add_parser(
         "batch",
@@ -125,12 +125,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="Alignment strategy to use (default: auto)",
     )
     batch_parser.add_argument(
-            "--whisper-backend",
-            type=str,   
-            choices=["fasterwhisper", "whisperx"],
-            default="whisperx",
-            help="Whisper backend to use (default: whisperx)",
-        )
+        "--whisper-backend",
+        type=str,
+        choices=[b.value for b in WhisperBackend],
+        default=WhisperBackend.OPENAI.value,
+        help=f"Whisper backend to use (default: {WhisperBackend.OPENAI.value})",
+    )
     return parser
 
 
@@ -237,7 +237,7 @@ def cmd_align(args: argparse.Namespace) -> int:
         device=settings.device
     )
   
-    segments = transcriber.transcribe(audio_path)
+    segments = transcriber.transcribe(audio_path, surah_id=surah_num)
 
     # Align
     ayahs = load_surah_ayahs(surah_num)
@@ -273,7 +273,11 @@ def cmd_batch(args: argparse.Namespace) -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     settings = get_settings()
     print(f"Found {len(audio_files)} audio files to process.", file=sys.stderr)
-    transcriber = WhisperFactory().create_whisper(backend=WhisperBackend(args.whisper_backend),model_name=settings.model_id,device=settings.devic )
+    transcriber = WhisperFactory().create_whisper(
+        backend=WhisperBackend(args.whisper_backend),
+        model_name=settings.model_id,
+        device=settings.device,
+    )
   
 
 
@@ -288,7 +292,7 @@ def cmd_batch(args: argparse.Namespace) -> int:
                 file=sys.stderr,
             )
 
-            segments = transcriber.transcribe(str(audio_file))
+            segments = transcriber.transcribe(str(audio_file), surah_id=surah_num)
             ayahs = load_surah_ayahs(surah_num)
             results = align(str(audio_file), segments, ayahs, strategy=args.strategy)
 

@@ -27,7 +27,12 @@ class BaseTranscriber(ABC):
     """
 
     @abstractmethod
-    def transcribe(self, audio_path: str | Path, batch_size: int = 16) -> list[Segment]:
+    def transcribe(
+        self,
+        audio_path: str | Path,
+        batch_size: int = 16,
+        surah_id: int | None = None,
+    ) -> list[Segment]:
         """
         Transcribe an audio file to segments.
 

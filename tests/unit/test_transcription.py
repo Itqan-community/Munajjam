@@ -54,7 +54,7 @@ def test_whisperx_transcribe(mock_whisperx_module):
     transcriber = Whisperx(model_name="base", device="cpu")
     
     # Actually call transcribe
-    segments = transcriber.transcribe("dummy_audio.wav", batch_size=8)
+    segments = transcriber.transcribe("dummy_audio.wav", batch_size=8, surah_id=1)
     
     assert len(segments) == 1
     assert segments[0].text == "hello"
@@ -97,7 +97,7 @@ def test_whisper_transcriber_transcribe_transformers(
     with patch("munajjam.transcription.whisper.librosa.get_duration", return_value=1.5):
         # Mock Arabic text detection assuming an ayah mapping function could be invoked
         with patch("munajjam.transcription.whisper.detect_segment_type", return_value=(SegmentType.AYAH, 1)):
-            segments = transcriber.transcribe("1.wav")
+            segments = transcriber.transcribe("1.wav", surah_id=1)
     
     assert len(segments) == 1
     assert segments[0].text == "اَلْحَمْدُ لِلَّهِ"

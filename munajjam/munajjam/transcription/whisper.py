@@ -185,37 +185,35 @@ class WhisperTranscriber(BaseTranscriber):
         self,
         audio_path: str | Path,
         batch_size: int = 16,
+        surah_id: int | None = None,
     ) -> list[Segment]:
         """
         Transcribe an audio file to segments.
 
         Args:
             audio_path: Path to the audio file (WAV)
-            batch_size: Batch size for transcribing (not currently used by standard whisper backends)
+            batch_size: Batch size for transcribing
+            surah_id: Optional surah number (inferred from filename if not provided)
 
         Returns:
             List of transcribed Segment objects
         """
 
         audio_path = Path(audio_path)
-        if not audio_path.exists():
-            raise AudioFileError(str(audio_path), "File not found")
-
-        # Extract surah ID from filename
-  
-        try:
-            surah_id = infer_surah_number(audio_path)
-        except ValueError:
-            surah_id = 1  # Default fallback if name isn't an integer
+        # Use surah_id if provided, otherwise raise
+        if surah_id is None:
+            raise ValueError(
+                "surah_id is required. Please provide it or ensure it's inferred in the caller."
+            )
 
         if self._model_type == "faster-whisper":
-            segments = self._transcribe_faster_whisper(audio_path, surah_id)
+            segments = self._transcribe_faster_whisper(audio_path, surah_id, batch_size)
         else:
-            segments = self._transcribe_transformers(audio_path, surah_id)
-            
+            segments = self._transcribe_transformers(audio_path, surah_id, batch_size)
+
         return segments
 
-    def _transcribe_transformers(self, audio_path: Path, surah_id: int) -> list[Segment]:
+    def _transcribe_transformers(self, audio_path: Path, surah_id: int, batch_size: int = 16) -> list[Segment]:
         """Transcribe using Transformers."""
         import warnings
         import torch
@@ -269,7 +267,8 @@ class WhisperTranscriber(BaseTranscriber):
     def _transcribe_faster_whisper(
         self,
         audio_path: Path,
-        surah_id: int
+        surah_id: int,
+        batch_size: int = 16,
     ) -> list[Segment]:
         """Transcribe an audio file using Faster Whisper (whisper.cpp)."""
         
@@ -277,15 +276,35 @@ class WhisperTranscriber(BaseTranscriber):
              raise ModelNotLoadedError("Faster Whisper model not loaded.")
              
         # We pass string to faster-whisper directly
-        segments_result, _ = self._model.transcribe(
-            str(audio_path),
-            beam_size=5,
-            language="ar",
-            word_timestamps=True,
-        )
+        if batch_size > 1:
+            try:
+                from faster_whisper import BatchedInferencePipeline
+                pipeline = BatchedInferencePipeline(self._model)
+                segments_result, _ = pipeline.transcribe(
+                    str(audio_path),
+                    batch_size=batch_size,
+                    beam_size=5,
+                    language="ar",
+                    word_timestamps=True,
+                )
+            except (ImportError, AttributeError):
+                # Fallback to standard transcribe if BatchedInferencePipeline not available
+                segments_result, _ = self._model.transcribe(
+                    str(audio_path),
+                    beam_size=5,
+                    language="ar",
+                    word_timestamps=True,
+                )
+        else:
+            segments_result, _ = self._model.transcribe(
+                str(audio_path),
+                beam_size=5,
+                language="ar",
+                word_timestamps=True,
+            )
 
         segments = []
-        for i, s in enumerate(segments_result):
+        for i, s in enumerate(segments_result, start=1):
             text = s.text.strip()
             seg_type, _ = detect_segment_type(text)
             segments.append(
