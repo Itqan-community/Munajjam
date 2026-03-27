@@ -8,7 +8,7 @@ Usage:
 
     # Transcribe
     with WhisperTranscriber() as transcriber:
-        segments = transcriber.transcribe("surah_1.wav")
+        segments = transcriber.transcribe("surah_1.wav", surah_id=1)
 
     # Align
     ayahs = load_surah_ayahs(1)

@@ -2,19 +2,20 @@
 Command-line interface for Munajjam.
 
 Usage:
-    munajjam align <audio_file> [--surah <number>] [--strategy <name>] [--output <file>] [--format <fmt>]
-    munajjam batch <directory> [--pattern <glob>] [--output-dir <dir>] [--format <fmt>]
+    munajjam align <audio_file> [--surah <number>] [--strategy <name>] [--output <file>] [--format <fmt>] [--whisper-backend <backend>]
+    munajjam batch <directory> [--pattern <glob>] [--output-dir <dir>] [--format <fmt>] [--whisper-backend <backend>]
     munajjam --version
     munajjam --help
 """
 
 import argparse
 import json
-import re
 import sys
 from pathlib import Path
 
 from munajjam import __version__
+from munajjam.core.arabic import infer_surah_number
+from munajjam.transcription.whisperFactory import WhisperBackend, WhisperFactory
 
 # Valid surah range
 MIN_SURAH = 1
@@ -76,7 +77,13 @@ def create_parser() -> argparse.ArgumentParser:
         default="json",
         help="Output format (default: json)",
     )
-
+    align_parser.add_argument(
+        "--whisper-backend",
+        type=str,
+        choices=[b.value for b in WhisperBackend],
+        default=WhisperBackend.OPENAI.value,
+        help=f"Whisper backend to use (default: {WhisperBackend.OPENAI.value})",
+    )
     # --- batch subcommand ---
     batch_parser = subparsers.add_parser(
         "batch",
@@ -115,7 +122,13 @@ def create_parser() -> argparse.ArgumentParser:
         default="auto",
         help="Alignment strategy to use (default: auto)",
     )
-
+    batch_parser.add_argument(
+        "--whisper-backend",
+        type=str,
+        choices=[b.value for b in WhisperBackend],
+        default=WhisperBackend.OPENAI.value,
+        help=f"Whisper backend to use (default: {WhisperBackend.OPENAI.value})",
+    )
     return parser
 
 
@@ -129,28 +142,6 @@ def _validate_surah_number(surah_num: int) -> None:
         raise ValueError(
             f"Invalid surah number: {surah_num}. Must be between {MIN_SURAH} and {MAX_SURAH}."
         )
-
-
-def _infer_surah_number(audio_path: str) -> int:
-    """Infer surah number from the audio filename.
-
-    Extracts the first contiguous sequence of digits from the filename stem.
-    This avoids false results from filenames like 'surah_1_v2.mp3' where
-    joining all digits would produce '12' instead of '1'.
-
-    Expects filenames like '001.mp3', '114.mp3', 'surah_001.mp3', etc.
-    """
-    stem = Path(audio_path).stem
-    # Find the first contiguous group of digits in the filename
-    match = re.search(r"\d+", stem)
-    if match:
-        num = int(match.group())
-        if MIN_SURAH <= num <= MAX_SURAH:
-            return num
-    raise ValueError(
-        f"Cannot infer surah number from filename '{audio_path}'. "
-        "Please provide --surah explicitly."
-    )
 
 
 def _format_results(results: list, fmt: str) -> str:
@@ -188,14 +179,26 @@ def _write_output(content: str, output_path: str | None) -> None:
         Path(output_path).write_text(content, encoding="utf-8")
         print(f"Results written to {output_path}", file=sys.stderr)
     else:
-        print(content)
+        try:
+            print(content)
+        except UnicodeEncodeError:
+            # Fallback for Windows console with restricted encoding
+            if hasattr(sys.stdout, "buffer"):
+                sys.stdout.buffer.write(content.encode("utf-8"))
+                sys.stdout.buffer.write(b"\n")
+            else:
+                # Last resort: replace unencodable characters
+                print(
+                    content.encode(sys.stdout.encoding, errors="replace").decode(
+                        sys.stdout.encoding
+                    )
+                )
 
 
 def cmd_align(args: argparse.Namespace) -> int:
     """Execute the align command."""
     from munajjam.core import align
     from munajjam.data import load_surah_ayahs
-    from munajjam.transcription import WhisperTranscriber
 
     audio_path = args.audio_file
     if not Path(audio_path).exists():
@@ -206,7 +209,7 @@ def cmd_align(args: argparse.Namespace) -> int:
     surah_num = args.surah
     if surah_num is None:
         try:
-            surah_num = _infer_surah_number(audio_path)
+            surah_num = infer_surah_number(audio_path)
         except ValueError as e:
             print(f"Error: {e}", file=sys.stderr)
             return 1
@@ -221,9 +224,17 @@ def cmd_align(args: argparse.Namespace) -> int:
     print(f"Processing surah {surah_num} from {audio_path}...", file=sys.stderr)
     print(f"Strategy: {args.strategy}", file=sys.stderr)
 
-    # Transcribe
-    with WhisperTranscriber() as transcriber:
-        segments = transcriber.transcribe(audio_path)
+    from munajjam.config import get_settings
+
+    settings = get_settings()
+
+    transcriber = WhisperFactory().create_whisper(
+        backend=WhisperBackend(args.whisper_backend),
+        model_name=settings.model_id,
+        device=settings.device,
+    )
+
+    segments = transcriber.transcribe(audio_path, surah_id=surah_num)
 
     # Align
     ayahs = load_surah_ayahs(surah_num)
@@ -238,9 +249,9 @@ def cmd_align(args: argparse.Namespace) -> int:
 
 def cmd_batch(args: argparse.Namespace) -> int:
     """Execute the batch command."""
+    from munajjam.config import get_settings
     from munajjam.core import align
     from munajjam.data import load_surah_ayahs
-    from munajjam.transcription import WhisperTranscriber
 
     input_dir = Path(args.directory)
     if not input_dir.is_dir():
@@ -257,35 +268,40 @@ def cmd_batch(args: argparse.Namespace) -> int:
 
     output_dir = Path(args.output_dir) if args.output_dir else input_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-
+    settings = get_settings()
     print(f"Found {len(audio_files)} audio files to process.", file=sys.stderr)
+    transcriber = WhisperFactory().create_whisper(
+        backend=WhisperBackend(args.whisper_backend),
+        model_name=settings.model_id,
+        device=settings.device,
+    )
 
     errors = 0
-    with WhisperTranscriber() as transcriber:
-        for audio_file in audio_files:
-            try:
-                surah_num = _infer_surah_number(str(audio_file))
-                _validate_surah_number(surah_num)
-                print(
-                    f"Processing surah {surah_num}: {audio_file.name}...",
-                    file=sys.stderr,
-                )
 
-                segments = transcriber.transcribe(str(audio_file))
-                ayahs = load_surah_ayahs(surah_num)
-                results = align(str(audio_file), segments, ayahs, strategy=args.strategy)
+    for audio_file in audio_files:
+        try:
+            surah_num = infer_surah_number(str(audio_file))
+            _validate_surah_number(surah_num)
+            print(
+                f"Processing surah {surah_num}: {audio_file.name}...",
+                file=sys.stderr,
+            )
 
-                # Determine output extension
-                ext = {"json": ".json", "csv": ".csv", "text": ".txt"}[args.format]
-                output_path = output_dir / f"{audio_file.stem}{ext}"
+            segments = transcriber.transcribe(str(audio_file), surah_id=surah_num)
+            ayahs = load_surah_ayahs(surah_num)
+            results = align(str(audio_file), segments, ayahs, strategy=args.strategy)
 
-                content = _format_results(results, args.format)
-                output_path.write_text(content, encoding="utf-8")
-                print(f"  -> {output_path}", file=sys.stderr)
+            # Determine output extension
+            ext = {"json": ".json", "csv": ".csv", "text": ".txt"}[args.format]
+            output_path = output_dir / f"{audio_file.stem}{ext}"
 
-            except Exception as e:
-                print(f"  Error processing {audio_file.name}: {e}", file=sys.stderr)
-                errors += 1
+            content = _format_results(results, args.format)
+            output_path.write_text(content, encoding="utf-8")
+            print(f"  -> {output_path}", file=sys.stderr)
+
+        except Exception as e:
+            print(f"  Error processing {audio_file.name}: {e}", file=sys.stderr)
+            errors += 1
 
     total = len(audio_files)
     print(f"\nBatch complete: {total - errors}/{total} succeeded.", file=sys.stderr)
@@ -312,6 +328,22 @@ def main(argv: list[str] | None = None) -> int:
 
 def cli() -> None:
     """Entry point for the console_scripts."""
+    # Ensure UTF-8 output based on platform and environment
+    if sys.platform == "win32":
+        try:
+            # Python 3.7+ approach for reconfiguring standard streams
+            if hasattr(sys.stdout, "reconfigure"):
+                sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+                sys.stderr.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+            else:
+                # Legacy or restricted environments
+                import io
+
+                sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+                sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
+        except Exception:
+            pass
+
     sys.exit(main())
 
 

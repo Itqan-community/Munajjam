@@ -56,7 +56,7 @@ def main():
     # Step 3: Transcribe with custom settings
     print("\nStep 3: Transcribing audio...")
     with WhisperTranscriber() as transcriber:
-        segments = transcriber.transcribe(audio_path)
+        segments = transcriber.transcribe(audio_path, surah_id=surah_number)
 
     print(f"  Found {len(segments)} segments")
 
@@ -83,9 +83,9 @@ def main():
         audio_path=audio_path,  # Audio file (required)
         strategy="auto",
         quality_threshold=0.85,  # Threshold for high-quality alignment
-        fix_drift=True,          # Enable zone realignment
-        fix_overlaps=True,       # Fix overlapping ayahs
-        energy_snap=True,        # Snap boundaries to energy minima (default)
+        fix_drift=True,  # Enable zone realignment
+        fix_overlaps=True,  # Fix overlapping ayahs
+        energy_snap=True,  # Snap boundaries to energy minima (default)
     )
 
     results = aligner.align(

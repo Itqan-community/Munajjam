@@ -118,7 +118,7 @@ class TestMyFeature:
     def test_basic_usage(self, sample_segments, sample_ayahs):
         aligner = Aligner(strategy="hybrid")
         results = aligner.align(sample_segments, sample_ayahs)
-        
+
         assert len(results) > 0
 ```
 

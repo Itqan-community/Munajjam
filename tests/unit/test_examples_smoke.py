@@ -297,7 +297,10 @@ class TestExample02ComparingStrategies:
                 "example_02_comparing",
             )
             results, elapsed, avg_sim = mod.align_with_strategy(
-                mock_segments, mock_ayahs, "greedy", "/fake/audio.wav",
+                mock_segments,
+                mock_ayahs,
+                "greedy",
+                "/fake/audio.wav",
             )
             assert isinstance(results, list)
             assert len(results) > 0
@@ -493,7 +496,9 @@ class TestMunajjamExampleBasicUsage:
                 import basic_usage  # type: ignore[import-not-found]
 
                 output = basic_usage.process_surah(
-                    "/fake/audio.wav", 1, "Test Reciter",
+                    "/fake/audio.wav",
+                    1,
+                    "Test Reciter",
                 )
 
                 assert hasattr(output, "results")
@@ -511,7 +516,8 @@ class TestMunajjamExampleAlignment:
     """Smoke tests for munajjam/examples/example_alignment.py."""
 
     def test_core_functions_runs(
-        self, monkeypatch: pytest.MonkeyPatch,
+        self,
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """run_core_functions() runs without error (pure computation)."""
         monkeypatch.syspath_prepend(str(MUNAJJAM_EXAMPLES))
