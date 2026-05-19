@@ -1,0 +1,9 @@
+name: Org Compliance Check
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main, staging]
+
+jobs:
+  check:
+    uses: Itqan-community/.github/.github/workflows/hub-compliance.yml@main
