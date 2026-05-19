@@ -1,0 +1,9 @@
+name: Post-Deploy Health Check
+on:
+  push:
+    branches: [main, staging]
+
+jobs:
+  check:
+    uses: Itqan-community/.github/.github/workflows/health-check.yml@main
+    secrets: inherit
