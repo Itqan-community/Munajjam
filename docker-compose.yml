@@ -1,0 +1,29 @@
+# GPU (default):  docker compose up --build
+# CPU only:       docker compose -f docker-compose.yml -f docker-compose.cpu.yml up --build
+# ────────────────────────────────────────────────────────────────────
+services:
+  munajjam:
+    build: .
+    image: munajjam_api:latest
+    container_name: munajjam_api
+    security_opt:
+      - seccomp=unconfined
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist downloaded models across rebuilds
+      - model_data:/app/model_local
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-}
+    # GPU
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+volumes:
+  model_data:
