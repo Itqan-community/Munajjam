@@ -8,10 +8,7 @@ from fastapi import FastAPI, UploadFile, File, Form, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from munajjam.transcription import WhisperTranscriber
-from munajjam.data import load_surah_ayahs
-from munajjam.core import align
-from munajjam.formatters import format_alignment_results
+from munajjam.transcription.whisperFactory import WhisperFactory, WhisperBackend
 
 app = FastAPI(title="Munajjam API Server")
 
@@ -32,31 +29,26 @@ _executor = ThreadPoolExecutor(max_workers=1)
 def _run_job(job_id: str, file_location: str, surah_number: int):
     """
     مهمة خلفية تقوم بالنسخ الصوتي والمزامنة ثم تحديث حالة المهمة.
-    تحتفظ بنفس طرق التزمين الأساسية الخاصة بمكتبة منجم.
     """
     try:
         jobs[job_id]["status"] = "processing"
 
-        print(f"[Job {job_id[:8]}] Started processing Surah {surah_number}")
+        print(f"[Job {job_id[:8]}] Started processing Surah {surah_number} with WhisperX")
 
-        # 1. النسخ الصوتي باستخدام إعدادات منجم
-        with WhisperTranscriber() as transcriber:
-            segments = transcriber.transcribe(file_location, surah_id=surah_number)
-        
-        # 2. تحميل الآيات الخاصة بالسورة
-        ayahs = load_surah_ayahs(surah_number)
-        
-        # 3. المزامنة باستخدام خوارزميات منجم
-        results = align(file_location, segments, ayahs)
-        
-        # 4. تنسيق المخرجات
-        output = format_alignment_results(
-            results=results,
-            surah_id=surah_number
-        )
-        
-        # الواجهة الأمامية تتوقع البيانات ضمن مفتاح data
-        response_data = output.to_dict()["results"]
+        # استخدام WhisperX للحصول على تزمين على مستوى الكلمات
+        transcriber = WhisperFactory().create_whisper(backend=WhisperBackend.WHISPERX, model_name="large-v2")
+        segments = transcriber.transcribe(file_location, surah_id=surah_number)
+
+        response_data = []
+        for segment in segments:
+            ayah_data = {
+                "ayah_number": segment.id,
+                "start_time": segment.start,
+                "end_time": segment.end
+            }
+            if getattr(segment, "words", None):
+                ayah_data["words"] = [{"word": w.word, "start": w.start, "end": w.end} for w in segment.words]
+            response_data.append(ayah_data)
 
         jobs[job_id] = {
             "status": "success",
