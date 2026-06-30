@@ -183,7 +183,7 @@ def _finalize_ayah(
 
     # Update context
     ctx.results.append(result)
-    ctx.prev_ayah_end = buffered_end
+    ctx.prev_ayah_end = end_time
     ctx.current_ayah_idx += 1
 
     if overlap_detected:
