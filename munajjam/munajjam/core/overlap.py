@@ -78,56 +78,75 @@ def apply_buffers(
     new_start = start_time
     new_end = end_time
 
-    if not silences:
-        return new_start, new_end
-
-    # Convert silences to seconds and sort by start time
-    silences_sec = [(s[0] / 1000, s[1] / 1000) for s in silences]
+    silences_sec = [(s[0] / 1000, s[1] / 1000) for s in silences] if silences else []
     silences_sec.sort(key=lambda x: x[0])
 
-    # Find silence before start_time
-    best_silence_before = None
-    for silence_start, silence_end in silences_sec:
-        if silence_end <= start_time:
-            if best_silence_before is None or silence_end > best_silence_before[1]:
-                best_silence_before = (silence_start, silence_end)
-        elif silence_start > start_time:
-            break
+    # 1. Handle start time buffer
+    if prev_end is not None and start_time > prev_end:
+        gap = start_time - prev_end
+        if gap <= 0.3:
+            start_buffer = min(gap, 0.1)
+        elif gap >= 0.4:
+            start_buffer = 0.2
+        else:
+            start_buffer = gap / 2.0
+        new_start = start_time - start_buffer
+    else:
+        # Fallback to silence array logic
+        best_silence_before = None
+        for silence_start, silence_end in silences_sec:
+            if silence_end <= start_time:
+                if best_silence_before is None or silence_end > best_silence_before[1]:
+                    best_silence_before = (silence_start, silence_end)
+            elif silence_start > start_time:
+                break
+                
+        if best_silence_before:
+            silence_start, silence_end = best_silence_before
+            available_buffer = start_time - silence_start
+            buffer_to_apply = min(buffer, available_buffer)
+            buffer_start = start_time - buffer_to_apply
+            
+            if prev_end is None:
+                new_start = buffer_start
+            elif buffer_start >= prev_end:
+                new_start = buffer_start
+            elif prev_end < start_time:
+                new_start = max(buffer_start, prev_end)
 
-    if best_silence_before:
-        silence_start, silence_end = best_silence_before
-        available_buffer = start_time - silence_start
-        buffer_to_apply = min(buffer, available_buffer)
-        buffer_start = start_time - buffer_to_apply
-
-        if prev_end is None:
-            new_start = buffer_start
-        elif buffer_start >= prev_end:
-            new_start = buffer_start
-        elif prev_end < start_time:
-            new_start = max(buffer_start, prev_end)
-
-    # Find silence after end_time
-    best_silence_after = None
-    for silence_start, silence_end in silences_sec:
-        if silence_start >= end_time:
-            if best_silence_after is None or silence_start < best_silence_after[0]:
-                best_silence_after = (silence_start, silence_end)
-        elif silence_end < end_time:
-            continue
-
-    if best_silence_after:
-        silence_start, silence_end = best_silence_after
-        available_buffer = silence_end - end_time
-        buffer_to_apply = min(buffer, available_buffer)
-        buffer_end = end_time + buffer_to_apply
-
-        if next_start is None:
-            new_end = buffer_end
-        elif buffer_end <= next_start:
-            new_end = buffer_end
-        elif next_start > end_time:
-            new_end = min(buffer_end, next_start)
+    # 2. Handle end time buffer
+    if next_start is not None and next_start > end_time:
+        gap = next_start - end_time
+        if gap <= 0.3:
+            start_buffer_next = min(gap, 0.1)
+            end_buffer = gap - start_buffer_next
+        elif gap >= 0.4:
+            end_buffer = gap - 0.2
+        else:
+            end_buffer = gap / 2.0
+        new_end = end_time + end_buffer
+    else:
+        # Fallback to silence array logic
+        best_silence_after = None
+        for silence_start, silence_end in silences_sec:
+            if silence_start >= end_time:
+                if best_silence_after is None or silence_start < best_silence_after[0]:
+                    best_silence_after = (silence_start, silence_end)
+            elif silence_end < end_time:
+                continue
+                
+        if best_silence_after:
+            silence_start, silence_end = best_silence_after
+            available_buffer = silence_end - end_time
+            buffer_to_apply = min(buffer, available_buffer)
+            buffer_end = end_time + buffer_to_apply
+            
+            if next_start is None:
+                new_end = buffer_end
+            elif buffer_end <= next_start:
+                new_end = buffer_end
+            elif next_start > end_time:
+                new_end = min(buffer_end, next_start)
 
     return new_start, new_end
 
