@@ -35,7 +35,8 @@ class Whisperx(BaseTranscriber):
         self.wav2vec2_model_id = settings.wav2vec2_model_id
 
         self.whisper_model = None
-        self.whisper_model = None
+        self.align_model = None
+        self.align_metadata = None
 
     def _normalize_arabic(self, text: str) -> str:
         text = re.sub(r'[\u064B-\u065F\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]', '', text)
@@ -120,8 +121,11 @@ class Whisperx(BaseTranscriber):
                     segment["text"] = " ".join(seg_ref_texts[idx])
         # --- End Injection ---
         
-        model_a, metadata = whisperx.load_align_model(language_code="ar", device=self.device)
-        result = whisperx.align(result["segments"], model_a, metadata, audio, self.device, return_char_alignments=False)
+        if getattr(self, "align_model", None) is None:
+            print(f"Loading WhisperX alignment model...")
+            self.align_model, self.align_metadata = whisperx.load_align_model(language_code="ar", device=self.device)
+            
+        result = whisperx.align(result["segments"], self.align_model, self.align_metadata, audio, self.device, return_char_alignments=False)
         
         extracted_words = []
         for segment in result["segments"]:
@@ -185,10 +189,8 @@ class Whisperx(BaseTranscriber):
                     "confidence": 0.0
                 })
 
-        del model_a
+        # Memory cleanup for temp variables, but keep models loaded
         gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
             
         final_alignments = w_alignments
 

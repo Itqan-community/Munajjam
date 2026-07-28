@@ -26,6 +26,9 @@ jobs: dict = {}
 # ThreadPoolExecutor بمسار واحد لمنع تداخل عمليات كرت الشاشة (GPU)
 _executor = ThreadPoolExecutor(max_workers=1)
 
+print("Initializing global WhisperX transcriber (models will be loaded lazily on first request)...")
+global_transcriber = WhisperFactory().create_whisper(backend=WhisperBackend.WHISPERX, model_name="large-v2")
+
 def _run_job(job_id: str, file_location: str, surah_number: int):
     """
     مهمة خلفية تقوم بالنسخ الصوتي والمزامنة ثم تحديث حالة المهمة.
@@ -35,9 +38,8 @@ def _run_job(job_id: str, file_location: str, surah_number: int):
 
         print(f"[Job {job_id[:8]}] Started processing Surah {surah_number} with WhisperX")
 
-        # استخدام WhisperX للحصول على تزمين على مستوى الكلمات
-        transcriber = WhisperFactory().create_whisper(backend=WhisperBackend.WHISPERX, model_name="large-v2")
-        segments = transcriber.transcribe(file_location, surah_id=surah_number)
+        # استخدام WhisperX للحصول على تزمين على مستوى الكلمات (من الذاكرة المؤقتة)
+        segments = global_transcriber.transcribe(file_location, surah_id=surah_number)
 
         response_data = []
         for segment in segments:
@@ -68,11 +70,9 @@ def _run_job(job_id: str, file_location: str, surah_number: int):
         print(f"[Job {job_id[:8]}] Error: {str(e)}")
 
     finally:
-        # تنظيف الموارد
+        # تنظيف الموارد الخاصة بالملف المؤقت فقط (مع إبقاء النماذج بالذاكرة)
         if os.path.exists(file_location):
             os.remove(file_location)
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
         gc.collect()
 
 
