@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Standalone FastAPI server (`server.py`) for asynchronous audio alignment API
+- Dockerfile and docker-compose configurations for scalable API deployments
+- Asynchronous task queuing using FastAPI BackgroundTasks
 - Zone-level word-DP fallback for drifted pace regions
 - Phonetic similarity scoring for Arabic ASR confusion pairs
 - Energy-snap boundary adjustment (`energy_snap` parameter)

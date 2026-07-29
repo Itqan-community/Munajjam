@@ -14,14 +14,27 @@ Thank you for your interest in contributing to Munajjam!
 ```bash
 # Clone the repository
 git clone https://github.com/Itqan-community/munajjam.git
-cd munajjam/munajjam
+cd munajjam
 
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install with dev dependencies
+# Install the library with dev dependencies
+cd munajjam
 pip install -e ".[dev]"
+cd ..
+
+# Install FastAPI and Uvicorn for API Server development
+pip install fastapi uvicorn python-multipart
+```
+
+### Running the API Server Locally
+
+For API server development, you can run the server directly:
+
+```bash
+uvicorn server:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Setting Up Pre-commit Hooks

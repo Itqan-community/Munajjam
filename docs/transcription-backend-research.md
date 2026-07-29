@@ -22,21 +22,19 @@
 
 ---
 
-## Current State
+## Current State (Updated)
 
-Munajjam currently supports two transcription backends (configured via `model_type` in `munajjam/config.py`):
+Munajjam currently supports three transcription backends (configured via `model_type` in `munajjam/config.py` or `WhisperFactory`):
 
 | Setting | Value |
 |---------|-------|
-| Default model | `OdyAsh/faster-whisper-base-ar-quran` |
-| Default backend | `faster-whisper` |
+| API Server Default | `WhisperX` (large-v2) |
+| Library Default | `faster-whisper` (`OdyAsh/faster-whisper-base-ar-quran`) |
 | Alternative backend | `transformers` (HuggingFace pipeline) |
 | Device | Auto-detect (CUDA > MPS > CPU) |
-| Word timestamps | faster-whisper only (two-pass strategy) |
+| Word timestamps | `whisperx` (phoneme alignment) & `faster-whisper` (two-pass strategy) |
 
-The **faster-whisper** backend uses CTranslate2 under the hood and is already 4-5x faster than vanilla OpenAI Whisper. The **transformers** backend provides compatibility but does not produce word-level timestamps.
-
-Key bottleneck: the faster-whisper backend uses a **two-pass transcription strategy** (first pass for text, second pass for word timestamps), effectively doubling transcription time when word timestamps are needed.
+The **WhisperX** backend is now the recommended default for the standalone API server, as it provides batched inference and phoneme-based forced alignment. This resolves the previous bottleneck where the **faster-whisper** backend's two-pass strategy doubled transcription time. The **transformers** backend remains for baseline compatibility.
 
 ---
 
@@ -245,7 +243,7 @@ Models discovered on Hugging Face, ranked by adoption:
 
 ## Recommendations
 
-### Priority 1: WhisperX backend (High impact, Medium effort)
+### Priority 1: WhisperX backend (High impact, Medium effort) - ✅ IMPLEMENTED
 
 **Rationale**: WhisperX combines multiple optimizations that directly address Munajjam's needs:
 - Uses faster-whisper internally (already compatible with current Tarteel model)
@@ -254,13 +252,7 @@ Models discovered on Hugging Face, ranked by adoption:
 - Arabic phoneme alignment via `wav2vec2-large-xlsr-53-arabic` produces word timestamps far more precise than Whisper's attention-based method
 - **Eliminates the two-pass word timestamp bottleneck** in the current faster-whisper backend
 
-**Integration approach**:
-1. Add `whisperx` as an optional dependency (`pip install munajjam[whisperx]`)
-2. Implement a `WhisperXTranscriber` class extending `BaseTranscriber`
-3. The VAD segmentation could replace or augment the current `detect_silences()` function
-4. Forced alignment replaces the current two-pass transcription strategy
-
-**Dependencies**: `whisperx`, `torch`, `torchaudio`, plus ~1.2 GB wav2vec2 Arabic model download.
+**Status**: Implemented. `WhisperX` is now integrated via `WhisperFactory` and is the default backend utilized by the new FastAPI server (`server.py`). Ayah gap logic and word-level alignments have been fully optimized to work natively with WhisperX.
 
 ### Priority 2: Whisper Large v3 Turbo as model option (Low effort, Medium impact)
 

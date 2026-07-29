@@ -1,10 +1,40 @@
 # Munajjam
 
-**A Python library to synchronize Quran ayat with audio recitations.**
+**A Python library and API Server to synchronize Quran ayat with audio recitations.**
 
 Munajjam uses AI-powered speech recognition to automatically generate precise timestamps for each ayah in a Quran audio recording.
 
-## Installation
+## API Server & Docker (Recommended)
+
+You can run Munajjam as a standalone API server with asynchronous processing and GPU support.
+
+### Running with Docker
+
+The easiest way to run the API server is using Docker Compose:
+
+```bash
+git clone https://github.com/Itqan-community/munajjam.git
+cd munajjam
+
+# To run with GPU support (default)
+docker compose up --build
+
+# To run with CPU only
+docker compose -f docker-compose.yml -f docker-compose.cpu.yml up --build
+```
+
+### API Endpoints
+
+Once the server is running (default: http://localhost:8000), you can use the following endpoints:
+
+- **`POST /align/{surah_number}`**: Upload an audio file for a specific surah. Returns a `job_id`.
+  - Form Data: `file` (audio file), `riwaya` (e.g., "hafs")
+- **`GET /align/status/{job_id}`**: Check the status of the alignment job and get the results when ready.
+- **`GET /health`**: Health check.
+
+## Library Installation
+
+If you want to use Munajjam as a Python library:
 
 Clone the repository:
 
@@ -31,7 +61,7 @@ For development (editable install):
 pip install -e ".[dev]"
 ```
 
-## Quick Start
+## Quick Start (Library)
 
 ### 1. Download a sample recitation
 
@@ -78,6 +108,7 @@ Ayah 7: 33.98s - 46.44s
 
 ## Features
 
+- **API Server** - Async FastAPI server for handling concurrent alignment jobs
 - **Whisper Transcription** - Uses faster-whisper as default backend with Quran-tuned models
 - **Four Alignment Strategies** - Auto, Hybrid, DP, and Greedy
 - **Arabic Text Normalization** - Handles diacritics, hamzas, and character variations
@@ -122,6 +153,7 @@ See the [examples](./examples) directory for more usage patterns:
 - Python 3.10+
 - PyTorch 2.0+
 - FFmpeg (for audio processing)
+- Docker & Docker Compose (Optional, for running the API server)
 
 ## Community
 

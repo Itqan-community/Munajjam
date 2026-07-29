@@ -97,6 +97,26 @@ python 04_batch_processing.py
 
 ---
 
+### 5. API Client (`05_api_client.py`)
+
+**Difficulty:** Beginner
+
+Interact with the standalone API Server. Demonstrates:
+- Uploading an audio file to the `/align/{surah_number}` endpoint
+- Triggering a background transcription job
+- Polling the `/align/status/{job_id}` endpoint to get asynchronous results
+
+**Usage:**
+```bash
+python 05_api_client.py
+```
+
+**Learn:**
+- How to write a client for the Munajjam API server
+- How to handle background task polling
+
+---
+
 ## Before Running
 
 ### 1. Install Munajjam
