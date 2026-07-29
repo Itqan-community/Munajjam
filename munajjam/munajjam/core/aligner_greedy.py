@@ -294,7 +294,14 @@ def align_segments(
             # Check if reached end of ayah
             is_end, _ = _check_end_of_ayah(merged_text, ayah, settings)
             if is_end:
-                result = _finalize_ayah(ctx, merged_text, start_time, end_time, overlap_flag, merged_segments=current_segments)
+                result = _finalize_ayah(
+                    ctx,
+                    merged_text,
+                    start_time,
+                    end_time,
+                    overlap_flag,
+                    merged_segments=current_segments,
+                )
                 if on_ayah_aligned:
                     on_ayah_aligned(result)
                 break
@@ -384,7 +391,14 @@ def align_segments(
 
             else:
                 # End of segments - finalize last ayah
-                result = _finalize_ayah(ctx, merged_text, start_time, end_time, overlap_flag, merged_segments=current_segments)
+                result = _finalize_ayah(
+                    ctx,
+                    merged_text,
+                    start_time,
+                    end_time,
+                    overlap_flag,
+                    merged_segments=current_segments,
+                )
                 if on_ayah_aligned:
                     on_ayah_aligned(result)
                 break

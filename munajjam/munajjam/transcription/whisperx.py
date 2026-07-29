@@ -4,12 +4,15 @@ from pathlib import Path
 
 try:
     import torch
+
     # Workaround for PyTorch 2.6+ weights_only=True default which breaks pyannote/lightning
     _original_torch_load = getattr(torch, "load", None)
     if _original_torch_load:
+
         def _patched_torch_load(*args, **kwargs):
             kwargs["weights_only"] = False
             return _original_torch_load(*args, **kwargs)
+
         torch.load = _patched_torch_load
 
     import whisperx
@@ -41,9 +44,9 @@ class Whisperx(BaseTranscriber):
         self.align_metadata = None
 
     def _normalize_arabic(self, text: str) -> str:
-        text = re.sub(r'[\u064B-\u065F\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]', '', text)
-        text = re.sub(r'[أإآٱ]', 'ا', text)
-        text = re.sub(r'[^\u0621-\u064A\s]', '', text)
+        text = re.sub(r"[\u064B-\u065F\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]", "", text)
+        text = re.sub(r"[أإآٱ]", "ا", text)
+        text = re.sub(r"[^\u0621-\u064A\s]", "", text)
         return text.strip()
 
     def transcribe(
@@ -64,7 +67,9 @@ class Whisperx(BaseTranscriber):
 
         if not self.whisper_model:
             print(f"Loading WhisperX model {self.model_name}...")
-            self.whisper_model = whisperx.load_model(self.model_name, self.device, compute_type=self.compute_type, language="ar")
+            self.whisper_model = whisperx.load_model(
+                self.model_name, self.device, compute_type=self.compute_type, language="ar"
+            )
 
         audio = whisperx.load_audio(str(audio_path))
         result = self.whisper_model.transcribe(audio, batch_size=batch_size)
@@ -82,30 +87,28 @@ class Whisperx(BaseTranscriber):
                 dp_inj = np.zeros((n_ref + 1, m_tr + 1))
 
                 for i in range(1, n_ref + 1):
-                    rw = self._normalize_arabic(ref_words[i-1])
+                    rw = self._normalize_arabic(ref_words[i - 1])
                     for j in range(1, m_tr + 1):
-                        ew = self._normalize_arabic(transcribed_words[j-1]["word"])
+                        ew = self._normalize_arabic(transcribed_words[j - 1]["word"])
                         match_score = fuzz.ratio(rw, ew) / 100.0
                         if match_score < 0.6:
                             match_score = -1.0
                         dp_inj[i][j] = max(
-                            dp_inj[i-1][j],
-                            dp_inj[i][j-1],
-                            dp_inj[i-1][j-1] + match_score
+                            dp_inj[i - 1][j], dp_inj[i][j - 1], dp_inj[i - 1][j - 1] + match_score
                         )
 
                 mapped_seg_indices = [None] * n_ref
                 i, j = n_ref, m_tr
                 while i > 0 and j > 0:
-                    rw = self._normalize_arabic(ref_words[i-1])
-                    ew = self._normalize_arabic(transcribed_words[j-1]["word"])
+                    rw = self._normalize_arabic(ref_words[i - 1])
+                    ew = self._normalize_arabic(transcribed_words[j - 1]["word"])
                     match_score = fuzz.ratio(rw, ew) / 100.0
 
-                    if match_score >= 0.6 and dp_inj[i][j] == dp_inj[i-1][j-1] + match_score:
-                        mapped_seg_indices[i-1] = transcribed_words[j-1]["seg_idx"]
+                    if match_score >= 0.6 and dp_inj[i][j] == dp_inj[i - 1][j - 1] + match_score:
+                        mapped_seg_indices[i - 1] = transcribed_words[j - 1]["seg_idx"]
                         i -= 1
                         j -= 1
-                    elif dp_inj[i][j] == dp_inj[i-1][j]:
+                    elif dp_inj[i][j] == dp_inj[i - 1][j]:
                         i -= 1
                     else:
                         j -= 1
@@ -126,51 +129,58 @@ class Whisperx(BaseTranscriber):
 
         if getattr(self, "align_model", None) is None:
             print("Loading WhisperX alignment model...")
-            self.align_model, self.align_metadata = whisperx.load_align_model(language_code="ar", device=self.device)
+            self.align_model, self.align_metadata = whisperx.load_align_model(
+                language_code="ar", device=self.device
+            )
 
-        result = whisperx.align(result["segments"], self.align_model, self.align_metadata, audio, self.device, return_char_alignments=False)
+        result = whisperx.align(
+            result["segments"],
+            self.align_model,
+            self.align_metadata,
+            audio,
+            self.device,
+            return_char_alignments=False,
+        )
 
         extracted_words = []
         for segment in result["segments"]:
             if "words" in segment:
                 for w in segment["words"]:
                     if "start" in w and "end" in w:
-                        extracted_words.append({
-                            "word": w["word"],
-                            "start": w["start"],
-                            "end": w["end"],
-                            "confidence": w.get("score", 0.9)
-                        })
+                        extracted_words.append(
+                            {
+                                "word": w["word"],
+                                "start": w["start"],
+                                "end": w["end"],
+                                "confidence": w.get("score", 0.9),
+                            }
+                        )
 
         n = len(ref_words)
         m = len(extracted_words)
         dp = np.zeros((n + 1, m + 1))
 
         for i in range(1, n + 1):
-            rw = self._normalize_arabic(ref_words[i-1])
+            rw = self._normalize_arabic(ref_words[i - 1])
             for j in range(1, m + 1):
-                ew = self._normalize_arabic(extracted_words[j-1]["word"])
+                ew = self._normalize_arabic(extracted_words[j - 1]["word"])
                 match_score = fuzz.ratio(rw, ew) / 100.0
                 if match_score < 0.6:
                     match_score = -1.0
-                dp[i][j] = max(
-                    dp[i-1][j],
-                    dp[i][j-1],
-                    dp[i-1][j-1] + match_score
-                )
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1] + match_score)
 
         mapped_alignments = [None] * n
         i, j = n, m
         while i > 0 and j > 0:
-            rw = self._normalize_arabic(ref_words[i-1])
-            ew = self._normalize_arabic(extracted_words[j-1]["word"])
+            rw = self._normalize_arabic(ref_words[i - 1])
+            ew = self._normalize_arabic(extracted_words[j - 1]["word"])
             match_score = fuzz.ratio(rw, ew) / 100.0
 
-            if match_score >= 0.6 and dp[i][j] == dp[i-1][j-1] + match_score:
-                mapped_alignments[i-1] = extracted_words[j-1]
+            if match_score >= 0.6 and dp[i][j] == dp[i - 1][j - 1] + match_score:
+                mapped_alignments[i - 1] = extracted_words[j - 1]
                 i -= 1
                 j -= 1
-            elif dp[i][j] == dp[i-1][j]:
+            elif dp[i][j] == dp[i - 1][j]:
                 i -= 1
             else:
                 j -= 1
@@ -178,20 +188,24 @@ class Whisperx(BaseTranscriber):
         w_alignments = []
         for k in range(n):
             if mapped_alignments[k]:
-                w_alignments.append({
-                    "word": ref_words[k],
-                    "start": mapped_alignments[k]["start"],
-                    "end": mapped_alignments[k]["end"],
-                    "confidence": mapped_alignments[k]["confidence"]
-                })
+                w_alignments.append(
+                    {
+                        "word": ref_words[k],
+                        "start": mapped_alignments[k]["start"],
+                        "end": mapped_alignments[k]["end"],
+                        "confidence": mapped_alignments[k]["confidence"],
+                    }
+                )
             else:
                 prev_end = w_alignments[-1]["end"] if w_alignments else 0
-                w_alignments.append({
-                    "word": ref_words[k],
-                    "start": prev_end,
-                    "end": prev_end + 0.1,
-                    "confidence": 0.0
-                })
+                w_alignments.append(
+                    {
+                        "word": ref_words[k],
+                        "start": prev_end,
+                        "end": prev_end + 0.1,
+                        "confidence": 0.0,
+                    }
+                )
 
         # Memory cleanup for temp variables, but keep models loaded
         gc.collect()
@@ -211,11 +225,11 @@ class Whisperx(BaseTranscriber):
 
         for k in range(len(final_alignments)):
             if k > 0:
-                if final_alignments[k]["start"] < final_alignments[k-1]["end"]:
-                    final_alignments[k]["start"] = final_alignments[k-1]["end"]
+                if final_alignments[k]["start"] < final_alignments[k - 1]["end"]:
+                    final_alignments[k]["start"] = final_alignments[k - 1]["end"]
 
             if k < len(final_alignments) - 1:
-                next_start = final_alignments[k+1]["start"]
+                next_start = final_alignments[k + 1]["start"]
                 current_end = final_alignments[k]["end"]
                 gap = next_start - current_end
 
@@ -223,14 +237,14 @@ class Whisperx(BaseTranscriber):
                     if k in ayah_boundary_indices:
                         if gap <= 0.3:
                             start_buffer = min(gap, 0.1)
-                            final_alignments[k+1]["start"] = round(next_start - start_buffer, 3)
+                            final_alignments[k + 1]["start"] = round(next_start - start_buffer, 3)
                             final_alignments[k]["end"] = round(next_start - start_buffer, 3)
                         elif gap >= 0.4:
-                            final_alignments[k+1]["start"] = round(next_start - 0.2, 3)
+                            final_alignments[k + 1]["start"] = round(next_start - 0.2, 3)
                             final_alignments[k]["end"] = round(next_start - 0.2, 3)
                         else:
                             mid = gap / 2.0
-                            final_alignments[k+1]["start"] = round(next_start - mid, 3)
+                            final_alignments[k + 1]["start"] = round(next_start - mid, 3)
                             final_alignments[k]["end"] = round(next_start - mid, 3)
                     else:
                         if gap > 0.1:
@@ -260,7 +274,7 @@ class Whisperx(BaseTranscriber):
                         word=wa["word"],
                         start=wa["start"],
                         end=wa["end"],
-                        probability=wa["confidence"]
+                        probability=wa["confidence"],
                     )
                 )
                 avg_conf += wa["confidence"]
@@ -276,7 +290,7 @@ class Whisperx(BaseTranscriber):
                         text=ayah.text,
                         type=SegmentType.AYAH,
                         words=words,
-                        confidence=avg_conf
+                        confidence=avg_conf,
                     )
                 )
 

@@ -163,7 +163,9 @@ def _align_greedy_multi_ayah(
                     else f"[{len(best_match_segs)} segs -> {len(best_match_ayahs)} ayahs]",
                     similarity_score=best_score,
                     overlap_detected=len(best_match_ayahs) > 1 or len(best_match_segs) > 1,
-                    words=[w for s in best_match_segs if s.words for w in s.words] if best_match_segs else None,
+                    words=[w for s in best_match_segs if s.words for w in s.words]
+                    if best_match_segs
+                    else None,
                 )
                 results.append(result)
                 current_time += ayah_duration

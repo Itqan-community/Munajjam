@@ -27,8 +27,7 @@ def _get_quran_json_path(riwaya: str) -> Path:
         return bundled
 
     raise QuranDataError(
-        f"Quran ayahs JSON for riwaya '{riwaya}' not found. "
-        f"Expected at: {bundled}"
+        f"Quran ayahs JSON for riwaya '{riwaya}' not found. Expected at: {bundled}"
     )
 
 

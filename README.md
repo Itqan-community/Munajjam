@@ -77,9 +77,9 @@ curl -L -o 001.mp3 "https://pub-9ee413c8af4041c6bd5223d08f5d0f0f.r2.dev/media/up
 ### 2. Run the alignment
 
 ```python
-from munajjam.transcription import WhisperTranscriber
 from munajjam.core import align
 from munajjam.data import load_surah_ayahs
+from munajjam.transcription import WhisperTranscriber
 
 # Transcribe audio
 with WhisperTranscriber() as transcriber:
@@ -91,7 +91,10 @@ results = align("001.mp3", segments, ayahs)
 
 # Get timestamps
 for result in results:
-    print(f"Ayah {result.ayah.ayah_number}: {result.start_time:.2f}s - {result.end_time:.2f}s")
+    print(
+        f"Ayah {result.ayah.ayah_number}: "
+        f"{result.start_time:.2f}s - {result.end_time:.2f}s"
+    )
 ```
 
 ### 3. Output
@@ -128,13 +131,15 @@ from munajjam.core import Aligner
 aligner = Aligner("001.mp3")
 
 # Hybrid - DP with greedy fallback (legacy)
-aligner = Aligner("001.mp3", strategy="hybrid")
-
-# Greedy - fastest, good for clean recordings
-aligner = Aligner("001.mp3", strategy="greedy")
-
-# DP - optimal alignment using dynamic programming
-aligner = Aligner("001.mp3", strategy="dp")
+aligner = Aligner(
+    "001.mp3",  # Audio file path (required)
+    strategy="auto",  # "greedy", "dp", "hybrid", or "auto" (default)
+    quality_threshold=0.85,  # Similarity threshold for high-quality alignment
+    fix_drift=True,  # Run zone realignment for long surahs
+    fix_overlaps=True,  # Fix overlapping ayah timings
+    min_gap=0.3,  # Minimum gap between consecutive ayahs (seconds)
+    energy_snap=True,  # Snap boundaries to energy minima (default True)
+)
 
 results = aligner.align(segments, ayahs)
 ```
