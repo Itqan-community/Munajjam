@@ -1,6 +1,7 @@
 import gc
 import re
 from pathlib import Path
+from typing import Any
 
 try:
     import torch
@@ -9,7 +10,7 @@ try:
     _original_torch_load = getattr(torch, "load", None)
     if _original_torch_load:
 
-        def _patched_torch_load(*args, **kwargs):
+        def _patched_torch_load(*args: Any, **kwargs: Any) -> Any:
             kwargs["weights_only"] = False
             return _original_torch_load(*args, **kwargs)
 
@@ -39,9 +40,9 @@ class Whisperx(BaseTranscriber):
         settings = get_settings()
         self.wav2vec2_model_id = settings.wav2vec2_model_id
 
-        self.whisper_model = None
-        self.align_model = None
-        self.align_metadata = None
+        self.whisper_model: Any = None
+        self.align_model: Any = None
+        self.align_metadata: Any = None
 
     def _normalize_arabic(self, text: str) -> str:
         text = re.sub(r"[\u064B-\u065F\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]", "", text)
@@ -71,6 +72,7 @@ class Whisperx(BaseTranscriber):
                 self.model_name, self.device, compute_type=self.compute_type, language="ar"
             )
 
+        assert self.whisper_model is not None
         audio = whisperx.load_audio(str(audio_path))
         result = self.whisper_model.transcribe(audio, batch_size=batch_size)
 
@@ -97,7 +99,7 @@ class Whisperx(BaseTranscriber):
                             dp_inj[i - 1][j], dp_inj[i][j - 1], dp_inj[i - 1][j - 1] + match_score
                         )
 
-                mapped_seg_indices = [None] * n_ref
+                mapped_seg_indices: list[int | None] = [None] * n_ref
                 i, j = n_ref, m_tr
                 while i > 0 and j > 0:
                     rw = self._normalize_arabic(ref_words[i - 1])
@@ -113,7 +115,7 @@ class Whisperx(BaseTranscriber):
                     else:
                         j -= 1
 
-                seg_ref_texts = {idx: [] for idx in range(len(result["segments"]))}
+                seg_ref_texts: dict[int, list[str]] = {idx: [] for idx in range(len(result["segments"]))}
                 last_seg_idx = 0
                 for k in range(n_ref):
                     if mapped_seg_indices[k] is not None:
@@ -133,6 +135,8 @@ class Whisperx(BaseTranscriber):
                 language_code="ar", device=self.device
             )
 
+        assert self.align_model is not None
+        assert self.align_metadata is not None
         result = whisperx.align(
             result["segments"],
             self.align_model,
@@ -142,7 +146,7 @@ class Whisperx(BaseTranscriber):
             return_char_alignments=False,
         )
 
-        extracted_words = []
+        extracted_words: list[dict[str, Any]] = []
         for segment in result["segments"]:
             if "words" in segment:
                 for w in segment["words"]:
@@ -169,7 +173,7 @@ class Whisperx(BaseTranscriber):
                     match_score = -1.0
                 dp[i][j] = max(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1] + match_score)
 
-        mapped_alignments = [None] * n
+        mapped_alignments: list[dict[str, Any] | None] = [None] * n
         i, j = n, m
         while i > 0 and j > 0:
             rw = self._normalize_arabic(ref_words[i - 1])
@@ -185,7 +189,7 @@ class Whisperx(BaseTranscriber):
             else:
                 j -= 1
 
-        w_alignments = []
+        w_alignments: list[dict[str, Any]] = []
         for k in range(n):
             if mapped_alignments[k]:
                 w_alignments.append(
