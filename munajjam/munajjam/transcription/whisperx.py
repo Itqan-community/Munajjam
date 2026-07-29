@@ -1,28 +1,33 @@
 import gc
 import re
 import warnings
-
-import librosa
-import numpy as np
-import soundfile as sf
-import torch
-
-# Workaround for PyTorch 2.6+ weights_only=True default which breaks pyannote/lightning
-_original_torch_load = torch.load
-def _patched_torch_load(*args, **kwargs):
-    kwargs["weights_only"] = False
-    return _original_torch_load(*args, **kwargs)
-torch.load = _patched_torch_load
-
-import whisperx
-from rapidfuzz import fuzz
 from pathlib import Path
 
-from munajjam.core.arabic import detect_segment_type
-from munajjam.models import Segment, WordTimestamp, SegmentType
-from munajjam.transcription.base import BaseTranscriber
-from munajjam.data import load_surah_ayahs
+import librosa
+try:
+    import torch
+    # Workaround for PyTorch 2.6+ weights_only=True default which breaks pyannote/lightning
+    _original_torch_load = getattr(torch, "load", None)
+    if _original_torch_load:
+        def _patched_torch_load(*args, **kwargs):
+            kwargs["weights_only"] = False
+            return _original_torch_load(*args, **kwargs)
+        torch.load = _patched_torch_load
+    
+    import whisperx
+except ImportError:
+    torch = None
+    whisperx = None
+
+import numpy as np
+import soundfile as sf
+from rapidfuzz import fuzz
+
 from munajjam.config import get_settings
+from munajjam.core.arabic import detect_segment_type
+from munajjam.data import load_surah_ayahs
+from munajjam.models import Segment, SegmentType, WordTimestamp
+from munajjam.transcription.base import BaseTranscriber
 
 
 class Whisperx(BaseTranscriber):
