@@ -115,7 +115,9 @@ class Whisperx(BaseTranscriber):
                     else:
                         j -= 1
 
-                seg_ref_texts: dict[int, list[str]] = {idx: [] for idx in range(len(result["segments"]))}
+                seg_ref_texts: dict[int, list[str]] = {
+                    idx: [] for idx in range(len(result["segments"]))
+                }
                 last_seg_idx = 0
                 for k in range(n_ref):
                     if mapped_seg_indices[k] is not None:
