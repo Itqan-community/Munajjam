@@ -1,6 +1,7 @@
 import gc
 import re
 from pathlib import Path
+
 try:
     import torch
     # Workaround for PyTorch 2.6+ weights_only=True default which breaks pyannote/lightning

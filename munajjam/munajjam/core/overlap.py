@@ -100,13 +100,13 @@ def apply_buffers(
                     best_silence_before = (silence_start, silence_end)
             elif silence_start > start_time:
                 break
-                
+
         if best_silence_before:
             silence_start, silence_end = best_silence_before
             available_buffer = start_time - silence_start
             buffer_to_apply = min(buffer, available_buffer)
             buffer_start = start_time - buffer_to_apply
-            
+
             if prev_end is None:
                 new_start = buffer_start
             elif buffer_start >= prev_end:
@@ -134,13 +134,13 @@ def apply_buffers(
                     best_silence_after = (silence_start, silence_end)
             elif silence_end < end_time:
                 continue
-                
+
         if best_silence_after:
             silence_start, silence_end = best_silence_after
             available_buffer = silence_end - end_time
             buffer_to_apply = min(buffer, available_buffer)
             buffer_end = end_time + buffer_to_apply
-            
+
             if next_start is None:
                 new_end = buffer_end
             elif buffer_end <= next_start:

@@ -247,7 +247,7 @@ def cmd_align(args: argparse.Namespace) -> int:
     print(f"Strategy: {args.strategy}", file=sys.stderr)
     print(f"Riwaya: {args.riwaya}", file=sys.stderr)
 
-    from munajjam.config import configure, get_settings
+    from munajjam.config import configure
 
     settings = configure(riwaya=args.riwaya)
 
@@ -272,7 +272,7 @@ def cmd_align(args: argparse.Namespace) -> int:
 
 def cmd_batch(args: argparse.Namespace) -> int:
     """Execute the batch command."""
-    from munajjam.config import configure, get_settings
+    from munajjam.config import configure
     from munajjam.core import align
     from munajjam.data import load_surah_ayahs
 
