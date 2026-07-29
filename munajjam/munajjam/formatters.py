@@ -32,8 +32,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from munajjam._version import __version__
 from munajjam.models.result import AlignmentResult
-from munajjam.models.surah import SURAH_NAMES
 from munajjam.models.segment import WordTimestamp
+from munajjam.models.surah import SURAH_NAMES
 
 
 class FormattedAyahResult(BaseModel):

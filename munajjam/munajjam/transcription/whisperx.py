@@ -1,9 +1,6 @@
 import gc
 import re
-import warnings
 from pathlib import Path
-
-import librosa
 try:
     import torch
     # Workaround for PyTorch 2.6+ weights_only=True default which breaks pyannote/lightning
@@ -24,7 +21,6 @@ import soundfile as sf
 from rapidfuzz import fuzz
 
 from munajjam.config import get_settings
-from munajjam.core.arabic import detect_segment_type
 from munajjam.data import load_surah_ayahs
 from munajjam.models import Segment, SegmentType, WordTimestamp
 from munajjam.transcription.base import BaseTranscriber
@@ -89,7 +85,8 @@ class Whisperx(BaseTranscriber):
                     for j in range(1, m_tr + 1):
                         ew = self._normalize_arabic(transcribed_words[j-1]["word"])
                         match_score = fuzz.ratio(rw, ew) / 100.0
-                        if match_score < 0.6: match_score = -1.0
+                        if match_score < 0.6:
+                            match_score = -1.0
                         dp_inj[i][j] = max(
                             dp_inj[i-1][j],
                             dp_inj[i][j-1],
@@ -127,7 +124,7 @@ class Whisperx(BaseTranscriber):
         # --- End Injection ---
 
         if getattr(self, "align_model", None) is None:
-            print(f"Loading WhisperX alignment model...")
+            print("Loading WhisperX alignment model...")
             self.align_model, self.align_metadata = whisperx.load_align_model(language_code="ar", device=self.device)
 
         result = whisperx.align(result["segments"], self.align_model, self.align_metadata, audio, self.device, return_char_alignments=False)
@@ -153,7 +150,8 @@ class Whisperx(BaseTranscriber):
             for j in range(1, m + 1):
                 ew = self._normalize_arabic(extracted_words[j-1]["word"])
                 match_score = fuzz.ratio(rw, ew) / 100.0
-                if match_score < 0.6: match_score = -1.0
+                if match_score < 0.6:
+                    match_score = -1.0
                 dp[i][j] = max(
                     dp[i-1][j],
                     dp[i][j-1],

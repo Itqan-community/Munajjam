@@ -6,14 +6,13 @@ bundled JSON file.
 """
 
 import json
-import os
 from functools import lru_cache
 from pathlib import Path
 
+from munajjam.config import get_settings
 from munajjam.exceptions import QuranDataError
 from munajjam.models import Ayah, Surah
 from munajjam.models.surah import SURAH_AYAH_COUNTS, SURAH_NAMES
-from munajjam.config import get_settings
 
 
 def _get_data_path() -> Path:
@@ -53,10 +52,10 @@ def load_ayahs(riwaya: str | None = None) -> list[Ayah]:
     try:
         json_path = _get_quran_json_path(riwaya)
         ayahs = []
-        
+
         with open(json_path, encoding="utf-8") as f:
             data = json.load(f)
-            
+
         global_id = 1
         for surah_idx in range(1, 115):
             surah_str = str(surah_idx)
