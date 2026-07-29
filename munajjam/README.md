@@ -48,13 +48,15 @@ results = aligner.align(segments, ayahs)
 # Step 4: Output as JSON
 output = []
 for result in results:
-    output.append({
-        "ayah_number": result.ayah.ayah_number,
-        "start_time": result.start_time,
-        "end_time": result.end_time,
-        "text": result.ayah.text,
-        "similarity_score": result.similarity_score,
-    })
+    output.append(
+        {
+            "ayah_number": result.ayah.ayah_number,
+            "start_time": result.start_time,
+            "end_time": result.end_time,
+            "text": result.ayah.text,
+            "similarity_score": result.similarity_score,
+        }
+    )
 
 with open("output.json", "w", encoding="utf-8") as f:
     json.dump(output, f, ensure_ascii=False, indent=2)
@@ -116,21 +118,21 @@ aligner = Aligner("001.mp3", strategy="hybrid")
 
 # Or with full custom configuration
 aligner = Aligner(
-    "001.mp3",              # Audio file path (required)
-    strategy="auto",        # "greedy", "dp", "hybrid", or "auto" (default)
-    quality_threshold=0.85, # Similarity threshold for high-quality alignment
-    fix_drift=True,         # Run zone realignment for long surahs
-    fix_overlaps=True,      # Fix overlapping ayah timings
-    min_gap=0.3,            # Minimum gap between consecutive ayahs (seconds)
-    energy_snap=True,       # Snap boundaries to energy minima (default True)
+    "001.mp3",  # Audio file path (required)
+    strategy="auto",  # "greedy", "dp", "hybrid", or "auto" (default)
+    quality_threshold=0.85,  # Similarity threshold for high-quality alignment
+    fix_drift=True,  # Run zone realignment for long surahs
+    fix_overlaps=True,  # Fix overlapping ayah timings
+    min_gap=0.3,  # Minimum gap between consecutive ayahs (seconds)
+    energy_snap=True,  # Snap boundaries to energy minima (default True)
 )
 
 # Run alignment
 results = aligner.align(
     segments=segments,
     ayahs=ayahs,
-    silences_ms=silences,   # Optional: silence periods for better boundaries
-    on_progress=callback,   # Optional: progress callback (current, total)
+    silences_ms=silences,  # Optional: silence periods for better boundaries
+    on_progress=callback,  # Optional: progress callback (current, total)
 )
 
 # Access stats from hybrid alignment
@@ -164,12 +166,7 @@ results = align("001.mp3", segments, ayahs)
 ```python
 from munajjam import Ayah
 
-ayah = Ayah(
-    id=1,
-    surah_id=1,
-    ayah_number=1,
-    text="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
-)
+ayah = Ayah(id=1, surah_id=1, ayah_number=1, text="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ")
 ```
 
 ### Segment
@@ -198,9 +195,9 @@ segment = Segment(
 from munajjam import AlignmentResult
 
 # Contains aligned ayah with timing and quality metrics
-result.ayah              # The matched Ayah
-result.start_time        # Start timestamp (seconds)
-result.end_time          # End timestamp (seconds)
+result.ayah  # The matched Ayah
+result.start_time  # Start timestamp (seconds)
+result.end_time  # End timestamp (seconds)
 result.similarity_score  # Match quality (0.0-1.0)
 result.is_high_confidence  # True if score >= 0.8
 ```
