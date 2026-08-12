@@ -114,6 +114,7 @@ Example:
 import pytest
 from munajjam.core import Aligner
 
+
 class TestMyFeature:
     def test_basic_usage(self, sample_segments, sample_ayahs):
         aligner = Aligner(strategy="hybrid")

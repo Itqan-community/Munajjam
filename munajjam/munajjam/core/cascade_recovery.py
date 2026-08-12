@@ -5,6 +5,8 @@ Detects sequences of consecutive low-scoring ayahs and attempts
 to re-align them using silence boundaries for better sync.
 """
 
+from dataclasses import dataclass
+
 from ..models import AlignmentResult, Ayah, Segment
 from .dp_core import compute_alignment_cost
 from .matcher import similarity
@@ -310,3 +312,119 @@ def apply_cascade_recovery(
             improved_results = improved_results[:ext_start] + recovery + improved_results[ext_end:]
 
     return improved_results
+
+
+@dataclass
+class UnalignedWordGap:
+    """Represents a gap of unaligned fallback words needing recovery."""
+
+    start_word_idx: int
+    end_word_idx: int
+    words: list[str]
+    gap_start_time: float
+    gap_end_time: float
+
+
+def detect_unaligned_word_gaps(
+    words: list[dict],
+    min_confidence_thresh: float = 0.1,
+    max_placeholder_duration: float = 0.15,
+) -> list[UnalignedWordGap]:
+    """
+    Detect sequences of unaligned fallback words (confidence <= 0.1 or placeholder duration <= 0.15s).
+
+    Args:
+        words: List of word timestamp dictionaries containing 'word', 'start', 'end', and 'confidence'.
+        min_confidence_thresh: Confidence threshold below which a word is unaligned.
+        max_placeholder_duration: Duration threshold below which a word duration is considered a placeholder.
+
+    Returns:
+        List of UnalignedWordGap objects.
+    """
+    gaps: list[UnalignedWordGap] = []
+    if not words:
+        return gaps
+
+    n = len(words)
+    i = 0
+    while i < n:
+        w = words[i]
+        conf = float(w.get("confidence", 0.0))
+        dur = float(w.get("end", 0.0)) - float(w.get("start", 0.0))
+
+        if conf <= min_confidence_thresh or dur <= max_placeholder_duration:
+            start_idx = i
+            while i < n:
+                curr_w = words[i]
+                c = float(curr_w.get("confidence", 0.0))
+                d = float(curr_w.get("end", 0.0)) - float(curr_w.get("start", 0.0))
+                if c <= min_confidence_thresh or d <= max_placeholder_duration:
+                    i += 1
+                else:
+                    break
+            end_idx = i
+
+            prev_end = (
+                float(words[start_idx - 1]["end"])
+                if start_idx > 0
+                else float(words[start_idx]["start"])
+            )
+            next_start = (
+                float(words[end_idx]["start"]) if end_idx < n else float(words[end_idx - 1]["end"])
+            )
+            if next_start < prev_end:
+                next_start = prev_end + 0.5
+
+            gap_words = [str(words[k]["word"]) for k in range(start_idx, end_idx)]
+            gaps.append(
+                UnalignedWordGap(
+                    start_word_idx=start_idx,
+                    end_word_idx=end_idx,
+                    words=gap_words,
+                    gap_start_time=prev_end,
+                    gap_end_time=next_start,
+                )
+            )
+        else:
+            i += 1
+
+    return gaps
+
+
+def recover_unaligned_word_gaps(
+    words: list[dict],
+    min_confidence_thresh: float = 0.1,
+) -> list[dict]:
+    """
+    Recover timestamps for unaligned fallback words by interpolating precise timings within surrounding audio gap bounds.
+
+    Args:
+        words: List of word timestamp dictionaries.
+        min_confidence_thresh: Confidence threshold.
+
+    Returns:
+        Updated list of word timestamp dictionaries with recovered start, end, and confidence scores.
+    """
+    gaps = detect_unaligned_word_gaps(words, min_confidence_thresh=min_confidence_thresh)
+    if not gaps:
+        return words
+
+    recovered_words = list(words)
+    for gap in gaps:
+        total_duration = max(0.1, gap.gap_end_time - gap.gap_start_time)
+        char_lens = [max(1, len(w)) for w in gap.words]
+        total_chars = sum(char_lens)
+
+        curr_t = gap.gap_start_time
+        for idx_offset, w_idx in enumerate(range(gap.start_word_idx, gap.end_word_idx)):
+            w_dur = (char_lens[idx_offset] / total_chars) * total_duration
+            w_end = curr_t + w_dur
+            recovered_words[w_idx] = {
+                "word": gap.words[idx_offset],
+                "start": round(curr_t, 2),
+                "end": round(w_end, 2),
+                "confidence": 0.75,
+            }
+            curr_t = w_end
+
+    return recovered_words

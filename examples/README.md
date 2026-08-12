@@ -183,7 +183,7 @@ aligner = Aligner("001.mp3", strategy="greedy")
 
 # For maximum control
 aligner = Aligner("001.mp3", strategy="hybrid")  # DP with greedy fallback
-aligner = Aligner("001.mp3", strategy="dp")      # Full dynamic programming
+aligner = Aligner("001.mp3", strategy="dp")  # Full dynamic programming
 ```
 
 ### Inspecting Results
@@ -227,6 +227,7 @@ By default, Munajjam auto-detects your device. To force CPU:
 
 ```python
 from munajjam.config import configure
+
 configure(device="cpu")
 ```
 

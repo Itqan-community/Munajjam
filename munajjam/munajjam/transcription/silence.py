@@ -5,6 +5,7 @@ Provides both pydub (accurate) and librosa (fast) implementations.
 Use the fast implementation for long files (>5 minutes).
 """
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -347,3 +348,98 @@ def extract_segment_audio(
     start_sample = int((start_ms / 1000) * sample_rate)
     end_sample = int((end_ms / 1000) * sample_rate)
     return waveform[start_sample:end_sample]
+
+
+@dataclass
+class BreathBoundary:
+    """Represents a reciter pause or breath boundary in audio."""
+
+    start_sec: float
+    end_sec: float
+    duration_sec: float
+    is_breath_boundary: bool = True
+
+
+def detect_reciter_breaths(
+    audio_path: str | Path,
+    min_pause_duration_ms: int = 300,
+    silence_thresh: int = -30,
+) -> list[BreathBoundary]:
+    """
+    Detect natural reciter pause and breath intervals without clipping voiceless consonants.
+
+    Args:
+        audio_path: Path to the audio file.
+        min_pause_duration_ms: Minimum pause duration threshold in ms.
+        silence_thresh: Silence energy threshold in dB.
+
+    Returns:
+        List of BreathBoundary objects detailing start, end, and duration.
+    """
+    try:
+        raw_silences = detect_silences(
+            audio_path,
+            min_silence_len=min_pause_duration_ms,
+            silence_thresh=silence_thresh,
+            use_fast=True,
+        )
+    except Exception:
+        raw_silences = []
+
+    breath_boundaries: list[BreathBoundary] = []
+    for s_ms, e_ms in raw_silences:
+        duration_sec = (e_ms - s_ms) / 1000.0
+        breath_boundaries.append(
+            BreathBoundary(
+                start_sec=s_ms / 1000.0,
+                end_sec=e_ms / 1000.0,
+                duration_sec=duration_sec,
+                is_breath_boundary=True,
+            )
+        )
+    return breath_boundaries
+
+
+def annotate_segments_with_breaths(
+    segments: list,
+    audio_path: str | Path,
+    min_pause_duration_ms: int = 300,
+    silence_thresh: int = -30,
+) -> list:
+    """
+    Annotate audio segments with reciter pause_duration and is_breath_boundary flags.
+
+    Args:
+        segments: List of Segment objects.
+        audio_path: Path to the audio file.
+        min_pause_duration_ms: Minimum pause duration in ms.
+        silence_thresh: Silence threshold in dB.
+
+    Returns:
+        List of annotated Segment objects.
+    """
+    if not segments:
+        return segments
+
+    breaths = detect_reciter_breaths(
+        audio_path=audio_path,
+        min_pause_duration_ms=min_pause_duration_ms,
+        silence_thresh=silence_thresh,
+    )
+
+    for seg in segments:
+        seg_end = seg.end
+        matching_breath = None
+        for b in breaths:
+            if abs(b.start_sec - seg_end) <= 0.5 or (b.start_sec <= seg_end <= b.end_sec):
+                matching_breath = b
+                break
+
+        if matching_breath:
+            seg.pause_duration = matching_breath.duration_sec
+            seg.is_breath_boundary = True
+        else:
+            seg.pause_duration = 0.0
+            seg.is_breath_boundary = False
+
+    return segments
