@@ -180,3 +180,22 @@ def test_whisperx_set_model_name_swapping():
     transcriber.set_model_name("large-v3")
     assert transcriber.whisper_model is None
     assert transcriber.model_name == "large-v3"
+
+
+@patch("server.global_transcriber")
+@patch("server.os.path.exists", return_value=False)
+def test_server_run_job_model_size_resolution(mock_exists, mock_transcriber):
+    from server import _run_job, jobs
+
+    mock_transcriber.transcribe.return_value = []
+    mock_transcriber.model_name = "large-v2"
+
+    # Explicit model size provided
+    jobs["job_1"] = {"status": "queued"}
+    _run_job("job_1", "dummy.mp3", 1, model_size="tiny")
+    mock_transcriber.set_model_name.assert_called_with("tiny")
+
+    # No model size provided -> falls back to default settings ("large-v2")
+    jobs["job_2"] = {"status": "queued"}
+    _run_job("job_2", "dummy.mp3", 1, model_size=None)
+    mock_transcriber.set_model_name.assert_called_with("large-v2")

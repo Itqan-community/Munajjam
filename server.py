@@ -5,24 +5,26 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import BackgroundTasks, FastAPI, File, Form, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from munajjam.config import get_settings
 from munajjam.transcription.whisperFactory import WhisperBackend, WhisperFactory
 
 app = FastAPI(title="Munajjam API Server")
 
-# السماح بالاتصال من أي واجهة (للتوافق مع Colab)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Supported WhisperX model sizes
+VALID_MODEL_SIZES = {
+    "tiny",
+    "base",
+    "small",
+    "medium",
+    "large-v1",
+    "large-v2",
+    "large-v3",
+}
 
-# قاموس لتخزين حالة المهام في الخلفية
+# Dictionary for storing background job states
 jobs: dict = {}
-# ThreadPoolExecutor بمسار واحد لمنع تداخل عمليات كرت الشاشة (GPU)
+# Single-threaded ThreadPoolExecutor to prevent GPU memory race conditions
 _executor = ThreadPoolExecutor(max_workers=1)
 
 print(
@@ -33,22 +35,32 @@ global_transcriber = WhisperFactory().create_whisper(backend=WhisperBackend.WHIS
 
 def _run_job(
     job_id: str, file_location: str, surah_number: int, model_size: str | None = None
-):
+) -> None:
     """
-    مهمة خلفية تقوم بالنسخ الصوتي والمزامنة ثم تحديث حالة المهمة.
+    Background job function to execute audio transcription and ayah alignment.
+
+    Args:
+        job_id: Unique identifier for the alignment job.
+        file_location: Path to temporary audio file.
+        surah_number: Surah number (1-114).
+        model_size: Optional WhisperX model size requested by caller.
     """
     try:
         jobs[job_id]["status"] = "processing"
 
-        if model_size and hasattr(global_transcriber, "set_model_name"):
-            print(f"[Job {job_id[:8]}] Setting WhisperX model size to: {model_size}")
-            global_transcriber.set_model_name(model_size)
+        # Resolve model size for every job (defaults to configuration setting)
+        target_model_size = model_size or get_settings().whisperx_model_size
+        if hasattr(global_transcriber, "set_model_name"):
+            print(
+                f"[Job {job_id[:8]}] Resolving WhisperX model size to: {target_model_size}"
+            )
+            global_transcriber.set_model_name(target_model_size)
 
         print(
             f"[Job {job_id[:8]}] Started processing Surah {surah_number} with WhisperX ({global_transcriber.model_name})"
         )
 
-        # استخدام WhisperX للحصول على تزمين على مستوى الكلمات (من الذاكرة المؤقتة)
+        # Transcribe and align
         segments = global_transcriber.transcribe(file_location, surah_id=surah_number)
 
         response_data = []
@@ -76,7 +88,6 @@ def _run_job(
         print(f"[Job {job_id[:8]}] Error: {e!s}")
 
     finally:
-        # تنظيف الموارد الخاصة بالملف المؤقت فقط (مع إبقاء النماذج بالذاكرة)
         if os.path.exists(file_location):
             os.remove(file_location)
         gc.collect()
@@ -89,10 +100,29 @@ async def align_audio(
     file: UploadFile = File(...),
     riwaya: str = Form("hafs"),
     model_size: str | None = Form(None),
-):
+) -> JSONResponse:
     """
-    مسار لاستقبال الملفات وبدء المزامنة
+    Upload an audio file and initiate background audio-to-ayah alignment.
+
+    Args:
+        surah_number: Quran Surah number (1-114).
+        background_tasks: FastAPI background task manager.
+        file: Uploaded audio file (.mp3, .wav, etc.).
+        riwaya: Quranic Riwaya ("hafs", "warsh").
+        model_size: Optional WhisperX model size (tiny, base, small, medium, large-v1, large-v2, large-v3).
+
+    Returns:
+        JSONResponse containing job status and job_id.
     """
+    if model_size and model_size not in VALID_MODEL_SIZES:
+        return JSONResponse(
+            {
+                "status": "error",
+                "message": f"Invalid model_size: '{model_size}'. Must be one of {sorted(VALID_MODEL_SIZES)}",
+            },
+            status_code=400,
+        )
+
     job_id = str(uuid.uuid4())
     os.makedirs("temp_audio", exist_ok=True)
     file_location = os.path.join("temp_audio", f"{job_id}_{surah_number}.mp3")
@@ -102,7 +132,6 @@ async def align_audio(
 
     jobs[job_id] = {"status": "queued", "data": None, "error": None}
 
-    # تشغيل المعالجة في الخلفية
     background_tasks.add_task(
         lambda: _executor.submit(
             _run_job, job_id, file_location, surah_number, model_size
