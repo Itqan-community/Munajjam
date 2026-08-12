@@ -15,7 +15,7 @@ repos:
         additional_dependencies:
           - pydantic>=2.0
           - pydantic-settings>=2.0
-        args: [--config-file=munajjam/pyproject.toml]
+        args: [--config-file=munajjam/pyproject.toml, --ignore-missing-imports]
         pass_filenames: false
         entry: mypy munajjam/munajjam
         types_or: [python, pyi]

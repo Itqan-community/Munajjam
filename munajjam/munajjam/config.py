@@ -58,6 +58,13 @@ class MunajjamSettings(BaseSettings):
         description="Model backend type",
     )
 
+    whisperx_model_size: Literal[
+        "tiny", "base", "small", "medium", "large-v1", "large-v2", "large-v3"
+    ] = Field(
+        default="large-v2",
+        description="WhisperX model size (tiny, base, small, medium, large-v1, large-v2, large-v3)",
+    )
+
     # ============ Audio Processing ============
 
     silence_threshold_db: int = Field(

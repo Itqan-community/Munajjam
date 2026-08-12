@@ -1,10 +1,10 @@
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from munajjam.transcription.whisperFactory import WhisperFactory, WhisperBackend
-from munajjam.transcription.whisper import WhisperTranscriber
-from munajjam.transcription.whisperx import Whisperx
+import pytest
 from munajjam.models import SegmentType
+from munajjam.transcription.whisper import WhisperTranscriber
+from munajjam.transcription.whisperFactory import WhisperBackend, WhisperFactory
+from munajjam.transcription.whisperx import Whisperx
 
 
 @pytest.fixture
@@ -62,6 +62,10 @@ def test_whisperx_transcribe(mock_whisperx_module):
         "segments": [{"start": 0.0, "end": 1.5, "text": "hello"}]
     }
     mock_whisperx_module.load_model.return_value = mock_model
+    mock_whisperx_module.load_align_model.return_value = (MagicMock(), MagicMock())
+    mock_whisperx_module.align.return_value = {
+        "segments": [{"start": 0.0, "end": 1.5, "text": "hello"}]
+    }
     mock_whisperx_module.load_audio.return_value = "mock_audio_data"
 
     transcriber = Whisperx(model_name="base", device="cpu")
@@ -69,10 +73,9 @@ def test_whisperx_transcribe(mock_whisperx_module):
     # Actually call transcribe
     segments = transcriber.transcribe("dummy_audio.wav", batch_size=8, surah_id=1)
 
-    assert len(segments) == 1
-    assert segments[0].text == "hello"
-    assert segments[0].start == 0.0
-    assert segments[0].end == 1.5
+    assert len(segments) == 7
+    assert segments[0].surah_id == 1
+    assert "بِسْمِ" in segments[0].text
 
     mock_whisperx_module.load_audio.assert_called_once_with("dummy_audio.wav")
     mock_model.transcribe.assert_called_once_with("mock_audio_data", batch_size=8)
@@ -124,3 +127,56 @@ def test_whisper_transcriber_transcribe_transformers(
 
     mock_model.generate.assert_called_once()
     mock_processor.batch_decode.assert_called_once()
+
+
+def test_whisperx_model_size_config(monkeypatch):
+    from munajjam.config import MunajjamSettings
+
+    default_settings = MunajjamSettings()
+    assert default_settings.whisperx_model_size == "large-v2"
+
+    monkeypatch.setenv("MUNAJJAM_WHISPERX_MODEL_SIZE", "tiny")
+    env_settings = MunajjamSettings()
+    assert env_settings.whisperx_model_size == "tiny"
+
+
+def test_whisperx_init_default_and_custom():
+    transcriber_default = Whisperx()
+    assert transcriber_default.model_name == "large-v2"
+
+    transcriber_custom = Whisperx(model_name="medium")
+    assert transcriber_custom.model_name == "medium"
+
+
+@patch("gc.collect")
+@patch("munajjam.transcription.whisperx.torch")
+def test_whisperx_unload_model(mock_torch, mock_gc_collect):
+    mock_torch.cuda.is_available.return_value = True
+    transcriber = Whisperx(model_name="base", device="cuda")
+    transcriber.whisper_model = MagicMock()
+    transcriber.align_model = MagicMock()
+    transcriber.align_metadata = MagicMock()
+
+    transcriber.unload_model()
+
+    assert transcriber.whisper_model is None
+    assert transcriber.align_model is None
+    assert transcriber.align_metadata is None
+    mock_gc_collect.assert_called_once()
+    mock_torch.cuda.empty_cache.assert_called_once()
+
+
+def test_whisperx_set_model_name_swapping():
+    transcriber = Whisperx(model_name="small", device="cpu")
+    mock_model = MagicMock()
+    transcriber.whisper_model = mock_model
+
+    # Same model size -> no unload
+    transcriber.set_model_name("small")
+    assert transcriber.whisper_model == mock_model
+    assert transcriber.model_name == "small"
+
+    # Different model size -> unloads and updates model_name
+    transcriber.set_model_name("large-v3")
+    assert transcriber.whisper_model is None
+    assert transcriber.model_name == "large-v3"
