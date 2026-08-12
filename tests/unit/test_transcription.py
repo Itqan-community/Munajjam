@@ -182,11 +182,15 @@ def test_whisperx_set_model_name_swapping():
     assert transcriber.model_name == "large-v3"
 
 
+@patch("server.get_settings")
 @patch("server.global_transcriber")
 @patch("server.os.path.exists", return_value=False)
-def test_server_run_job_model_size_resolution(mock_exists, mock_transcriber):
+def test_server_run_job_model_size_resolution(
+    mock_exists, mock_transcriber, mock_get_settings
+):
     from server import _run_job, jobs
 
+    mock_get_settings.return_value.whisperx_model_size = "large-v2"
     mock_transcriber.transcribe.return_value = []
     mock_transcriber.model_name = "large-v2"
 
