@@ -350,15 +350,13 @@ def detect_unaligned_word_gaps(
     while i < n:
         w = words[i]
         conf = float(w.get("confidence", 0.0))
-        dur = float(w.get("end", 0.0)) - float(w.get("start", 0.0))
 
-        if conf <= min_confidence_thresh or dur <= max_placeholder_duration:
+        if conf <= min_confidence_thresh:
             start_idx = i
             while i < n:
                 curr_w = words[i]
                 c = float(curr_w.get("confidence", 0.0))
-                d = float(curr_w.get("end", 0.0)) - float(curr_w.get("start", 0.0))
-                if c <= min_confidence_thresh or d <= max_placeholder_duration:
+                if c <= min_confidence_thresh:
                     i += 1
                 else:
                     break
@@ -373,7 +371,7 @@ def detect_unaligned_word_gaps(
                 float(words[end_idx]["start"]) if end_idx < n else float(words[end_idx - 1]["end"])
             )
             if next_start < prev_end:
-                next_start = prev_end + 0.5
+                next_start = prev_end
 
             gap_words = [str(words[k]["word"]) for k in range(start_idx, end_idx)]
             gaps.append(
@@ -411,7 +409,10 @@ def recover_unaligned_word_gaps(
 
     recovered_words = list(words)
     for gap in gaps:
-        total_duration = max(0.1, gap.gap_end_time - gap.gap_start_time)
+        total_duration = gap.gap_end_time - gap.gap_start_time
+        if total_duration <= 0:
+            continue
+
         char_lens = [max(1, len(w)) for w in gap.words]
         total_chars = sum(char_lens)
 
@@ -421,8 +422,8 @@ def recover_unaligned_word_gaps(
             w_end = curr_t + w_dur
             recovered_words[w_idx] = {
                 "word": gap.words[idx_offset],
-                "start": round(curr_t, 2),
-                "end": round(w_end, 2),
+                "start": curr_t,
+                "end": w_end,
                 "confidence": 0.75,
             }
             curr_t = w_end

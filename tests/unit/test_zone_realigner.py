@@ -120,3 +120,15 @@ def test_recover_unaligned_word_gaps():
     assert recovered[1]["start"] == 0.8
     assert recovered[2]["end"] == 3.0
     assert recovered[1]["end"] == recovered[2]["start"]
+
+
+def test_detect_unaligned_word_gaps_preserves_high_confidence_short_words():
+    """Verify that a valid short word (duration <= 0.15s) with high confidence is NOT detected as unaligned."""
+    words = [
+        {"word": "قُلْ", "start": 0.0, "end": 0.5, "confidence": 0.95},
+        {"word": "فِي", "start": 0.5, "end": 0.62, "confidence": 0.95},
+        {"word": "ٱلْأَرْضِ", "start": 0.62, "end": 1.5, "confidence": 0.92},
+    ]
+
+    gaps = detect_unaligned_word_gaps(words)
+    assert len(gaps) == 0
