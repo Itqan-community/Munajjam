@@ -40,6 +40,7 @@ class Whisperx(BaseTranscriber):
 
         settings = get_settings()
         self.wav2vec2_model_id = settings.wav2vec2_model_id
+        self.min_pause_duration_ms = settings.min_pause_duration_ms
 
         self.whisper_model: Any = None
         self.align_model: Any = None
@@ -307,4 +308,6 @@ class Whisperx(BaseTranscriber):
 
         from .silence import annotate_segments_with_breaths
 
-        return annotate_segments_with_breaths(segments, audio_path)
+        return annotate_segments_with_breaths(
+            segments, audio_path, min_pause_duration_ms=self.min_pause_duration_ms
+        )

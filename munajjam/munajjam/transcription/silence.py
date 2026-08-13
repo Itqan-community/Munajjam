@@ -5,9 +5,12 @@ Provides both pydub (accurate) and librosa (fast) implementations.
 Use the fast implementation for long files (>5 minutes).
 """
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 def detect_silences(
@@ -383,7 +386,8 @@ def detect_reciter_breaths(
             silence_thresh=silence_thresh,
             use_fast=True,
         )
-    except Exception:
+    except Exception as exc:
+        logger.warning("Breath detection failed for %s: %s", audio_path, exc)
         raw_silences = []
 
     breath_boundaries: list[BreathBoundary] = []

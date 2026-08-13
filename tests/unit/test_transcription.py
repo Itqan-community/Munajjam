@@ -83,6 +83,8 @@ def test_whisperx_transcribe(mock_whisperx_module):
     assert len(segments) == 7
     assert segments[0].id == 1
     assert "بِسْمِ" in segments[0].text
+    assert segments[0].is_breath_boundary is False
+    assert segments[0].pause_duration == 0.0
 
     mock_whisperx_module.load_audio.assert_called_once_with("dummy_audio.wav")
     mock_model.transcribe.assert_called_once_with("mock_audio_data", batch_size=8)

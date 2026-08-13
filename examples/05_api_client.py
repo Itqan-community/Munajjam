@@ -11,6 +11,7 @@ import requests
 from pathlib import Path
 
 API_URL = "http://localhost:8000"
+REQUEST_TIMEOUT = 30
 
 
 def main():
@@ -33,6 +34,7 @@ def main():
                 f"{API_URL}/align/{surah_number}",
                 files={"file": f},
                 data={"riwaya": "hafs"},
+                timeout=REQUEST_TIMEOUT,
             )
         response.raise_for_status()
         job_data = response.json()
@@ -51,7 +53,10 @@ def main():
     print("Polling for results (this may take a few seconds)...")
     while True:
         try:
-            status_response = requests.get(f"{API_URL}/align/status/{job_id}")
+            status_response = requests.get(
+                f"{API_URL}/align/status/{job_id}",
+                timeout=REQUEST_TIMEOUT,
+            )
             status_response.raise_for_status()
             status_data = status_response.json()
 
