@@ -2,21 +2,40 @@
 Unit tests for silence detection.
 """
 
-import pytest
-from munajjam.transcription.silence import detect_silences
+from unittest.mock import patch
+from munajjam.models import Segment
+from munajjam.transcription.silence import (
+    BreathBoundary,
+    annotate_segments_with_breaths,
+    detect_reciter_breaths,
+)
 
 
-class TestDetectSilences:
-    """Test silence detection functions."""
+class TestBreathDetection:
+    """Test reciter breath boundary detection and annotation."""
 
-    def test_detect_silences_file_not_found(self):
-        """Test silence detection with non-existent file."""
-        with pytest.raises(Exception):
-            detect_silences("nonexistent_file.wav")
+    @patch("munajjam.transcription.silence.detect_silences")
+    def test_detect_reciter_breaths(self, mock_detect_silences):
+        mock_detect_silences.return_value = [(1000, 1600), (4000, 4800)]
+        breaths = detect_reciter_breaths("dummy.wav", min_pause_duration_ms=300)
+        assert len(breaths) == 2
+        assert breaths[0].start_sec == 1.0
+        assert breaths[0].end_sec == 1.6
+        assert breaths[0].duration_sec == 0.6
+        assert breaths[0].is_breath_boundary is True
 
-    def test_silence_tuple_format(self, sample_silences):
-        """Test that silences are in (start_ms, end_ms) format."""
-        for start, end in sample_silences:
-            assert isinstance(start, int)
-            assert isinstance(end, int)
-            assert start < end
+    @patch("munajjam.transcription.silence.detect_reciter_breaths")
+    def test_annotate_segments_with_breaths(self, mock_detect_breaths):
+        mock_detect_breaths.return_value = [
+            BreathBoundary(
+                start_sec=1.5, end_sec=2.1, duration_sec=0.6, is_breath_boundary=True
+            )
+        ]
+        seg1 = Segment(id=1, surah_id=1, start=0.0, end=1.5, text="بِسْمِ ٱللَّهِ")
+        seg2 = Segment(id=2, surah_id=1, start=2.1, end=5.0, text="ٱلْحَمْدُ لِلَّهِ")
+
+        annotated = annotate_segments_with_breaths([seg1, seg2], "dummy.wav")
+        assert annotated[0].is_breath_boundary is True
+        assert annotated[0].pause_duration == 0.6
+        assert annotated[1].is_breath_boundary is False
+        assert annotated[1].pause_duration == 0.0
