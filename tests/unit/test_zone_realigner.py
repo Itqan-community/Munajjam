@@ -2,6 +2,10 @@
 Unit tests for zone-level realignment helpers.
 """
 
+from munajjam.core.cascade_recovery import (
+    detect_unaligned_word_gaps,
+    recover_unaligned_word_gaps,
+)
 from munajjam.core.zone_realigner import _find_problem_runs
 from munajjam.models import AlignmentResult, Ayah
 
@@ -83,3 +87,36 @@ def test_find_problem_runs_single_low():
     )
 
     assert runs == []
+
+
+def test_detect_unaligned_word_gaps():
+    words = [
+        {"word": "بِسْمِ", "start": 0.0, "end": 0.8, "confidence": 0.95},
+        {"word": "ٱللَّهِ", "start": 0.8, "end": 0.9, "confidence": 0.0},
+        {"word": "ٱلرَّحْمَـٰنِ", "start": 0.9, "end": 1.0, "confidence": 0.0},
+        {"word": "ٱلرَّحِيمِ", "start": 3.0, "end": 4.5, "confidence": 0.92},
+    ]
+
+    gaps = detect_unaligned_word_gaps(words)
+    assert len(gaps) == 1
+    assert gaps[0].start_word_idx == 1
+    assert gaps[0].end_word_idx == 3
+    assert gaps[0].words == ["ٱللَّهِ", "ٱلرَّحْمَـٰنِ"]
+    assert gaps[0].gap_start_time == 0.8
+    assert gaps[0].gap_end_time == 3.0
+
+
+def test_recover_unaligned_word_gaps():
+    words = [
+        {"word": "بِسْمِ", "start": 0.0, "end": 0.8, "confidence": 0.95},
+        {"word": "ٱللَّهِ", "start": 0.8, "end": 0.9, "confidence": 0.0},
+        {"word": "ٱلرَّحْمَـٰنِ", "start": 0.9, "end": 1.0, "confidence": 0.0},
+        {"word": "ٱلرَّحِيمِ", "start": 3.0, "end": 4.5, "confidence": 0.92},
+    ]
+
+    recovered = recover_unaligned_word_gaps(words)
+    assert recovered[1]["confidence"] > 0.5
+    assert recovered[2]["confidence"] > 0.5
+    assert recovered[1]["start"] == 0.8
+    assert recovered[2]["end"] == 3.0
+    assert recovered[1]["end"] == recovered[2]["start"]
