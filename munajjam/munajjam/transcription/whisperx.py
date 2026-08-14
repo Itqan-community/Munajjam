@@ -81,8 +81,9 @@ class Whisperx(BaseTranscriber):
         assert self.whisper_model is not None
         audio = whisperx.load_audio(str(audio_path))
 
-        breaths = detect_reciter_breaths(
-            audio_path, min_pause_duration_ms=self.min_pause_duration_ms
+        breaths = (
+            detect_reciter_breaths(audio_path, min_pause_duration_ms=self.min_pause_duration_ms)
+            or []
         )
         result = self.whisper_model.transcribe(audio, batch_size=batch_size)
 

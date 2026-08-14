@@ -367,9 +367,9 @@ def detect_reciter_breaths(
     audio_path: str | Path,
     min_pause_duration_ms: int = 300,
     silence_thresh: int = -30,
-) -> list[BreathBoundary]:
+) -> list[BreathBoundary] | None:
     """
-    Detect natural reciter pause and breath intervals without clipping voiceless consonants.
+    Detect pauses and breath intervals in reciter audio using silence detection.
 
     Args:
         audio_path: Path to the audio file.
@@ -377,7 +377,7 @@ def detect_reciter_breaths(
         silence_thresh: Silence energy threshold in dB.
 
     Returns:
-        List of BreathBoundary objects detailing start, end, and duration.
+        List of BreathBoundary objects detailing start, end, and duration, or None if detection failed.
     """
     try:
         raw_silences = detect_silences(
@@ -388,7 +388,7 @@ def detect_reciter_breaths(
         )
     except Exception as exc:
         logger.warning("Breath detection failed for %s: %s", audio_path, exc)
-        raw_silences = []
+        return None
 
     breath_boundaries: list[BreathBoundary] = []
     for s_ms, e_ms in raw_silences:
@@ -431,22 +431,21 @@ def annotate_segments_with_breaths(
         if audio_path is None:
             breaths = []
         else:
-            breaths = detect_reciter_breaths(
+            detected = detect_reciter_breaths(
                 audio_path=audio_path,
                 min_pause_duration_ms=min_pause_duration_ms,
                 silence_thresh=silence_thresh,
             )
+            if detected is None:
+                return segments
+            breaths = detected
 
     available_breaths = list(breaths)
 
     for seg in segments:
         seg_end = seg.end
         matching_breath = None
-        candidates = [
-            b
-            for b in available_breaths
-            if abs(b.start_sec - seg_end) <= 0.5 or (b.start_sec <= seg_end <= b.end_sec)
-        ]
+        candidates = [b for b in available_breaths if (b.start_sec - 0.5) <= seg_end <= b.end_sec]
         if candidates:
             matching_breath = min(candidates, key=lambda b: abs(b.start_sec - seg_end))
 
