@@ -39,3 +39,17 @@ class TestBreathDetection:
         assert annotated[0].pause_duration == 0.6
         assert annotated[1].is_breath_boundary is False
         assert annotated[1].pause_duration == 0.0
+
+    def test_annotate_segments_with_breaths_single_assignment_per_boundary(self):
+        """Verify that a breath boundary is assigned to only ONE segment, not reused by consecutive segments."""
+        breath = BreathBoundary(
+            start_sec=1.5, end_sec=2.1, duration_sec=0.6, is_breath_boundary=True
+        )
+        seg1 = Segment(id=1, surah_id=1, start=0.0, end=1.4, text="seg1")
+        seg2 = Segment(id=2, surah_id=1, start=1.4, end=1.5, text="seg2")
+
+        annotated = annotate_segments_with_breaths([seg1, seg2], breaths=[breath])
+        assigned_count = sum(1 for s in annotated if s.is_breath_boundary)
+        assert assigned_count == 1
+        assert annotated[0].is_breath_boundary is True
+        assert annotated[1].is_breath_boundary is False

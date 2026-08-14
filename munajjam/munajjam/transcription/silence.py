@@ -406,9 +406,10 @@ def detect_reciter_breaths(
 
 def annotate_segments_with_breaths(
     segments: list,
-    audio_path: str | Path,
+    audio_path: str | Path | None = None,
     min_pause_duration_ms: int = 300,
     silence_thresh: int = -30,
+    breaths: list[BreathBoundary] | None = None,
 ) -> list:
     """
     Annotate audio segments with reciter pause_duration and is_breath_boundary flags.
@@ -418,6 +419,7 @@ def annotate_segments_with_breaths(
         audio_path: Path to the audio file.
         min_pause_duration_ms: Minimum pause duration in ms.
         silence_thresh: Silence threshold in dB.
+        breaths: Pre-detected list of BreathBoundary objects (optional).
 
     Returns:
         List of annotated Segment objects.
@@ -425,23 +427,33 @@ def annotate_segments_with_breaths(
     if not segments:
         return segments
 
-    breaths = detect_reciter_breaths(
-        audio_path=audio_path,
-        min_pause_duration_ms=min_pause_duration_ms,
-        silence_thresh=silence_thresh,
-    )
+    if breaths is None:
+        if audio_path is None:
+            breaths = []
+        else:
+            breaths = detect_reciter_breaths(
+                audio_path=audio_path,
+                min_pause_duration_ms=min_pause_duration_ms,
+                silence_thresh=silence_thresh,
+            )
+
+    available_breaths = list(breaths)
 
     for seg in segments:
         seg_end = seg.end
         matching_breath = None
-        for b in breaths:
-            if abs(b.start_sec - seg_end) <= 0.5 or (b.start_sec <= seg_end <= b.end_sec):
-                matching_breath = b
-                break
+        candidates = [
+            b
+            for b in available_breaths
+            if abs(b.start_sec - seg_end) <= 0.5 or (b.start_sec <= seg_end <= b.end_sec)
+        ]
+        if candidates:
+            matching_breath = min(candidates, key=lambda b: abs(b.start_sec - seg_end))
 
         if matching_breath:
             seg.pause_duration = matching_breath.duration_sec
             seg.is_breath_boundary = True
+            available_breaths.remove(matching_breath)
         else:
             seg.pause_duration = 0.0
             seg.is_breath_boundary = False
