@@ -132,3 +132,26 @@ def test_detect_unaligned_word_gaps_preserves_high_confidence_short_words():
 
     gaps = detect_unaligned_word_gaps(words)
     assert len(gaps) == 0
+
+
+def test_detect_unaligned_word_gaps_with_placeholder_flags():
+    """Verify that an explicit placeholder/fallback record (even with high confidence) is detected."""
+    words = [
+        {"word": "بِسْمِ", "start": 0.0, "end": 0.8, "confidence": 0.95},
+        {
+            "word": "ٱللَّهِ",
+            "start": 0.8,
+            "end": 0.9,
+            "confidence": 0.95,
+            "is_placeholder": True,
+        },
+        {"word": "ٱلرَّحْمَـٰنِ", "start": 0.9, "end": 1.0, "confidence": 0.0},
+        {"word": "ٱلرَّحِيمِ", "start": 3.0, "end": 4.5, "confidence": 0.92},
+    ]
+    gaps = detect_unaligned_word_gaps(words)
+    assert len(gaps) == 1
+    assert gaps[0].start_word_idx == 1
+    assert gaps[0].end_word_idx == 3
+    assert gaps[0].words == ["ٱللَّهِ", "ٱلرَّحْمَـٰنِ"]
+    assert gaps[0].gap_start_time == 0.8
+    assert gaps[0].gap_end_time == 3.0

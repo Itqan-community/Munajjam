@@ -331,12 +331,17 @@ def detect_unaligned_word_gaps(
     max_placeholder_duration: float = 0.15,
 ) -> list[UnalignedWordGap]:
     """
-    Detect sequences of unaligned fallback words (confidence <= 0.1 or placeholder duration <= 0.15s).
+    Detect sequences of unaligned fallback words.
+
+    A word is detected as unaligned if:
+    - It is explicitly marked with 'is_placeholder': True or 'fallback': True.
+    - Its confidence is <= min_confidence_thresh (e.g. 0.0 fallback from ASR).
+    - Its duration is non-positive (<= 0.0).
 
     Args:
         words: List of word timestamp dictionaries containing 'word', 'start', 'end', and 'confidence'.
-        min_confidence_thresh: Confidence threshold below which a word is unaligned.
-        max_placeholder_duration: Duration threshold below which a word duration is considered a placeholder.
+        min_confidence_thresh: Confidence threshold below which a word is considered unaligned.
+        max_placeholder_duration: Maximum duration threshold for placeholder validation.
 
     Returns:
         List of UnalignedWordGap objects.
@@ -345,21 +350,24 @@ def detect_unaligned_word_gaps(
     if not words:
         return gaps
 
+    def _is_unaligned(w: dict) -> bool:
+        if bool(w.get("is_placeholder", False)) or bool(w.get("fallback", False)):
+            return True
+        conf = float(w.get("confidence", 0.0))
+        if conf <= min_confidence_thresh:
+            return True
+        dur = float(w.get("end", 0.0)) - float(w.get("start", 0.0))
+        if dur <= 0.0:
+            return True
+        return False
+
     n = len(words)
     i = 0
     while i < n:
-        w = words[i]
-        conf = float(w.get("confidence", 0.0))
-
-        if conf <= min_confidence_thresh:
+        if _is_unaligned(words[i]):
             start_idx = i
-            while i < n:
-                curr_w = words[i]
-                c = float(curr_w.get("confidence", 0.0))
-                if c <= min_confidence_thresh:
-                    i += 1
-                else:
-                    break
+            while i < n and _is_unaligned(words[i]):
+                i += 1
             end_idx = i
 
             prev_end = (
@@ -392,6 +400,7 @@ def detect_unaligned_word_gaps(
 def recover_unaligned_word_gaps(
     words: list[dict],
     min_confidence_thresh: float = 0.1,
+    max_placeholder_duration: float = 0.15,
 ) -> list[dict]:
     """
     Recover timestamps for unaligned fallback words by interpolating precise timings within surrounding audio gap bounds.
@@ -399,11 +408,16 @@ def recover_unaligned_word_gaps(
     Args:
         words: List of word timestamp dictionaries.
         min_confidence_thresh: Confidence threshold.
+        max_placeholder_duration: Maximum duration threshold for placeholder validation.
 
     Returns:
         Updated list of word timestamp dictionaries with recovered start, end, and confidence scores.
     """
-    gaps = detect_unaligned_word_gaps(words, min_confidence_thresh=min_confidence_thresh)
+    gaps = detect_unaligned_word_gaps(
+        words,
+        min_confidence_thresh=min_confidence_thresh,
+        max_placeholder_duration=max_placeholder_duration,
+    )
     if not gaps:
         return words
 
