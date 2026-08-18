@@ -24,17 +24,18 @@
 
 ## Current State (Updated)
 
-Munajjam currently supports three transcription backends (configured via `model_type` in `munajjam/config.py` or `WhisperFactory`):
+Munajjam currently supports four transcription backends (configured via `model_type` in `munajjam/config.py` or `WhisperFactory`):
 
 | Setting | Value |
 |---------|-------|
 | API Server Default | `WhisperX` (large-v2) |
 | Library Default | `faster-whisper` (`OdyAsh/faster-whisper-base-ar-quran`) |
 | Alternative backend | `transformers` (HuggingFace pipeline) |
+| Experimental cloud backend | `chirp3` (Google Cloud Speech-to-Text V2; research only) |
 | Device | Auto-detect (CUDA > MPS > CPU) |
-| Word timestamps | `whisperx` (phoneme alignment) & `faster-whisper` (two-pass strategy) |
+| Word timestamps | `whisperx` (phoneme alignment) & `faster-whisper` (two-pass strategy); Chirp 3 word offsets for evaluation |
 
-The **WhisperX** backend is now the recommended default for the standalone API server, as it provides batched inference and phoneme-based forced alignment. This resolves the previous bottleneck where the **faster-whisper** backend's two-pass strategy doubled transcription time. The **transformers** backend remains for baseline compatibility.
+The **WhisperX** backend is now the recommended default for the standalone API server, as it provides batched inference and phoneme-based forced alignment. This resolves the previous bottleneck where the **faster-whisper** backend's two-pass strategy doubled transcription time. The **transformers** backend remains for baseline compatibility. **Chirp 3** is an optional research adapter (`--whisper-backend chirp3`) so cloud ASR can be compared with WhisperX; it is not a production default.
 
 ---
 
