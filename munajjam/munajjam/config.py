@@ -5,10 +5,11 @@ Uses Pydantic Settings for type-safe configuration with environment variable sup
 All settings can be overridden via environment variables with the MUNAJJAM_ prefix.
 """
 
+import os
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -139,7 +140,47 @@ class MunajjamSettings(BaseSettings):
         le=16,
     )
 
+    # ============ Google Cloud (experimental Chirp 3 backend) ============
+
+    gcp_project_id: str | None = Field(
+        default=None,
+        description="Google Cloud project id for the experimental Chirp 3 backend",
+    )
+
+    gcp_credentials_path: str | None = Field(
+        default=None,
+        description="Path to a GCP service-account JSON key file",
+    )
+
+    gcp_location: str = Field(
+        default="us",
+        description="Speech-to-Text V2 region for Chirp 3 (us or eu; not global)",
+    )
+
     # ============ Validators ============
+
+    @model_validator(mode="before")
+    @classmethod
+    def accept_unprefixed_gcp_env(cls, data: Any) -> Any:
+        """Also accept GCP_* env vars listed in issue #101, without the MUNAJJAM_ prefix."""
+        if not isinstance(data, dict):
+            return data
+
+        merged = dict(data)
+        aliases = {
+            "gcp_project_id": ("GCP_PROJECT_ID", "MUNAJJAM_GCP_PROJECT_ID"),
+            "gcp_credentials_path": ("GCP_CREDENTIALS_PATH", "MUNAJJAM_GCP_CREDENTIALS_PATH"),
+            "gcp_location": ("GCP_LOCATION", "MUNAJJAM_GCP_LOCATION"),
+        }
+        for field, keys in aliases.items():
+            if merged.get(field):
+                continue
+            for key in keys:
+                value = os.environ.get(key)
+                if value:
+                    merged[field] = value
+                    break
+        return merged
 
     @field_validator("device")
     @classmethod

@@ -54,6 +54,13 @@ def test_whisper_factory_unsupported(factory):
         factory.create_whisper("invalid_backend", "base", "cpu")
 
 
+def test_whisper_factory_chirp3(factory):
+    from munajjam.transcription.chirp import ChirpTranscriber
+
+    transcriber = factory.create_whisper(WhisperBackend.CHIRP3, "n/a", "cpu")
+    assert isinstance(transcriber, ChirpTranscriber)
+
+
 @patch("munajjam.transcription.whisperx.whisperx")
 def test_whisperx_transcribe(mock_whisperx_module):
     # Mock whisperx load_model and its returned model

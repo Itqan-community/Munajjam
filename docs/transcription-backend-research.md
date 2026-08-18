@@ -277,6 +277,38 @@ Models discovered on Hugging Face, ranked by adoption:
 
 **Caveat**: Only benefits Apple Silicon users. Linux CUDA users are already well-served by faster-whisper.
 
+### Experimental: Google Cloud Chirp 3 (Issue #101)
+
+> ⚠️ **Research / evaluation only.** Chirp 3 is not a production Munajjam default. It exists so we can compare cloud ASR against local WhisperX without requiring a GPU.
+
+**What it is**: Google's Speech-to-Text V2 multilingual model (`chirp_3`). Munajjam talks to it through `ChirpTranscriber` (`munajjam/transcription/chirp.py`), registered as `WhisperBackend.CHIRP3` (`--whisper-backend chirp3`).
+
+| Criterion | Chirp 3 (cloud) | WhisperX (local default) |
+|-----------|-----------------|--------------------------|
+| Runtime | Google Cloud API; no local GPU/PyTorch | Local CUDA/CPU + wav2vec2 aligner |
+| Arabic (`ar-SA`) | Preview on Chirp 3 | Production (Whisper + `wav2vec2-large-xlsr-53-arabic`) |
+| Word timestamps | `enable_word_time_offsets=True` (word-level, not phoneme-level) | Phoneme-level forced alignment (best-in-class for this repo) |
+| Quran fine-tuning | None (general Arabic) | Can use Quran-tuned Whisper checkpoints |
+| Latency | Network RTT + cloud inference. Short surahs typically a few seconds; long recitations are chunked at 50s because `Recognize` is limited to ~1 minute | Dominated by model load + GPU/CPU decode; no network |
+| Auth / cost | GCP project, credentials, billed STT usage | Free after model download |
+| Integration | Optional extra: `pip install "munajjam[gcp]"` | Already the API-server default |
+
+**How timestamps are mapped**: Chirp returns free-form ASR words. Munajjam then fuzzy-matches those words onto canonical ayah text (same DP approach as WhisperX) and emits `Segment` + `WordTimestamp` objects so the rest of the pipeline (`Result` / `AlignmentResult` via `align()`) is unchanged.
+
+**Live accuracy numbers**: This change ships the adapter and mocked unit tests. A side-by-side WER / timestamp-error benchmark against WhisperX needs a GCP project and sample recitations (e.g. Al-Fatiha + a long surah). Until that run is recorded here, treat Chirp 3 as a *candidate*, not a replacement: expect weaker Tajweed/Quran-specific accuracy than WhisperX, in exchange for zero local GPU.
+
+**Configuration**
+
+```bash
+export GCP_PROJECT_ID="your-project"          # or MUNAJJAM_GCP_PROJECT_ID
+export GCP_CREDENTIALS_PATH="/path/key.json"  # or MUNAJJAM_GCP_CREDENTIALS_PATH
+export GCP_LOCATION="us"                      # us or eu; Chirp 3 is not on global
+```
+
+**Sources**: [Chirp 3 model docs](https://cloud.google.com/speech-to-text/docs/models/chirp-3), [Speech-to-Text V2 word offsets](https://cloud.google.com/speech-to-text/docs/samples/speech-transcribe-word-time-offsets-v2)
+
+---
+
 ### Not recommended
 
 | Backend | Reason |
