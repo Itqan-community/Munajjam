@@ -5,11 +5,21 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import BackgroundTasks, FastAPI, File, Form, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from munajjam.config import get_settings
 from munajjam.transcription.whisperFactory import WhisperBackend, WhisperFactory
 
 app = FastAPI(title="Munajjam API Server")
+
+# Enable CORS for external web clients and Google Colab / tunnel frontends
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Supported WhisperX model sizes
 VALID_MODEL_SIZES = {
