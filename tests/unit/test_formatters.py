@@ -8,8 +8,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from pydantic import ValidationError
-
 from munajjam.formatters import (
     AlignmentMetadata,
     AlignmentOutput,
@@ -19,6 +17,7 @@ from munajjam.formatters import (
 )
 from munajjam.models.ayah import Ayah
 from munajjam.models.result import AlignmentResult
+from pydantic import ValidationError
 
 # --- Fixtures ---
 
@@ -316,6 +315,7 @@ class TestAlignmentOutput:
             "similarity_score",
             "is_high_confidence",
             "overlap_detected",
+            "words",
         }
         for result in data["results"]:
             assert set(result.keys()) == expected_keys
