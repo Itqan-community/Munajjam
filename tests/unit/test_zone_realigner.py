@@ -2,6 +2,8 @@
 Unit tests for zone-level realignment helpers.
 """
 
+import numpy as np
+
 from munajjam.core.cascade_recovery import (
     detect_unaligned_word_gaps,
     recover_unaligned_word_gaps,
@@ -155,3 +157,50 @@ def test_detect_unaligned_word_gaps_with_placeholder_flags():
     assert gaps[0].words == ["ٱللَّهِ", "ٱلرَّحْمَـٰنِ"]
     assert gaps[0].gap_start_time == 0.8
     assert gaps[0].gap_end_time == 3.0
+
+
+def test_slice_audio_array():
+    """Verify audio slicing returns correct duration and sample bounds."""
+    from munajjam.core.cascade_recovery import slice_audio_array
+
+    dummy_audio = np.zeros(16000 * 5, dtype=np.float32)  # 5 seconds
+    slice_arr, start_sec, end_sec = slice_audio_array(
+        dummy_audio, 1.0, 2.5, sample_rate=16000
+    )
+    assert len(slice_arr) == 16000 * 1.5
+    assert start_sec == 1.0
+    assert end_sec == 2.5
+
+
+def test_recover_unaligned_word_gaps_acoustic():
+    """Verify recover_unaligned_word_gaps uses acoustic realignment when provided."""
+    from unittest.mock import MagicMock, patch
+
+    words = [
+        {"word": "بِسْمِ", "start": 0.0, "end": 0.8, "confidence": 0.95},
+        {"word": "ٱللَّهِ", "start": 0.8, "end": 0.9, "confidence": 0.0},
+        {"word": "ٱلرَّحِيمِ", "start": 2.0, "end": 3.0, "confidence": 0.92},
+    ]
+    dummy_audio = np.zeros(16000 * 4, dtype=np.float32)
+    mock_align_model = MagicMock()
+    mock_align_metadata = {"language": "ar"}
+
+    mock_align_result = {
+        "segments": [
+            {
+                "text": "ٱللَّهِ",
+                "words": [{"word": "ٱللَّهِ", "start": 0.25, "end": 1.15, "score": 0.88}],
+            }
+        ]
+    }
+
+    with patch("whisperx.align", return_value=mock_align_result):
+        recovered = recover_unaligned_word_gaps(
+            words,
+            audio=dummy_audio,
+            align_model=mock_align_model,
+            align_metadata=mock_align_metadata,
+        )
+        assert recovered[1]["confidence"] == 0.88
+        assert recovered[1]["start"] > 0.5
+        assert recovered[1]["end"] <= 2.0

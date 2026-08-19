@@ -220,7 +220,13 @@ class Whisperx(BaseTranscriber):
 
         from ..core.cascade_recovery import recover_unaligned_word_gaps
 
-        w_alignments = recover_unaligned_word_gaps(w_alignments)
+        w_alignments = recover_unaligned_word_gaps(
+            w_alignments,
+            audio=audio,
+            align_model=self.align_model,
+            align_metadata=self.align_metadata,
+            device=self.device,
+        )
         final_alignments = w_alignments
 
         try:
