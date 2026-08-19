@@ -45,10 +45,10 @@ def _detect_silences_pydub(
     min_silence_len: int = 300,
     silence_thresh: int = -30,
 ) -> list[tuple[int, int]]:
-    """Pydub-based silence detection (slower but reliable)."""
+    """Pydub-based silence detection (slower but reliable, supports any audio format)."""
     from pydub import AudioSegment, silence
 
-    audio = AudioSegment.from_wav(str(audio_path))
+    audio = AudioSegment.from_file(str(audio_path))
     silences = silence.detect_silence(
         audio,
         min_silence_len=min_silence_len,
@@ -445,9 +445,18 @@ def annotate_segments_with_breaths(
     for seg in segments:
         seg_end = seg.end
         matching_breath = None
-        candidates = [b for b in available_breaths if (b.start_sec - 0.5) <= seg_end <= b.end_sec]
+        # Match if breath boundary overlaps or is close to the transition between seg.end and the next segment
+        candidates = [
+            b
+            for b in available_breaths
+            if abs(b.start_sec - seg_end) <= 0.8
+            or abs(b.end_sec - seg_end) <= 0.8
+            or (b.start_sec - 0.5 <= seg_end <= b.end_sec + 0.5)
+        ]
         if candidates:
-            matching_breath = min(candidates, key=lambda b: abs(b.start_sec - seg_end))
+            matching_breath = min(
+                candidates, key=lambda b: min(abs(b.start_sec - seg_end), abs(b.end_sec - seg_end))
+            )
 
         if matching_breath:
             seg.pause_duration = matching_breath.duration_sec
