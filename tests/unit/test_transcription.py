@@ -1,3 +1,4 @@
+import importlib.util
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -109,6 +110,10 @@ def test_whisperx_transcribe(mock_whisperx_module, mock_detect_breaths):
     mock_model.transcribe.assert_called_once_with("mock_audio_data", batch_size=8)
 
 
+@pytest.mark.skipif(
+    importlib.util.find_spec("torch") is None,
+    reason="torch is not installed in lightweight test environment",
+)
 @patch("munajjam.transcription.whisper.Path.exists", return_value=True)
 @patch("munajjam.transcription.whisper.load_audio_waveform")
 @patch("munajjam.transcription.whisper.WhisperTranscriber._initialize_model")
@@ -210,6 +215,10 @@ def test_whisperx_set_model_name_swapping():
     assert transcriber.model_name == "large-v3"
 
 
+@pytest.mark.skipif(
+    importlib.util.find_spec("fastapi") is None,
+    reason="fastapi is not installed in lightweight test environment",
+)
 @patch("server.get_settings")
 @patch("server.global_transcriber")
 @patch("server.os.path.exists", return_value=False)

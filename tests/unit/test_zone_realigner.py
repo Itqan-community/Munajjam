@@ -174,6 +174,7 @@ def test_slice_audio_array():
 
 def test_recover_unaligned_word_gaps_acoustic():
     """Verify recover_unaligned_word_gaps uses acoustic realignment when provided."""
+    import sys
     from unittest.mock import MagicMock, patch
 
     words = [
@@ -193,8 +194,10 @@ def test_recover_unaligned_word_gaps_acoustic():
             }
         ]
     }
+    mock_whisperx = MagicMock()
+    mock_whisperx.align.return_value = mock_align_result
 
-    with patch("whisperx.align", return_value=mock_align_result):
+    with patch.dict(sys.modules, {"whisperx": mock_whisperx}):
         recovered = recover_unaligned_word_gaps(
             words,
             audio=dummy_audio,
@@ -208,6 +211,7 @@ def test_recover_unaligned_word_gaps_acoustic():
 
 def test_realign_trailing_gap_acoustic():
     """Verify trailing unaligned gap resolves recovery interval using total audio duration."""
+    import sys
     from unittest.mock import MagicMock, patch
 
     words = [
@@ -226,8 +230,10 @@ def test_realign_trailing_gap_acoustic():
             }
         ]
     }
+    mock_whisperx = MagicMock()
+    mock_whisperx.align.return_value = mock_align_result
 
-    with patch("whisperx.align", return_value=mock_align_result):
+    with patch.dict(sys.modules, {"whisperx": mock_whisperx}):
         recovered = recover_unaligned_word_gaps(
             words,
             audio=dummy_audio,
@@ -240,6 +246,7 @@ def test_realign_trailing_gap_acoustic():
 
 def test_realign_rejects_out_of_bounds_acoustic():
     """Verify acoustic realignment is rejected and falls back if timestamps exceed anchor bounds."""
+    import sys
     from unittest.mock import MagicMock, patch
 
     words = [
@@ -260,8 +267,10 @@ def test_realign_rejects_out_of_bounds_acoustic():
             }
         ]
     }
+    mock_whisperx = MagicMock()
+    mock_whisperx.align.return_value = mock_align_result
 
-    with patch("whisperx.align", return_value=mock_align_result):
+    with patch.dict(sys.modules, {"whisperx": mock_whisperx}):
         recovered = recover_unaligned_word_gaps(
             words,
             audio=dummy_audio,
@@ -275,6 +284,7 @@ def test_realign_rejects_out_of_bounds_acoustic():
 
 def test_realign_preserves_canonical_reference_word():
     """Verify acoustic recovery preserves the canonical Quranic reference word text."""
+    import sys
     from unittest.mock import MagicMock, patch
 
     words = [
@@ -302,8 +312,10 @@ def test_realign_preserves_canonical_reference_word():
             }
         ]
     }
+    mock_whisperx = MagicMock()
+    mock_whisperx.align.return_value = mock_align_result
 
-    with patch("whisperx.align", return_value=mock_align_result):
+    with patch.dict(sys.modules, {"whisperx": mock_whisperx}):
         recovered = recover_unaligned_word_gaps(
             words,
             audio=dummy_audio,
@@ -319,6 +331,7 @@ def test_realign_preserves_canonical_reference_word():
 
 def test_realign_rejects_pre_start_timestamp():
     """Verify acoustic realignment is rejected if timestamp starts before recovery_start."""
+    import sys
     from unittest.mock import MagicMock, patch
 
     words = [
@@ -339,8 +352,10 @@ def test_realign_rejects_pre_start_timestamp():
             }
         ]
     }
+    mock_whisperx = MagicMock()
+    mock_whisperx.align.return_value = mock_align_result
 
-    with patch("whisperx.align", return_value=mock_align_result):
+    with patch.dict(sys.modules, {"whisperx": mock_whisperx}):
         recovered = recover_unaligned_word_gaps(
             words,
             audio=dummy_audio,
