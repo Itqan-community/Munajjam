@@ -507,7 +507,7 @@ def realign_unaligned_gap_acoustic(
     except Exception:
         return None
 
-    extracted_words = []
+    extracted_words: list[dict[str, Any]] = []
     if "segments" in align_result:
         for seg in align_result["segments"]:
             if isinstance(seg, dict) and "words" in seg:
@@ -526,20 +526,20 @@ def realign_unaligned_gap_acoustic(
         return None
 
     # 3. Validate chronological ordering and recovery interval bounds
-    prev_w_end = recovery_start - 0.05
+    prev_w_end: float = float(recovery_start - 0.05)
     for w in extracted_words:
-        w_start = w["start"]
-        w_end = w["end"]
+        w_start: float = float(w["start"]) if isinstance(w["start"], int | float) else 0.0
+        w_end: float = float(w["end"]) if isinstance(w["end"], int | float) else 0.0
 
         # Must have positive duration and be strictly chronological
         if w_end <= w_start or w_start < prev_w_end:
             return None
 
         # Cannot exceed recovery end (reject if placed in padded context outside anchor)
-        if not is_trailing and w_end > recovery_end + 0.05:
+        if not is_trailing and w_end > float(recovery_end + 0.05):
             return None
 
-        if is_trailing and w_end > total_audio_sec + 0.05:
+        if is_trailing and w_end > float(total_audio_sec + 0.05):
             return None
 
         prev_w_end = w_end

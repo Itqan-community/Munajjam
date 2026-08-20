@@ -19,8 +19,8 @@ try:
 
     import whisperx
 except ImportError:
-    torch = None
-    whisperx = None
+    torch = None  # type: ignore[assignment]
+    whisperx = None  # type: ignore[assignment]
 
 import numpy as np
 import soundfile as sf
