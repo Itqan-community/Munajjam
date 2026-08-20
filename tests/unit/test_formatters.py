@@ -316,6 +316,7 @@ class TestAlignmentOutput:
             "similarity_score",
             "is_high_confidence",
             "overlap_detected",
+            "words",
         }
         for result in data["results"]:
             assert set(result.keys()) == expected_keys

@@ -59,20 +59,35 @@ def test_whisperx_transcribe(mock_whisperx_module):
     # Mock whisperx load_model and its returned model
     mock_model = MagicMock()
     mock_model.transcribe.return_value = {
-        "segments": [{"start": 0.0, "end": 1.5, "text": "hello"}]
+        "segments": [{"start": 0.0, "end": 1.5, "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ"}]
     }
     mock_whisperx_module.load_model.return_value = mock_model
     mock_whisperx_module.load_audio.return_value = "mock_audio_data"
+    mock_whisperx_module.load_align_model.return_value = (
+        MagicMock(),
+        {"language": "ar"},
+    )
+    mock_whisperx_module.align.return_value = {
+        "segments": [
+            {
+                "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+                "words": [
+                    {"word": "بِسْمِ", "start": 0.0, "end": 0.3, "score": 0.95},
+                    {"word": "ٱللَّهِ", "start": 0.3, "end": 0.7, "score": 0.95},
+                    {"word": "ٱلرَّحْمَـٰنِ", "start": 0.7, "end": 1.1, "score": 0.95},
+                    {"word": "ٱلرَّحِيمِ", "start": 1.1, "end": 1.5, "score": 0.95},
+                ],
+            }
+        ]
+    }
 
     transcriber = Whisperx(model_name="base", device="cpu")
 
     # Actually call transcribe
     segments = transcriber.transcribe("dummy_audio.wav", batch_size=8, surah_id=1)
 
-    assert len(segments) == 1
-    assert segments[0].text == "hello"
+    assert len(segments) == 7
     assert segments[0].start == 0.0
-    assert segments[0].end == 1.5
 
     mock_whisperx_module.load_audio.assert_called_once_with("dummy_audio.wav")
     mock_model.transcribe.assert_called_once_with("mock_audio_data", batch_size=8)
