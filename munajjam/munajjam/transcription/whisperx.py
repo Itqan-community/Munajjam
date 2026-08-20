@@ -28,22 +28,55 @@ from rapidfuzz import fuzz
 
 from munajjam.config import get_settings
 from munajjam.data import load_surah_ayahs
+from munajjam.exceptions import TranscriptionError
 from munajjam.models import Segment, SegmentType, WordTimestamp
 from munajjam.transcription.base import BaseTranscriber
 
 
 class Whisperx(BaseTranscriber):
-    def __init__(self, model_name: str, device: str = "cuda", compute_type: str = "float16"):
-        self.model_name = model_name
-        self.device = device
-        self.compute_type = compute_type
-
+    def __init__(
+        self,
+        model_name: str | None = None,
+        device: str = "cuda",
+        compute_type: str = "float16",
+    ):
         settings = get_settings()
+        self.model_name = model_name or settings.whisperx_model_size
+        resolved_device = device
+        if resolved_device == "auto":
+            resolved_device = settings.get_resolved_device()
+        self.device = resolved_device
+        if self.device == "cpu" and compute_type == "float16":
+            self.compute_type = "int8"
+        else:
+            self.compute_type = compute_type
         self.wav2vec2_model_id = settings.wav2vec2_model_id
 
         self.whisper_model: Any = None
         self.align_model: Any = None
         self.align_metadata: Any = None
+
+    def unload_model(self) -> None:
+        """Safely unload active WhisperX and alignment models from VRAM/RAM."""
+        if getattr(self, "whisper_model", None) is not None:
+            del self.whisper_model
+            self.whisper_model = None
+        if getattr(self, "align_model", None) is not None:
+            del self.align_model
+            self.align_model = None
+        if getattr(self, "align_metadata", None) is not None:
+            del self.align_metadata
+            self.align_metadata = None
+
+        gc.collect()
+        if torch is not None and hasattr(torch, "cuda") and torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+    def set_model_name(self, model_name: str) -> None:
+        """Update model name and safely unload existing model if size changes."""
+        if self.model_name != model_name:
+            self.unload_model()
+            self.model_name = model_name
 
     def _normalize_arabic(self, text: str) -> str:
         text = re.sub(r"[\u064B-\u065F\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]", "", text)
@@ -66,6 +99,11 @@ class Whisperx(BaseTranscriber):
         for ayah in ayahs:
             for w in ayah.text.split():
                 ref_words.append(w)
+
+        if whisperx is None:
+            raise TranscriptionError(
+                "whisperx not installed. Install with: pip install git+https://github.com/m-bain/whisperx.git"
+            )
 
         if not self.whisper_model:
             print(f"Loading WhisperX model {self.model_name}...")

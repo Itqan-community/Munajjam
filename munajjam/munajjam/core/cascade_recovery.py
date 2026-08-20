@@ -440,6 +440,8 @@ def realign_unaligned_gap_acoustic(
     device: str = "cpu",
     sample_rate: int = 16000,
     context_pad_sec: float = 0.25,
+    is_trailing: bool = False,
+    is_leading: bool = False,
 ) -> list[dict] | None:
     """
     Perform acoustic realignment on a dynamically sliced audio window for unaligned words.
@@ -452,6 +454,8 @@ def realign_unaligned_gap_acoustic(
         device: Torch compute device ("cpu" or "cuda").
         sample_rate: Audio sample rate.
         context_pad_sec: Context padding in seconds around the gap.
+        is_trailing: Whether the gap is at the end of the transcription.
+        is_leading: Whether the gap is at the beginning of the transcription.
 
     Returns:
         List of aligned word dictionaries with true acoustic timestamps and scores, or None if realignment failed.
@@ -464,8 +468,16 @@ def realign_unaligned_gap_acoustic(
     except ImportError:
         return None
 
-    slice_start = max(0.0, gap.gap_start_time - context_pad_sec)
-    slice_end = gap.gap_end_time + context_pad_sec
+    total_audio_sec = len(audio) / float(sample_rate)
+
+    # 1. Resolve recovery interval boundaries from real audio bounds
+    recovery_start = 0.0 if is_leading else gap.gap_start_time
+    recovery_end = total_audio_sec if is_trailing else gap.gap_end_time
+
+    # 2. Add context padding for acoustic receptive field
+    slice_start = max(0.0, recovery_start - (0.0 if is_leading else context_pad_sec))
+    slice_end = min(total_audio_sec, recovery_end + (0.0 if is_trailing else context_pad_sec))
+
     audio_slice, actual_slice_start, actual_slice_end = slice_audio_array(
         audio, slice_start, slice_end, sample_rate=sample_rate
     )
@@ -510,11 +522,29 @@ def realign_unaligned_gap_acoustic(
                             }
                         )
 
-    if len(extracted_words) == len(gap.words):
-        # All words successfully realigned acoustically
-        return extracted_words
+    if len(extracted_words) != len(gap.words):
+        return None
 
-    return None
+    # 3. Validate chronological ordering and recovery interval bounds
+    prev_w_end = recovery_start - 0.05
+    for w in extracted_words:
+        w_start = w["start"]
+        w_end = w["end"]
+
+        # Must have positive duration and be strictly chronological
+        if w_end <= w_start or w_start < prev_w_end:
+            return None
+
+        # Cannot exceed recovery end (reject if placed in padded context outside anchor)
+        if not is_trailing and w_end > recovery_end + 0.05:
+            return None
+
+        if is_trailing and w_end > total_audio_sec + 0.05:
+            return None
+
+        prev_w_end = w_end
+
+    return extracted_words
 
 
 def recover_unaligned_word_gaps(
@@ -552,7 +582,11 @@ def recover_unaligned_word_gaps(
         return words
 
     recovered_words = list(words)
+    n_words = len(words)
     for gap in gaps:
+        is_leading = gap.start_word_idx == 0
+        is_trailing = gap.end_word_idx >= n_words
+
         # 1. Attempt true acoustic realignment on dynamically sliced audio
         if audio is not None and align_model is not None and align_metadata is not None:
             acoustic_words = realign_unaligned_gap_acoustic(
@@ -562,6 +596,8 @@ def recover_unaligned_word_gaps(
                 align_metadata=align_metadata,
                 device=device,
                 sample_rate=sample_rate,
+                is_trailing=is_trailing,
+                is_leading=is_leading,
             )
             if acoustic_words and len(acoustic_words) == (gap.end_word_idx - gap.start_word_idx):
                 for idx_offset, w_idx in enumerate(range(gap.start_word_idx, gap.end_word_idx)):

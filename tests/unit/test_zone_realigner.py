@@ -204,3 +204,70 @@ def test_recover_unaligned_word_gaps_acoustic():
         assert recovered[1]["confidence"] == 0.88
         assert recovered[1]["start"] > 0.5
         assert recovered[1]["end"] <= 2.0
+
+
+def test_realign_trailing_gap_acoustic():
+    """Verify trailing unaligned gap resolves recovery interval using total audio duration."""
+    from unittest.mock import MagicMock, patch
+
+    words = [
+        {"word": "بِسْمِ", "start": 0.0, "end": 0.8, "confidence": 0.95},
+        {"word": "ٱللَّهِ", "start": 0.8, "end": 0.9, "confidence": 0.0},  # Trailing gap
+    ]
+    dummy_audio = np.zeros(16000 * 3, dtype=np.float32)  # 3.0s total audio
+    mock_align_model = MagicMock()
+    mock_align_metadata = {"language": "ar"}
+
+    mock_align_result = {
+        "segments": [
+            {
+                "text": "ٱللَّهِ",
+                "words": [{"word": "ٱللَّهِ", "start": 0.2, "end": 1.5, "score": 0.90}],
+            }
+        ]
+    }
+
+    with patch("whisperx.align", return_value=mock_align_result):
+        recovered = recover_unaligned_word_gaps(
+            words,
+            audio=dummy_audio,
+            align_model=mock_align_model,
+            align_metadata=mock_align_metadata,
+        )
+        assert recovered[1]["confidence"] == 0.90
+        assert recovered[1]["end"] <= 3.0
+
+
+def test_realign_rejects_out_of_bounds_acoustic():
+    """Verify acoustic realignment is rejected and falls back if timestamps exceed anchor bounds."""
+    from unittest.mock import MagicMock, patch
+
+    words = [
+        {"word": "بِسْمِ", "start": 0.0, "end": 0.8, "confidence": 0.95},
+        {"word": "ٱللَّهِ", "start": 0.8, "end": 0.9, "confidence": 0.0},
+        {"word": "ٱلرَّحِيمِ", "start": 2.0, "end": 3.0, "confidence": 0.92},
+    ]
+    dummy_audio = np.zeros(16000 * 4, dtype=np.float32)
+    mock_align_model = MagicMock()
+    mock_align_metadata = {"language": "ar"}
+
+    # Mock returns timestamp placed in padded context past anchor end (2.5s > 2.0s)
+    mock_align_result = {
+        "segments": [
+            {
+                "text": "ٱللَّهِ",
+                "words": [{"word": "ٱللَّهِ", "start": 1.0, "end": 2.5, "score": 0.90}],
+            }
+        ]
+    }
+
+    with patch("whisperx.align", return_value=mock_align_result):
+        recovered = recover_unaligned_word_gaps(
+            words,
+            audio=dummy_audio,
+            align_model=mock_align_model,
+            align_metadata=mock_align_metadata,
+        )
+        # Should fall back to bounded interpolation (confidence 0.60, bounded by 2.0)
+        assert recovered[1]["confidence"] == 0.60
+        assert recovered[1]["end"] <= 2.0

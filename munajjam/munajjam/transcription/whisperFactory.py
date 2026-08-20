@@ -15,7 +15,7 @@ class WhisperFactory:
     def create_whisper(
         self,
         backend: WhisperBackend,
-        model_name: str,
+        model_name: str | None = None,
         device: Literal["auto", "cpu", "cuda", "mps"] = "cuda",
         compute_type: str = "float16",
     ) -> WhisperTranscriber | Whisperx:

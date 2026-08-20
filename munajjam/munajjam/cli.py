@@ -91,6 +91,13 @@ def create_parser() -> argparse.ArgumentParser:
         default="hafs",
         help="The Quranic riwaya to use for reference text (default: hafs)",
     )
+    align_parser.add_argument(
+        "--whisperx-model-size",
+        type=str,
+        choices=["tiny", "base", "small", "medium", "large-v1", "large-v2", "large-v3"],
+        default=None,
+        help="WhisperX model size (default: large-v2 or MUNAJJAM_WHISPERX_MODEL_SIZE)",
+    )
     # --- batch subcommand ---
     batch_parser = subparsers.add_parser(
         "batch",
@@ -142,6 +149,13 @@ def create_parser() -> argparse.ArgumentParser:
         choices=["hafs", "warsh"],
         default="hafs",
         help="The Quranic riwaya to use for reference text (default: hafs)",
+    )
+    batch_parser.add_argument(
+        "--whisperx-model-size",
+        type=str,
+        choices=["tiny", "base", "small", "medium", "large-v1", "large-v2", "large-v3"],
+        default=None,
+        help="WhisperX model size (default: large-v2 or MUNAJJAM_WHISPERX_MODEL_SIZE)",
     )
     return parser
 
@@ -251,9 +265,16 @@ def cmd_align(args: argparse.Namespace) -> int:
 
     settings = configure(riwaya=args.riwaya)
 
+    backend = WhisperBackend(args.whisper_backend)
+    model_name = (
+        args.whisperx_model_size or settings.whisperx_model_size
+        if backend == WhisperBackend.WHISPERX
+        else settings.model_id
+    )
+
     transcriber = WhisperFactory().create_whisper(
-        backend=WhisperBackend(args.whisper_backend),
-        model_name=settings.model_id,
+        backend=backend,
+        model_name=model_name,
         device=settings.device,
     )
 
@@ -294,9 +315,15 @@ def cmd_batch(args: argparse.Namespace) -> int:
     settings = configure(riwaya=args.riwaya)
     print(f"Found {len(audio_files)} audio files to process.", file=sys.stderr)
     print(f"Riwaya: {args.riwaya}", file=sys.stderr)
+    backend = WhisperBackend(args.whisper_backend)
+    model_name = (
+        args.whisperx_model_size or settings.whisperx_model_size
+        if backend == WhisperBackend.WHISPERX
+        else settings.model_id
+    )
     transcriber = WhisperFactory().create_whisper(
-        backend=WhisperBackend(args.whisper_backend),
-        model_name=settings.model_id,
+        backend=backend,
+        model_name=model_name,
         device=settings.device,
     )
 
