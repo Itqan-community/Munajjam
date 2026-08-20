@@ -222,7 +222,7 @@ def test_realign_trailing_gap_acoustic():
         "segments": [
             {
                 "text": "ٱللَّهِ",
-                "words": [{"word": "ٱللَّهِ", "start": 0.2, "end": 1.5, "score": 0.90}],
+                "words": [{"word": "ٱللَّهِ", "start": 0.35, "end": 1.5, "score": 0.90}],
             }
         ]
     }
@@ -271,3 +271,83 @@ def test_realign_rejects_out_of_bounds_acoustic():
         # Should fall back to bounded interpolation (confidence 0.60, bounded by 2.0)
         assert recovered[1]["confidence"] == 0.60
         assert recovered[1]["end"] <= 2.0
+
+
+def test_realign_preserves_canonical_reference_word():
+    """Verify acoustic recovery preserves the canonical Quranic reference word text."""
+    from unittest.mock import MagicMock, patch
+
+    words = [
+        {"word": "بِسْمِ", "start": 0.0, "end": 0.8, "confidence": 0.95},
+        {"word": "ٱللَّهِ", "start": 0.8, "end": 0.9, "confidence": 0.0},
+        {"word": "ٱلرَّحِيمِ", "start": 2.0, "end": 3.0, "confidence": 0.92},
+    ]
+    dummy_audio = np.zeros(16000 * 4, dtype=np.float32)
+    mock_align_model = MagicMock()
+    mock_align_metadata = {"language": "ar"}
+
+    # Mock returns a normalized or altered word string
+    mock_align_result = {
+        "segments": [
+            {
+                "text": "الله",
+                "words": [
+                    {
+                        "word": "الله_whisper_normalized",
+                        "start": 0.25,
+                        "end": 1.15,
+                        "score": 0.88,
+                    }
+                ],
+            }
+        ]
+    }
+
+    with patch("whisperx.align", return_value=mock_align_result):
+        recovered = recover_unaligned_word_gaps(
+            words,
+            audio=dummy_audio,
+            align_model=mock_align_model,
+            align_metadata=mock_align_metadata,
+        )
+        # Canonical reference word must be preserved intact
+        assert recovered[1]["word"] == "ٱللَّهِ"
+        assert recovered[1]["confidence"] == 0.88
+        assert recovered[1]["start"] == 0.8
+        assert recovered[1]["end"] == 1.7
+
+
+def test_realign_rejects_pre_start_timestamp():
+    """Verify acoustic realignment is rejected if timestamp starts before recovery_start."""
+    from unittest.mock import MagicMock, patch
+
+    words = [
+        {"word": "بِسْمِ", "start": 0.0, "end": 0.8, "confidence": 0.95},
+        {"word": "ٱللَّهِ", "start": 0.8, "end": 0.9, "confidence": 0.0},
+        {"word": "ٱلرَّحِيمِ", "start": 2.0, "end": 3.0, "confidence": 0.92},
+    ]
+    dummy_audio = np.zeros(16000 * 4, dtype=np.float32)
+    mock_align_model = MagicMock()
+    mock_align_metadata = {"language": "ar"}
+
+    # slice_start is 0.55s. start: 0.10s gives actual start 0.65s (< 0.80s anchor end)
+    mock_align_result = {
+        "segments": [
+            {
+                "text": "ٱللَّهِ",
+                "words": [{"word": "ٱللَّهِ", "start": 0.10, "end": 1.15, "score": 0.88}],
+            }
+        ]
+    }
+
+    with patch("whisperx.align", return_value=mock_align_result):
+        recovered = recover_unaligned_word_gaps(
+            words,
+            audio=dummy_audio,
+            align_model=mock_align_model,
+            align_metadata=mock_align_metadata,
+        )
+        # Must be rejected and fall back to bounded interpolation
+        assert recovered[1]["confidence"] == 0.60
+        assert recovered[1]["start"] >= 0.80
+        assert recovered[1]["end"] <= 2.00

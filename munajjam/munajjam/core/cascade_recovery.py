@@ -526,20 +526,13 @@ def realign_unaligned_gap_acoustic(
         return None
 
     # 3. Validate chronological ordering and recovery interval bounds
-    prev_w_end: float = float(recovery_start - 0.05)
+    prev_w_end: float = float(recovery_start)
     for w in extracted_words:
         w_start: float = float(w["start"]) if isinstance(w["start"], int | float) else 0.0
         w_end: float = float(w["end"]) if isinstance(w["end"], int | float) else 0.0
 
-        # Must have positive duration and be strictly chronological
-        if w_end <= w_start or w_start < prev_w_end:
-            return None
-
-        # Cannot exceed recovery end (reject if placed in padded context outside anchor)
-        if not is_trailing and w_end > float(recovery_end + 0.05):
-            return None
-
-        if is_trailing and w_end > float(total_audio_sec + 0.05):
+        # Must have positive duration and satisfy recovery_start <= start < end <= recovery_end
+        if w_end <= w_start or w_start < prev_w_end or w_end > float(recovery_end + 0.001):
             return None
 
         prev_w_end = w_end
@@ -601,7 +594,12 @@ def recover_unaligned_word_gaps(
             )
             if acoustic_words and len(acoustic_words) == (gap.end_word_idx - gap.start_word_idx):
                 for idx_offset, w_idx in enumerate(range(gap.start_word_idx, gap.end_word_idx)):
-                    recovered_words[w_idx] = acoustic_words[idx_offset]
+                    recovered_words[w_idx] = {
+                        **recovered_words[w_idx],
+                        "start": acoustic_words[idx_offset]["start"],
+                        "end": acoustic_words[idx_offset]["end"],
+                        "confidence": acoustic_words[idx_offset]["confidence"],
+                    }
                 continue
 
         # 2. Robust fallback interpolation within surrounding anchor bounds
