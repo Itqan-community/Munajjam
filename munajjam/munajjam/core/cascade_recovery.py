@@ -5,6 +5,11 @@ Detects sequences of consecutive low-scoring ayahs and attempts
 to re-align them using silence boundaries for better sync.
 """
 
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
+
 from ..models import AlignmentResult, Ayah, Segment
 from .dp_core import compute_alignment_cost
 from .matcher import similarity
@@ -310,3 +315,311 @@ def apply_cascade_recovery(
             improved_results = improved_results[:ext_start] + recovery + improved_results[ext_end:]
 
     return improved_results
+
+
+@dataclass
+class UnalignedWordGap:
+    """Represents a gap of unaligned fallback words needing recovery."""
+
+    start_word_idx: int
+    end_word_idx: int
+    words: list[str]
+    gap_start_time: float
+    gap_end_time: float
+
+
+def detect_unaligned_word_gaps(
+    words: list[dict],
+    min_confidence_thresh: float = 0.1,
+    max_placeholder_duration: float = 0.15,
+) -> list[UnalignedWordGap]:
+    """
+    Detect sequences of unaligned fallback words.
+
+    A word is detected as unaligned if:
+    - It is explicitly marked with 'is_placeholder': True or 'fallback': True.
+    - Its confidence is <= min_confidence_thresh (e.g. 0.0 fallback from ASR).
+    - Its duration is non-positive (<= 0.0).
+
+    Args:
+        words: List of word timestamp dictionaries containing 'word', 'start', 'end', and 'confidence'.
+        min_confidence_thresh: Confidence threshold below which a word is considered unaligned.
+        max_placeholder_duration: Maximum duration threshold for placeholder validation.
+
+    Returns:
+        List of UnalignedWordGap objects.
+    """
+    gaps: list[UnalignedWordGap] = []
+    if not words:
+        return gaps
+
+    def _is_unaligned(w: dict) -> bool:
+        if bool(w.get("is_placeholder", False)) or bool(w.get("fallback", False)):
+            return True
+        conf = float(w.get("confidence", 0.0))
+        if conf <= min_confidence_thresh:
+            return True
+        dur = float(w.get("end", 0.0)) - float(w.get("start", 0.0))
+        if dur <= 0.0:
+            return True
+        return False
+
+    n = len(words)
+    i = 0
+    while i < n:
+        if _is_unaligned(words[i]):
+            start_idx = i
+            while i < n and _is_unaligned(words[i]):
+                i += 1
+            end_idx = i
+
+            prev_end = (
+                float(words[start_idx - 1]["end"])
+                if start_idx > 0
+                else float(words[start_idx]["start"])
+            )
+            next_start = (
+                float(words[end_idx]["start"]) if end_idx < n else float(words[end_idx - 1]["end"])
+            )
+            if next_start < prev_end:
+                next_start = prev_end
+
+            gap_words = [str(words[k]["word"]) for k in range(start_idx, end_idx)]
+            gaps.append(
+                UnalignedWordGap(
+                    start_word_idx=start_idx,
+                    end_word_idx=end_idx,
+                    words=gap_words,
+                    gap_start_time=prev_end,
+                    gap_end_time=next_start,
+                )
+            )
+        else:
+            i += 1
+
+    return gaps
+
+
+def slice_audio_array(
+    audio: np.ndarray,
+    start_sec: float,
+    end_sec: float,
+    sample_rate: int = 16000,
+) -> tuple[np.ndarray, float, float]:
+    """
+    Extract a slice of the audio array corresponding to [start_sec, end_sec].
+
+    Args:
+        audio: 1D numpy array of audio samples.
+        start_sec: Start time in seconds.
+        end_sec: End time in seconds.
+        sample_rate: Audio sample rate in Hz (default: 16000).
+
+    Returns:
+        Tuple of (sliced_audio_array, actual_start_sec, actual_end_sec).
+    """
+    total_samples = len(audio)
+    start_sample = min(total_samples, max(0, int(start_sec * sample_rate)))
+    end_sample = min(total_samples, int(end_sec * sample_rate))
+
+    if end_sample <= start_sample:
+        # Guarantee non-empty slice of at least 100ms
+        end_sample = min(total_samples, start_sample + int(0.1 * sample_rate))
+
+    audio_slice = audio[start_sample:end_sample]
+    actual_start_sec = start_sample / float(sample_rate)
+    actual_end_sec = end_sample / float(sample_rate)
+    return audio_slice, actual_start_sec, actual_end_sec
+
+
+def realign_unaligned_gap_acoustic(
+    gap: UnalignedWordGap,
+    audio: np.ndarray,
+    align_model: Any,
+    align_metadata: Any,
+    device: str = "cpu",
+    sample_rate: int = 16000,
+    context_pad_sec: float = 0.25,
+    is_trailing: bool = False,
+    is_leading: bool = False,
+) -> list[dict] | None:
+    """
+    Perform acoustic realignment on a dynamically sliced audio window for unaligned words.
+
+    Args:
+        gap: UnalignedWordGap object.
+        audio: Full audio numpy array.
+        align_model: WhisperX / wav2vec2 alignment model.
+        align_metadata: WhisperX alignment metadata dictionary.
+        device: Torch compute device ("cpu" or "cuda").
+        sample_rate: Audio sample rate.
+        context_pad_sec: Context padding in seconds around the gap.
+        is_trailing: Whether the gap is at the end of the transcription.
+        is_leading: Whether the gap is at the beginning of the transcription.
+
+    Returns:
+        List of aligned word dictionaries with true acoustic timestamps and scores, or None if realignment failed.
+    """
+    if audio is None or align_model is None or align_metadata is None:
+        return None
+
+    try:
+        import whisperx
+    except ImportError:
+        return None
+
+    total_audio_sec = len(audio) / float(sample_rate)
+
+    # 1. Resolve recovery interval boundaries from real audio bounds
+    recovery_start = 0.0 if is_leading else gap.gap_start_time
+    recovery_end = total_audio_sec if is_trailing else gap.gap_end_time
+
+    # 2. Add context padding for acoustic receptive field
+    slice_start = max(0.0, recovery_start - (0.0 if is_leading else context_pad_sec))
+    slice_end = min(total_audio_sec, recovery_end + (0.0 if is_trailing else context_pad_sec))
+
+    audio_slice, actual_slice_start, actual_slice_end = slice_audio_array(
+        audio, slice_start, slice_end, sample_rate=sample_rate
+    )
+    slice_duration = actual_slice_end - actual_slice_start
+
+    if slice_duration <= 0.05 or len(audio_slice) == 0:
+        return None
+
+    gap_text = " ".join(gap.words)
+    segments_to_align = [
+        {
+            "text": gap_text,
+            "start": 0.0,
+            "end": slice_duration,
+        }
+    ]
+
+    try:
+        align_result = whisperx.align(
+            segments_to_align,
+            align_model,
+            align_metadata,
+            audio_slice,
+            device,
+            return_char_alignments=False,
+        )
+    except Exception:
+        return None
+
+    extracted_words: list[dict[str, Any]] = []
+    if "segments" in align_result:
+        for seg in align_result["segments"]:
+            if isinstance(seg, dict) and "words" in seg:
+                for w in seg["words"]:
+                    if isinstance(w, dict) and "start" in w and "end" in w:
+                        extracted_words.append(
+                            {
+                                "word": str(w["word"]),
+                                "start": round(actual_slice_start + float(w["start"]), 3),
+                                "end": round(actual_slice_start + float(w["end"]), 3),
+                                "confidence": round(float(w.get("score", 0.85)), 3),
+                            }
+                        )
+
+    if len(extracted_words) != len(gap.words):
+        return None
+
+    # 3. Validate chronological ordering and recovery interval bounds
+    prev_w_end: float = float(recovery_start)
+    for w in extracted_words:
+        w_start: float = float(w["start"]) if isinstance(w["start"], int | float) else 0.0
+        w_end: float = float(w["end"]) if isinstance(w["end"], int | float) else 0.0
+
+        # Must have positive duration and satisfy recovery_start <= start < end <= recovery_end
+        if w_end <= w_start or w_start < prev_w_end or w_end > float(recovery_end + 0.001):
+            return None
+
+        prev_w_end = w_end
+
+    return extracted_words
+
+
+def recover_unaligned_word_gaps(
+    words: list[dict],
+    min_confidence_thresh: float = 0.1,
+    max_placeholder_duration: float = 0.15,
+    audio: np.ndarray | None = None,
+    align_model: Any | None = None,
+    align_metadata: Any | None = None,
+    device: str = "cpu",
+    sample_rate: int = 16000,
+) -> list[dict]:
+    """
+    Recover timestamps for unaligned fallback words by running acoustic realignment on sliced audio gaps.
+
+    Args:
+        words: List of word timestamp dictionaries.
+        min_confidence_thresh: Confidence threshold for unaligned detection.
+        max_placeholder_duration: Maximum duration threshold for placeholder validation.
+        audio: Full audio waveform array (optional for acoustic pass).
+        align_model: Acoustic alignment model (optional).
+        align_metadata: Alignment model metadata (optional).
+        device: Torch compute device.
+        sample_rate: Audio sample rate.
+
+    Returns:
+        Updated list of word timestamp dictionaries with recovered start, end, and confidence scores.
+    """
+    gaps = detect_unaligned_word_gaps(
+        words,
+        min_confidence_thresh=min_confidence_thresh,
+        max_placeholder_duration=max_placeholder_duration,
+    )
+    if not gaps:
+        return words
+
+    recovered_words = list(words)
+    n_words = len(words)
+    for gap in gaps:
+        is_leading = gap.start_word_idx == 0
+        is_trailing = gap.end_word_idx >= n_words
+
+        # 1. Attempt true acoustic realignment on dynamically sliced audio
+        if audio is not None and align_model is not None and align_metadata is not None:
+            acoustic_words = realign_unaligned_gap_acoustic(
+                gap=gap,
+                audio=audio,
+                align_model=align_model,
+                align_metadata=align_metadata,
+                device=device,
+                sample_rate=sample_rate,
+                is_trailing=is_trailing,
+                is_leading=is_leading,
+            )
+            if acoustic_words and len(acoustic_words) == (gap.end_word_idx - gap.start_word_idx):
+                for idx_offset, w_idx in enumerate(range(gap.start_word_idx, gap.end_word_idx)):
+                    recovered_words[w_idx] = {
+                        **recovered_words[w_idx],
+                        "start": acoustic_words[idx_offset]["start"],
+                        "end": acoustic_words[idx_offset]["end"],
+                        "confidence": acoustic_words[idx_offset]["confidence"],
+                    }
+                continue
+
+        # 2. Robust fallback interpolation within surrounding anchor bounds
+        total_duration = gap.gap_end_time - gap.gap_start_time
+        if total_duration <= 0:
+            continue
+
+        char_lens = [max(1, len(w)) for w in gap.words]
+        total_chars = sum(char_lens)
+
+        curr_t = gap.gap_start_time
+        for idx_offset, w_idx in enumerate(range(gap.start_word_idx, gap.end_word_idx)):
+            w_dur = (char_lens[idx_offset] / total_chars) * total_duration
+            w_end = curr_t + w_dur
+            recovered_words[w_idx] = {
+                "word": gap.words[idx_offset],
+                "start": curr_t,
+                "end": w_end,
+                "confidence": 0.60,
+            }
+            curr_t = w_end
+
+    return recovered_words

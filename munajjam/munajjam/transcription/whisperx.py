@@ -19,8 +19,8 @@ try:
 
     import whisperx
 except ImportError:
-    torch = None
-    whisperx = None
+    torch = None  # type: ignore[assignment]
+    whisperx = None  # type: ignore[assignment]
 
 import numpy as np
 import soundfile as sf
@@ -266,6 +266,15 @@ class Whisperx(BaseTranscriber):
         # Memory cleanup for temp variables, but keep models loaded
         gc.collect()
 
+        from ..core.cascade_recovery import recover_unaligned_word_gaps
+
+        w_alignments = recover_unaligned_word_gaps(
+            w_alignments,
+            audio=audio,
+            align_model=self.align_model,
+            align_metadata=self.align_metadata,
+            device=self.device,
+        )
         final_alignments = w_alignments
 
         try:
