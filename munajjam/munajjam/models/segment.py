@@ -79,6 +79,15 @@ class Segment(BaseModel):
         default=None,
         description="Per-word timestamps from CTC/attention decoding",
     )
+    pause_duration: float | None = Field(
+        default=None,
+        description="Duration of silence/pause immediately following this segment in seconds",
+        ge=0.0,
+    )
+    is_breath_boundary: bool = Field(
+        default=False,
+        description="Indicates if segment ends on a reciter breath/pause boundary",
+    )
 
     @field_validator("end")
     @classmethod
