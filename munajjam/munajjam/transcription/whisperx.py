@@ -8,10 +8,11 @@ try:
 
     # Workaround for PyTorch 2.6+ weights_only=True default which breaks pyannote/lightning
     _original_torch_load = getattr(torch, "load", None)
-    if _original_torch_load:
+    if callable(_original_torch_load):
 
         def _patched_torch_load(*args: Any, **kwargs: Any) -> Any:
             kwargs["weights_only"] = False
+            assert callable(_original_torch_load)
             return _original_torch_load(*args, **kwargs)
 
         torch.load = _patched_torch_load
@@ -27,22 +28,60 @@ from rapidfuzz import fuzz
 
 from munajjam.config import get_settings
 from munajjam.data import load_surah_ayahs
+from munajjam.exceptions import TranscriptionError
 from munajjam.models import Segment, SegmentType, WordTimestamp
 from munajjam.transcription.base import BaseTranscriber
+from munajjam.transcription.silence import (
+    annotate_segments_with_breaths,
+    detect_reciter_breaths,
+)
 
 
 class Whisperx(BaseTranscriber):
-    def __init__(self, model_name: str, device: str = "cuda", compute_type: str = "float16"):
-        self.model_name = model_name
-        self.device = device
-        self.compute_type = compute_type
-
+    def __init__(
+        self,
+        model_name: str | None = None,
+        device: str = "cuda",
+        compute_type: str = "float16",
+    ):
         settings = get_settings()
+        self.model_name = model_name or settings.whisperx_model_size
+        resolved_device = device
+        if resolved_device == "auto":
+            resolved_device = settings.get_resolved_device()
+        self.device = resolved_device
+        if self.device == "cpu" and compute_type == "float16":
+            self.compute_type = "int8"
+        else:
+            self.compute_type = compute_type
         self.wav2vec2_model_id = settings.wav2vec2_model_id
+        self.min_pause_duration_ms = settings.min_pause_duration_ms
 
         self.whisper_model: Any = None
         self.align_model: Any = None
         self.align_metadata: Any = None
+
+    def unload_model(self) -> None:
+        """Safely unload active WhisperX and alignment models from VRAM/RAM."""
+        if getattr(self, "whisper_model", None) is not None:
+            del self.whisper_model
+            self.whisper_model = None
+        if getattr(self, "align_model", None) is not None:
+            del self.align_model
+            self.align_model = None
+        if getattr(self, "align_metadata", None) is not None:
+            del self.align_metadata
+            self.align_metadata = None
+
+        gc.collect()
+        if torch is not None and hasattr(torch, "cuda") and torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+    def set_model_name(self, model_name: str) -> None:
+        """Update model name and safely unload existing model if size changes."""
+        if self.model_name != model_name:
+            self.unload_model()
+            self.model_name = model_name
 
     def _normalize_arabic(self, text: str) -> str:
         text = re.sub(r"[\u064B-\u065F\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]", "", text)
@@ -66,6 +105,11 @@ class Whisperx(BaseTranscriber):
             for w in ayah.text.split():
                 ref_words.append(w)
 
+        if whisperx is None:
+            raise TranscriptionError(
+                "whisperx not installed. Install with: pip install git+https://github.com/m-bain/whisperx.git"
+            )
+
         if not self.whisper_model:
             print(f"Loading WhisperX model {self.model_name}...")
             self.whisper_model = whisperx.load_model(
@@ -74,13 +118,18 @@ class Whisperx(BaseTranscriber):
 
         assert self.whisper_model is not None
         audio = whisperx.load_audio(str(audio_path))
+
+        breaths = (
+            detect_reciter_breaths(audio_path, min_pause_duration_ms=self.min_pause_duration_ms)
+            or []
+        )
         result = self.whisper_model.transcribe(audio, batch_size=batch_size)
 
         # --- Reference Text Injection ---
         if result["segments"] and ref_words:
-            transcribed_words = []
+            transcribed_words: list[dict[str, Any]] = []
             for seg_idx, segment in enumerate(result["segments"]):
-                for w in segment["text"].split():
+                for w in str(segment["text"]).split():
                     transcribed_words.append({"word": w, "seg_idx": seg_idx})
 
             n_ref = len(ref_words)
@@ -91,7 +140,7 @@ class Whisperx(BaseTranscriber):
                 for i in range(1, n_ref + 1):
                     rw = self._normalize_arabic(ref_words[i - 1])
                     for j in range(1, m_tr + 1):
-                        ew = self._normalize_arabic(transcribed_words[j - 1]["word"])
+                        ew = self._normalize_arabic(str(transcribed_words[j - 1]["word"]))
                         match_score = fuzz.ratio(rw, ew) / 100.0
                         if match_score < 0.6:
                             match_score = -1.0
@@ -103,11 +152,11 @@ class Whisperx(BaseTranscriber):
                 i, j = n_ref, m_tr
                 while i > 0 and j > 0:
                     rw = self._normalize_arabic(ref_words[i - 1])
-                    ew = self._normalize_arabic(transcribed_words[j - 1]["word"])
+                    ew = self._normalize_arabic(str(transcribed_words[j - 1]["word"]))
                     match_score = fuzz.ratio(rw, ew) / 100.0
 
                     if match_score >= 0.6 and dp_inj[i][j] == dp_inj[i - 1][j - 1] + match_score:
-                        mapped_seg_indices[i - 1] = transcribed_words[j - 1]["seg_idx"]
+                        mapped_seg_indices[i - 1] = int(transcribed_words[j - 1]["seg_idx"])
                         i -= 1
                         j -= 1
                     elif dp_inj[i][j] == dp_inj[i - 1][j]:
@@ -120,10 +169,10 @@ class Whisperx(BaseTranscriber):
                 }
                 last_seg_idx = 0
                 for k in range(n_ref):
-                    if mapped_seg_indices[k] is not None:
-                        seg_idx = mapped_seg_indices[k]
-                        seg_ref_texts[seg_idx].append(ref_words[k])
-                        last_seg_idx = seg_idx
+                    seg_idx_val = mapped_seg_indices[k]
+                    if seg_idx_val is not None:
+                        seg_ref_texts[seg_idx_val].append(ref_words[k])
+                        last_seg_idx = seg_idx_val
                     else:
                         seg_ref_texts[last_seg_idx].append(ref_words[k])
 
@@ -150,15 +199,15 @@ class Whisperx(BaseTranscriber):
 
         extracted_words: list[dict[str, Any]] = []
         for segment in result["segments"]:
-            if "words" in segment:
+            if isinstance(segment, dict) and "words" in segment:
                 for w in segment["words"]:
-                    if "start" in w and "end" in w:
+                    if isinstance(w, dict) and "start" in w and "end" in w:
                         extracted_words.append(
                             {
-                                "word": w["word"],
-                                "start": w["start"],
-                                "end": w["end"],
-                                "confidence": w.get("score", 0.9),
+                                "word": str(w["word"]),
+                                "start": float(w["start"]),
+                                "end": float(w["end"]),
+                                "confidence": float(w.get("score", 0.9)),
                             }
                         )
 
@@ -169,7 +218,7 @@ class Whisperx(BaseTranscriber):
         for i in range(1, n + 1):
             rw = self._normalize_arabic(ref_words[i - 1])
             for j in range(1, m + 1):
-                ew = self._normalize_arabic(extracted_words[j - 1]["word"])
+                ew = self._normalize_arabic(str(extracted_words[j - 1]["word"]))
                 match_score = fuzz.ratio(rw, ew) / 100.0
                 if match_score < 0.6:
                     match_score = -1.0
@@ -179,7 +228,7 @@ class Whisperx(BaseTranscriber):
         i, j = n, m
         while i > 0 and j > 0:
             rw = self._normalize_arabic(ref_words[i - 1])
-            ew = self._normalize_arabic(extracted_words[j - 1]["word"])
+            ew = self._normalize_arabic(str(extracted_words[j - 1]["word"]))
             match_score = fuzz.ratio(rw, ew) / 100.0
 
             if match_score >= 0.6 and dp[i][j] == dp[i - 1][j - 1] + match_score:
@@ -193,13 +242,14 @@ class Whisperx(BaseTranscriber):
 
         w_alignments: list[dict[str, Any]] = []
         for k in range(n):
-            if mapped_alignments[k]:
+            align_item = mapped_alignments[k]
+            if align_item is not None:
                 w_alignments.append(
                     {
                         "word": ref_words[k],
-                        "start": mapped_alignments[k]["start"],
-                        "end": mapped_alignments[k]["end"],
-                        "confidence": mapped_alignments[k]["confidence"],
+                        "start": align_item["start"],
+                        "end": align_item["end"],
+                        "confidence": align_item["confidence"],
                     }
                 )
             else:
@@ -300,4 +350,4 @@ class Whisperx(BaseTranscriber):
                     )
                 )
 
-        return segments
+        return annotate_segments_with_breaths(segments, breaths=breaths)

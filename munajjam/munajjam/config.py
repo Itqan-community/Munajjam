@@ -59,6 +59,13 @@ class MunajjamSettings(BaseSettings):
         description="Model backend type",
     )
 
+    whisperx_model_size: Literal[
+        "tiny", "base", "small", "medium", "large-v1", "large-v2", "large-v3"
+    ] = Field(
+        default="large-v2",
+        description="WhisperX model size (tiny, base, small, medium, large-v1, large-v2, large-v3)",
+    )
+
     # ============ Audio Processing ============
 
     silence_threshold_db: int = Field(
@@ -73,6 +80,13 @@ class MunajjamSettings(BaseSettings):
         description="Minimum silence duration in milliseconds",
         ge=100,
         le=2000,
+    )
+
+    min_pause_duration_ms: int = Field(
+        default=300,
+        description="Minimum pause duration in milliseconds for reciter breath boundary detection",
+        ge=100,
+        le=3000,
     )
 
     sample_rate: int = Field(

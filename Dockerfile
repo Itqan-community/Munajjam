@@ -36,7 +36,7 @@ WORKDIR /app
 # Copy the server and entrypoint
 COPY server.py /app/server.py
 COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # Required directories
 RUN mkdir -p /app/model_local/whisper \
