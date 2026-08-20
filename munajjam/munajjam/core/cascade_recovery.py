@@ -419,7 +419,7 @@ def slice_audio_array(
         Tuple of (sliced_audio_array, actual_start_sec, actual_end_sec).
     """
     total_samples = len(audio)
-    start_sample = max(0, int(start_sec * sample_rate))
+    start_sample = min(total_samples, max(0, int(start_sec * sample_rate)))
     end_sample = min(total_samples, int(end_sec * sample_rate))
 
     if end_sample <= start_sample:
