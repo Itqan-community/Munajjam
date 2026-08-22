@@ -8,6 +8,7 @@ no onnxruntime, no NeMo, no network.
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -18,6 +19,7 @@ from munajjam.exceptions import TranscriptionError
 from munajjam.models import Segment, SegmentType, WordTimestamp
 from munajjam.transcription.ctc_segmentation import (
     AudioChunk,
+    SentencePieceTokenizer,
     FastConformerCTCTranscriber,
     QuranicPhonemizerAdapter,
     SileroVADChunker,
@@ -129,7 +131,7 @@ def _fake_tokenizer_for_surah(surah_id: int) -> FakeTokenizer:
     return FakeTokenizer(mapping)
 
 
-def _make_wav(tmp_path: pytest.TempPathFactory, seconds: float = 1.0) -> str:
+def _make_wav(tmp_path: Path, seconds: float = 1.0) -> str:
     path = tmp_path / "audio.wav"
     sf.write(str(path), np.zeros(int(16000 * seconds), dtype=np.float32), 16000)
     return str(path)
@@ -348,6 +350,11 @@ def test_transcribe_preserves_canonical_text(tmp_path) -> None:
         assert [wt.word for wt in segment.words or []] == expected_words
 
 
+def test_sentencepiece_tokenizer_requires_existing_model(tmp_path: Path) -> None:
+    with pytest.raises(TranscriptionError, match="tokenizer model not found"):
+        SentencePieceTokenizer(tmp_path / "missing.model")
+
+
 def test_transcribe_requires_tokenizer(tmp_path) -> None:
     audio = _make_wav(tmp_path)
     transcriber = FastConformerCTCTranscriber(inference=FakeInference(), tokenizer=None)
@@ -447,14 +454,69 @@ def test_transcribe_words_cross_chunk_boundary_once(tmp_path) -> None:
     assert all(start >= 5.0 for start, _ in flattened[2:])
 
 
-def test_transcribe_chunk_too_short_raises(tmp_path) -> None:
+def test_transcribe_short_first_chunk_is_deferred(tmp_path) -> None:
     audio = _make_wav(tmp_path)
+    reference = _surah_words(1)
     transcriber = FastConformerCTCTranscriber(
-        inference=SequenceFakeInference([3, 70]),  # 3 frames fit no word
+        inference=SequenceFakeInference([3, 70]),  # first chunk fits no word
         tokenizer=_fake_tokenizer_for_surah(1),
         chunker=_two_chunks_chunker(),
     )
-    with pytest.raises(TranscriptionError, match="chunk too short"):
+    segments = transcriber.transcribe(audio, surah_id=1)
+
+    assert _word_sequence(segments) == reference
+    timestamps = [(w.start, w.end) for s in segments for w in s.words or []]
+    for (_, previous_end), (start, _) in zip(timestamps, timestamps[1:], strict=False):
+        assert start >= previous_end - 1e-6
+
+
+def test_transcribe_multiple_short_chunks_are_deferred(tmp_path) -> None:
+    audio = _make_wav(tmp_path)
+    reference = _surah_words(1)
+
+    class ThreeChunks:
+        def chunk(self, waveform, sample_rate):
+            yield AudioChunk(waveform=waveform[:1000], start_seconds=0.0)
+            yield AudioChunk(waveform=waveform[1000:2000], start_seconds=1.0)
+            yield AudioChunk(waveform=waveform[2000:], start_seconds=2.0)
+
+    transcriber = FastConformerCTCTranscriber(
+        inference=SequenceFakeInference([2, 2, 70]),
+        tokenizer=_fake_tokenizer_for_surah(1),
+        chunker=ThreeChunks(),
+    )
+    segments = transcriber.transcribe(audio, surah_id=1)
+    assert _word_sequence(segments) == reference
+    all_words = [w for s in segments for w in s.words or []]
+    assert len(all_words) == len(reference)
+    for previous, current in zip(all_words, all_words[1:], strict=False):
+        assert current.start >= previous.end - 1e-6
+
+
+def test_transcribe_final_short_chunk_fails_cleanly(tmp_path) -> None:
+    audio = _make_wav(tmp_path)
+
+    class OneShortChunk:
+        def chunk(self, waveform, sample_rate):
+            yield AudioChunk(waveform=waveform[:1000], start_seconds=0.0)
+
+    transcriber = FastConformerCTCTranscriber(
+        inference=SequenceFakeInference([3]),
+        tokenizer=_fake_tokenizer_for_surah(1),
+        chunker=OneShortChunk(),
+    )
+    with pytest.raises(TranscriptionError, match="not all reference words"):
+        transcriber.transcribe(audio, surah_id=1)
+
+
+def test_transcribe_short_chunk_with_inference_failure_propagates(tmp_path) -> None:
+    audio = _make_wav(tmp_path)
+    transcriber = FastConformerCTCTranscriber(
+        inference=FailingInference(),
+        tokenizer=_fake_tokenizer_for_surah(1),
+        chunker=_two_chunks_chunker(),
+    )
+    with pytest.raises(TranscriptionError, match="boom"):
         transcriber.transcribe(audio, surah_id=1)
 
 

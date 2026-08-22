@@ -169,6 +169,7 @@ class FastConformerInference:
         self._session: Any = None
         self._vocab: list[str] | None = None
         self._derived_vocab_size: int | None = None
+        self._input_length_dtype: np.dtype[Any] | None = None
 
     # ------------------------------------------------------------------ #
     # Model lifecycle
@@ -253,9 +254,11 @@ class FastConformerInference:
                 "Vocabulary file not found",
                 context={"vocab_path": str(self.vocab_path)},
             )
-        tokens = [
-            line.rstrip("\n") for line in self.vocab_path.read_text(encoding="utf-8").splitlines()
-        ]
+        tokens = self.vocab_path.read_text(encoding="utf-8").splitlines()
+        # A final newline is a line terminator, not a vocabulary token. Keep
+        # empty entries inside the file, but discard only trailing blank lines.
+        while tokens and tokens[-1] == "":
+            tokens.pop()
         if not tokens:
             raise TranscriptionError(
                 "Vocabulary file is empty",
@@ -370,7 +373,8 @@ class FastConformerInference:
             raise TranscriptionError("waveform must not be empty")
 
         audio = np.ascontiguousarray(waveform, dtype=np.float32)[np.newaxis, :]  # [1, T]
-        length = np.array([audio.shape[1]], dtype=np.int32)  # [1]
+        length_dtype = self._input_length_dtype or np.dtype(np.int32)
+        length = np.array([audio.shape[1]], dtype=length_dtype)  # [1]
 
         input_feed = {
             self._input_signal_name: audio,
@@ -424,7 +428,8 @@ class FastConformerInference:
         session = self._get_session()
 
         inputs = list(session.get_inputs())
-        signal_name, length_name = self._find_signal_and_length(inputs)
+        signal_name, length_name, length_dtype = self._find_signal_and_length(inputs)
+        self._input_length_dtype = length_dtype
         if self._input_signal_name is None:
             self._input_signal_name = signal_name
         if self._input_length_name is None:
@@ -445,7 +450,7 @@ class FastConformerInference:
         )
 
     @staticmethod
-    def _find_signal_and_length(inputs: list[Any]) -> tuple[str, str]:
+    def _find_signal_and_length(inputs: list[Any]) -> tuple[str, str, np.dtype[Any]]:
         """
         Identify the waveform and length inputs by shape/type.
 
@@ -465,7 +470,8 @@ class FastConformerInference:
                 context={"found": [getattr(i, "name", None) for i in inputs]},
             )
 
-        return str(two_d_float[0].name), str(one_d_int[0].name)
+        length_dtype = _numpy_length_dtype(one_d_int[0])
+        return str(two_d_float[0].name), str(one_d_int[0].name), length_dtype
 
     @staticmethod
     def _find_logprobs_output(outputs: list[Any]) -> str:
@@ -522,5 +528,40 @@ def _is_float(io: Any) -> bool:
     return "float" in str(getattr(io, "type", "")).lower()
 
 
+_ONNX_INTEGER_TYPES = {
+    "tensor(int8)",
+    "tensor(int16)",
+    "tensor(int32)",
+    "tensor(int64)",
+    "tensor(uint8)",
+    "tensor(uint16)",
+    "tensor(uint32)",
+    "tensor(uint64)",
+}
+
+
 def _is_int(io: Any) -> bool:
-    return "int" in str(getattr(io, "type", "")).lower()
+    return str(getattr(io, "type", "")).lower() in _ONNX_INTEGER_TYPES
+
+
+def _numpy_length_dtype(io: Any) -> np.dtype[Any]:
+    """Map a supported ONNX integer tensor descriptor to an exact NumPy dtype."""
+    type_name = str(getattr(io, "type", "")).lower()
+    dtypes: dict[str, np.dtype[Any]] = {
+        "tensor(int8)": np.dtype(np.int8),
+        "tensor(int16)": np.dtype(np.int16),
+        "tensor(int32)": np.dtype(np.int32),
+        "tensor(int64)": np.dtype(np.int64),
+        "tensor(uint8)": np.dtype(np.uint8),
+    }
+    try:
+        return dtypes[type_name]
+    except KeyError as e:
+        raise TranscriptionError(
+            "Unsupported ONNX length input dtype",
+            context={
+                "input": getattr(io, "name", None),
+                "dtype": getattr(io, "type", None),
+                "supported": sorted(dtypes),
+            },
+        ) from e

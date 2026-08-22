@@ -8,8 +8,8 @@ from typing import cast
 from fastapi import BackgroundTasks, FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
 from munajjam.config import get_settings
+from munajjam.models import Segment
 from munajjam.transcription.ctc_segmentation import FastConformerCTCTranscriber
 from munajjam.transcription.whisperFactory import WhisperBackend, WhisperFactory
 from munajjam.transcription.whisperx import Whisperx
@@ -152,18 +152,19 @@ def _run_ctc_job(
         gc.collect()
 
 
-def _build_response(segments) -> list[dict]:
+def _build_response(segments: list[Segment]) -> list[dict[str, object]]:
     """Build the response payload from segments (shared by both backends)."""
-    response_data = []
+    response_data: list[dict[str, object]] = []
     for segment in segments:
-        ayah_data = {
+        ayah_data: dict[str, object] = {
             "ayah_number": segment.id,
             "start_time": segment.start,
             "end_time": segment.end,
         }
-        if getattr(segment, "words", None):
+        if segment.words:
             ayah_data["words"] = [
-                {"word": w.word, "start": w.start, "end": w.end} for w in segment.words
+                {"word": w.word, "start": w.start, "end": w.end}
+                for w in segment.words
             ]
         response_data.append(ayah_data)
     return response_data

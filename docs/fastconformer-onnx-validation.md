@@ -33,10 +33,11 @@ Without this step the exported graph would contain the RNNT decoder instead.
 
 ```bash
 # 1. Validation-only environment (not a munajjam runtime dependency)
-pip install torch torchaudio            # CPU build: --index-url https://download.pytorch.org/whl/cpu
+pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
 pip install "nemo_toolkit[asr]" onnx onnxscript onnxruntime
 
 # 2. Download the checkpoint (424 MB)
+mkdir -p .model_validation
 wget -O .model_validation/stt_ar_fastconformer_hybrid_large_pc_v1.0.nemo \
   "https://huggingface.co/nvidia/stt_ar_fastconformer_hybrid_large_pc_v1.0/resolve/main/stt_ar_fastconformer_hybrid_large_pc_v1.0.nemo"
 
@@ -97,7 +98,7 @@ numpy reimplementation of STFT/mel/log/per-feature normalization needed).
 On a 7.43 s 16 kHz mono speech file (93 frames), comparing the ONNX output to
 the same forward pass in PyTorch:
 
-```
+```text
 per-frame max |onnx - nemo|: mean=6.85e-05  p95=1.39e-04  max=8.95e-04
 frames with diff > 1e-3: 0 / 93
 ```

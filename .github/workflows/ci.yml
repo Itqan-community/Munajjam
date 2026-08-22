@@ -39,8 +39,6 @@ jobs:
             "ctc-segmentation" \
             "fastapi>=0.100.0" \
             "python-multipart>=0.0.6" \
-            "fastapi>=0.100.0" \
-            "python-multipart>=0.0.6" \
             "pytest>=7.0.0" \
             "pytest-asyncio>=0.21.0" \
             "ruff>=0.1.0" \

@@ -36,7 +36,7 @@ import numpy as np
 
 from munajjam.data.quran import load_surah_ayahs
 from munajjam.exceptions import TranscriptionError
-from munajjam.models import Segment, SegmentType, WordTimestamp
+from munajjam.models import Ayah, Segment, SegmentType, WordTimestamp
 from munajjam.transcription.base import BaseTranscriber
 from munajjam.transcription.fastconformer import (
     DEFAULT_SAMPLE_RATE,
@@ -46,10 +46,6 @@ from munajjam.transcription.fastconformer import (
 from munajjam.transcription.silence import load_audio_waveform
 
 logger = logging.getLogger(__name__)
-
-# Chunks shorter than this (0.1 s at 16 kHz) are treated as silence and
-# skipped; they carry no alignable speech.
-_MIN_CHUNK_SAMPLES = DEFAULT_SAMPLE_RATE // 10
 
 # --------------------------------------------------------------------------- #
 # Quranic text normalization (model-compatible)
@@ -143,8 +139,14 @@ class SentencePieceTokenizer:
     def __init__(self, model_path: str | Path) -> None:
         import sentencepiece  # lazy: only needed for actual alignment runs
 
-        self._sp = sentencepiece.SentencePieceProcessor(model_file=str(model_path))
-        self._model_path = str(model_path)
+        path = Path(model_path)
+        if not path.exists():
+            raise TranscriptionError(
+                "SentencePiece tokenizer model not found",
+                context={"tokenizer_model_path": str(path)},
+            )
+        self._sp = sentencepiece.SentencePieceProcessor(model_file=str(path))
+        self._model_path = str(path)
 
     @property
     def vocab_size(self) -> int:
@@ -646,7 +648,9 @@ class FastConformerCTCTranscriber(BaseTranscriber):
     # ------------------------------------------------------------------ #
     # Reference preparation
     # ------------------------------------------------------------------ #
-    def _build_reference(self, surah_id: int) -> tuple[list[str], list[list[int]]]:
+    def _build_reference(
+        self, surah_id: int, ayahs: Sequence[Ayah] | None = None
+    ) -> tuple[list[str], list[list[int]]]:
         """Tokenize the surah's canonical words into CTC token ids.
 
         Raises:
@@ -654,11 +658,11 @@ class FastConformerCTCTranscriber(BaseTranscriber):
                 or contains out-of-vocabulary (``<unk>``) tokens — the
                 normalized reference must be fully representable.
         """
-        ayahs = load_surah_ayahs(surah_id)
+        reference_ayahs = list(ayahs) if ayahs is not None else load_surah_ayahs(surah_id)
         tokenizer = self.tokenizer
         words: list[str] = []
         word_token_ids: list[list[int]] = []
-        for ayah in ayahs:
+        for ayah in reference_ayahs:
             for raw_word in ayah.text.split():
                 normalized = normalize_quran_text(raw_word)
                 if not normalized:
@@ -710,7 +714,8 @@ class FastConformerCTCTranscriber(BaseTranscriber):
                 alignment is degenerate.
         """
         del batch_size  # alignment is batch-independent
-        words, word_token_ids = self._build_reference(surah_id)
+        ayahs = load_surah_ayahs(surah_id)
+        words, word_token_ids = self._build_reference(surah_id, ayahs)
         if not words:
             return []
 
@@ -724,7 +729,7 @@ class FastConformerCTCTranscriber(BaseTranscriber):
             )
 
         aligned_words = self._align_chunks(words, word_token_ids, chunks, inference)
-        return self._build_segments(surah_id, aligned_words)
+        return self._build_segments(surah_id, aligned_words, ayahs)
 
     def _align_chunks(
         self,
@@ -746,40 +751,76 @@ class FastConformerCTCTranscriber(BaseTranscriber):
         aligned_all: list[AlignedWord] = []
         cursor = 0
         last_end = 0.0
+        pending_log_probs: np.ndarray | None = None
+        pending_start = 0.0
+        frame_duration = inference.frame_duration_seconds
+
         for chunk in chunks:
-            # Treat near-silent fragments (e.g. VAD edge padding) as empty.
-            if chunk.waveform.size < _MIN_CHUNK_SAMPLES:
+            # Empty VAD results carry no acoustic evidence. Short non-empty
+            # chunks are retained and merged with later chunks instead.
+            if chunk.waveform.size == 0:
                 continue
 
             log_probs = inference.log_probs(chunk.waveform)
-            n_frames = int(log_probs.shape[0])
-            if n_frames == 0:
+            if log_probs.shape[0] == 0:
                 continue
+
+            if pending_log_probs is None:
+                pending_log_probs = log_probs
+                pending_start = chunk.start_seconds
+            else:
+                pending_end = pending_start + pending_log_probs.shape[0] * frame_duration
+                gap_frames = max(
+                    0,
+                    int(round((chunk.start_seconds - pending_end) / frame_duration)),
+                )
+                if gap_frames:
+                    # Keep silence numerically finite: ctc-segmentation's
+                    # backtracking assumes every class has a representable
+                    # probability, while the blank remains overwhelmingly
+                    # preferred.
+                    blank_frames = np.full(
+                        (gap_frames, pending_log_probs.shape[1]),
+                        -30.0,
+                        dtype=np.float32,
+                    )
+                    blank_frames[:, inference.blank_index] = 0.0
+                    pending_log_probs = np.concatenate(
+                        (pending_log_probs, blank_frames, log_probs), axis=0
+                    )
+                else:
+                    pending_log_probs = np.concatenate((pending_log_probs, log_probs), axis=0)
 
             remaining_words = words[cursor:]
             remaining_tokens = word_token_ids[cursor:]
-            n = _fit_reference_prefix(remaining_words, remaining_tokens, n_frames)
+            current_chunk_can_fit = (
+                _fit_reference_prefix(remaining_words, remaining_tokens, int(log_probs.shape[0]))
+                > 0
+            )
+            if not current_chunk_can_fit:
+                # Defer this valid but short speech chunk. Gap frames in the
+                # pending timeline must not make silence look alignable; a
+                # later usable speech chunk flushes the accumulated buffer.
+                continue
+
+            n = _fit_reference_prefix(
+                remaining_words, remaining_tokens, int(pending_log_probs.shape[0])
+            )
             if n == 0:
-                raise TranscriptionError(
-                    "audio chunk too short to represent even one reference word",
-                    context={
-                        "chunk_start": chunk.start_seconds,
-                        "n_frames": n_frames,
-                    },
-                )
+                continue
 
             chunk_aligned = align_words_to_log_probs(
-                log_probs,
+                pending_log_probs,
                 remaining_words[:n],
                 remaining_tokens[:n],
                 blank_index=inference.blank_index,
-                frame_duration=inference.frame_duration_seconds,
+                frame_duration=frame_duration,
                 min_confidence=self._min_confidence,
             )
 
             for word in chunk_aligned:
-                start = word.start + chunk.start_seconds
-                end = word.end + chunk.start_seconds
+                start = word.start + pending_start
+                end = word.end + pending_start
                 if start < last_end - 1e-6:
                     raise TranscriptionError(
                         "CTC alignment produced non-monotonic timestamps across chunks",
@@ -793,23 +834,29 @@ class FastConformerCTCTranscriber(BaseTranscriber):
                 last_end = max(last_end, end)
 
             cursor += n
+            pending_log_probs = None
             if cursor >= len(words):
                 break
 
         if cursor < len(words):
             raise TranscriptionError(
                 "not all reference words could be aligned to the audio "
-                "(reference too long or audio too short)",
+                "(reference too long or final chunks were too short)",
                 context={"aligned_words": cursor, "total_words": len(words)},
             )
         return aligned_all
 
-    def _build_segments(self, surah_id: int, aligned_words: list[AlignedWord]) -> list[Segment]:
+    def _build_segments(
+        self,
+        surah_id: int,
+        aligned_words: list[AlignedWord],
+        ayahs: Sequence[Ayah] | None = None,
+    ) -> list[Segment]:
         """Group aligned words into per-ayah Segments (canonical text)."""
-        ayahs = load_surah_ayahs(surah_id)
+        reference_ayahs = list(ayahs) if ayahs is not None else load_surah_ayahs(surah_id)
         segments: list[Segment] = []
         word_index = 0
-        for ayah in ayahs:
+        for ayah in reference_ayahs:
             n_words = len(ayah.text.split())
             ayah_words = aligned_words[word_index : word_index + n_words]
             word_index += n_words

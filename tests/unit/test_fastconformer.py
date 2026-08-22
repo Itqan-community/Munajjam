@@ -38,6 +38,7 @@ class FakeSession:
         batch: int = 1,
         signal_name: str = "input_signal",
         length_input_name: str = "input_signal_length",
+        length_input_type: str = "tensor(int32)",
     ):
         self._logprobs_name = logprobs_name
         self._length_name = length_name
@@ -46,12 +47,13 @@ class FakeSession:
         self._batch = batch
         self._signal_name = signal_name
         self._length_input_name = length_input_name
+        self._length_input_type = length_input_type
         self.calls: list[tuple[list[str], dict[str, np.ndarray]]] = []
 
     def get_inputs(self) -> list[FakeIO]:
         return [
             FakeIO(self._signal_name, ["B", "T"], "tensor(float)"),
-            FakeIO(self._length_input_name, ["B"], "tensor(int32)"),
+            FakeIO(self._length_input_name, ["B"], self._length_input_type),
         ]
 
     def get_outputs(self) -> list[FakeIO]:
@@ -232,12 +234,18 @@ def test_io_name_resolution():
 
 def test_length_output_trims_padding():
     """Frames beyond the model's encoded length are trimmed."""
-    session = FakeSession(n_frames=14)
+
+    class TrimSession(FakeSession):
+        def run(self, output_names, input_feed):
+            outputs = super().run(output_names, input_feed)
+            outputs[1] = np.array([7], dtype=np.int32)
+            return outputs
+
+    session = TrimSession(n_frames=14)
     model = make_inference(session)
 
     log_probs = model.log_probs(np.zeros(16000, dtype=np.float32))
-    # FakeSession reports length == n_frames, so no trimming here.
-    assert log_probs.shape[0] == 14
+    assert log_probs.shape[0] == 7
 
 
 def test_invalid_waveforms():
@@ -358,6 +366,25 @@ def test_log_probs_from_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     assert log_probs.shape == (14, 1025)
 
 
+def test_int64_length_input_feed_uses_declared_dtype():
+    session = FakeSession(length_input_type="tensor(int64)")
+    model = make_inference(session)
+
+    model.log_probs(np.zeros(8000, dtype=np.float32))
+
+    length = session.calls[-1][1]["input_signal_length"]
+    assert length.dtype == np.int64
+    assert length.tolist() == [8000]
+
+
+def test_unsupported_length_input_dtype_is_rejected():
+    session = FakeSession(length_input_type="tensor(uint16)")
+    model = make_inference(session)
+
+    with pytest.raises(TranscriptionError, match="Unsupported ONNX length input dtype"):
+        model.load()
+
+
 def test_real_export_contract():
     """Mimic the verified production ONNX export (raw-audio graph):
     int32 length input, static 1025-class output, int64 encoded_lengths.
@@ -386,6 +413,21 @@ def test_real_export_contract():
     assert log_probs.shape == (14, 1025)
     # Static class dim must be read from the graph, not via a probe run.
     assert len(session.calls) == 1
+
+
+def test_supported_length_input_dtypes():
+    expected = {
+        "tensor(int8)": np.int8,
+        "tensor(int16)": np.int16,
+        "tensor(int32)": np.int32,
+        "tensor(int64)": np.int64,
+        "tensor(uint8)": np.uint8,
+    }
+    for descriptor, dtype in expected.items():
+        session = FakeSession(length_input_type=descriptor)
+        model = make_inference(session)
+        model.log_probs(np.zeros(8000, dtype=np.float32))
+        assert session.calls[-1][1]["input_signal_length"].dtype == dtype
 
 
 def test_int64_length_output_is_recognized():
