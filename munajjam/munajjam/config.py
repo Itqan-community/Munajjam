@@ -65,6 +65,33 @@ class MunajjamSettings(BaseSettings):
         description="WhisperX model size (tiny, base, small, medium, large-v1, large-v2, large-v3)",
     )
 
+    # ============ FastConformer (CTC Segmentation) Settings ============
+
+    fastconformer_model_path: str | None = Field(
+        default=None,
+        description="Path to the exported FastConformer CTC ONNX graph "
+        "(*_ctc_rawaudio.onnx). Required for alignment_mode=ctc_segmentation.",
+    )
+
+    fastconformer_vocab_path: str | None = Field(
+        default=None,
+        description="Optional vocabulary file (one token per line) for the "
+        "FastConformer CTC model.",
+    )
+
+    fastconformer_tokenizer_model_path: str | None = Field(
+        default=None,
+        description="Path to the model's SentencePiece tokenizer.model "
+        "(extracted from the .nemo checkpoint). Required for "
+        "alignment_mode=ctc_segmentation.",
+    )
+
+    fastconformer_vad_enabled: bool = Field(
+        default=False,
+        description="Whether to use silero-vad chunking for FastConformer CTC "
+        "alignment of long audio (requires the optional silero-vad package).",
+    )
+
     # ============ Audio Processing ============
 
     silence_threshold_db: int = Field(

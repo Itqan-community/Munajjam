@@ -130,3 +130,6 @@ batch_process.py
 # Local-only directories (not part of the library)
 v2/
 scripts/
+
+# Model validation artifacts (downloaded .nemo, extracted files, exported ONNX)
+.model_validation/
