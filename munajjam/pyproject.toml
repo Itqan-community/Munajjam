@@ -61,8 +61,11 @@ api = [
     "uvicorn>=0.23.0",
     "python-multipart>=0.0.6",
 ]
+gcp = [
+    "google-cloud-speech>=2.27.0",
+]
 all = [
-    "munajjam[dev,api]",
+    "munajjam[dev,api,gcp]",
 ]
 
 [project.scripts]
