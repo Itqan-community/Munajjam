@@ -5,8 +5,12 @@ Provides both pydub (accurate) and librosa (fast) implementations.
 Use the fast implementation for long files (>5 minutes).
 """
 
+import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 def detect_silences(
@@ -41,10 +45,10 @@ def _detect_silences_pydub(
     min_silence_len: int = 300,
     silence_thresh: int = -30,
 ) -> list[tuple[int, int]]:
-    """Pydub-based silence detection (slower but reliable)."""
+    """Pydub-based silence detection (slower but reliable, supports any audio format)."""
     from pydub import AudioSegment, silence
 
-    audio = AudioSegment.from_wav(str(audio_path))
+    audio = AudioSegment.from_file(str(audio_path))
     silences = silence.detect_silence(
         audio,
         min_silence_len=min_silence_len,
@@ -347,3 +351,119 @@ def extract_segment_audio(
     start_sample = int((start_ms / 1000) * sample_rate)
     end_sample = int((end_ms / 1000) * sample_rate)
     return waveform[start_sample:end_sample]
+
+
+@dataclass
+class BreathBoundary:
+    """Represents a reciter pause or breath boundary in audio."""
+
+    start_sec: float
+    end_sec: float
+    duration_sec: float
+    is_breath_boundary: bool = True
+
+
+def detect_reciter_breaths(
+    audio_path: str | Path,
+    min_pause_duration_ms: int = 300,
+    silence_thresh: int = -30,
+) -> list[BreathBoundary] | None:
+    """
+    Detect pauses and breath intervals in reciter audio using silence detection.
+
+    Args:
+        audio_path: Path to the audio file.
+        min_pause_duration_ms: Minimum pause duration threshold in ms.
+        silence_thresh: Silence energy threshold in dB.
+
+    Returns:
+        List of BreathBoundary objects detailing start, end, and duration, or None if detection failed.
+    """
+    try:
+        raw_silences = detect_silences(
+            audio_path,
+            min_silence_len=min_pause_duration_ms,
+            silence_thresh=silence_thresh,
+            use_fast=True,
+        )
+    except Exception as exc:
+        logger.warning("Breath detection failed for %s: %s", audio_path, exc)
+        return None
+
+    breath_boundaries: list[BreathBoundary] = []
+    for s_ms, e_ms in raw_silences:
+        duration_sec = (e_ms - s_ms) / 1000.0
+        breath_boundaries.append(
+            BreathBoundary(
+                start_sec=s_ms / 1000.0,
+                end_sec=e_ms / 1000.0,
+                duration_sec=duration_sec,
+                is_breath_boundary=True,
+            )
+        )
+    return breath_boundaries
+
+
+def annotate_segments_with_breaths(
+    segments: list,
+    audio_path: str | Path | None = None,
+    min_pause_duration_ms: int = 300,
+    silence_thresh: int = -30,
+    breaths: list[BreathBoundary] | None = None,
+) -> list:
+    """
+    Annotate audio segments with reciter pause_duration and is_breath_boundary flags.
+
+    Args:
+        segments: List of Segment objects.
+        audio_path: Path to the audio file.
+        min_pause_duration_ms: Minimum pause duration in ms.
+        silence_thresh: Silence threshold in dB.
+        breaths: Pre-detected list of BreathBoundary objects (optional).
+
+    Returns:
+        List of annotated Segment objects.
+    """
+    if not segments:
+        return segments
+
+    if breaths is None:
+        if audio_path is None:
+            breaths = []
+        else:
+            detected = detect_reciter_breaths(
+                audio_path=audio_path,
+                min_pause_duration_ms=min_pause_duration_ms,
+                silence_thresh=silence_thresh,
+            )
+            if detected is None:
+                return segments
+            breaths = detected
+
+    available_breaths = list(breaths)
+
+    for seg in segments:
+        seg_end = seg.end
+        matching_breath = None
+        # Match if breath boundary overlaps or is close to the transition between seg.end and the next segment
+        candidates = [
+            b
+            for b in available_breaths
+            if abs(b.start_sec - seg_end) <= 0.8
+            or abs(b.end_sec - seg_end) <= 0.8
+            or (b.start_sec - 0.5 <= seg_end <= b.end_sec + 0.5)
+        ]
+        if candidates:
+            matching_breath = min(
+                candidates, key=lambda b: min(abs(b.start_sec - seg_end), abs(b.end_sec - seg_end))
+            )
+
+        if matching_breath:
+            seg.pause_duration = matching_breath.duration_sec
+            seg.is_breath_boundary = True
+            available_breaths.remove(matching_breath)
+        else:
+            seg.pause_duration = 0.0
+            seg.is_breath_boundary = False
+
+    return segments

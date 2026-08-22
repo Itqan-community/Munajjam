@@ -31,6 +31,10 @@ from munajjam.data import load_surah_ayahs
 from munajjam.exceptions import TranscriptionError
 from munajjam.models import Segment, SegmentType, WordTimestamp
 from munajjam.transcription.base import BaseTranscriber
+from munajjam.transcription.silence import (
+    annotate_segments_with_breaths,
+    detect_reciter_breaths,
+)
 
 
 class Whisperx(BaseTranscriber):
@@ -51,6 +55,7 @@ class Whisperx(BaseTranscriber):
         else:
             self.compute_type = compute_type
         self.wav2vec2_model_id = settings.wav2vec2_model_id
+        self.min_pause_duration_ms = settings.min_pause_duration_ms
 
         self.whisper_model: Any = None
         self.align_model: Any = None
@@ -113,6 +118,11 @@ class Whisperx(BaseTranscriber):
 
         assert self.whisper_model is not None
         audio = whisperx.load_audio(str(audio_path))
+
+        breaths = (
+            detect_reciter_breaths(audio_path, min_pause_duration_ms=self.min_pause_duration_ms)
+            or []
+        )
         result = self.whisper_model.transcribe(audio, batch_size=batch_size)
 
         # --- Reference Text Injection ---
@@ -340,4 +350,4 @@ class Whisperx(BaseTranscriber):
                     )
                 )
 
-        return segments
+        return annotate_segments_with_breaths(segments, breaths=breaths)

@@ -91,19 +91,34 @@ def test_whisper_factory_unsupported(factory):
         factory.create_whisper("invalid_backend", "base", "cpu")
 
 
+@patch("munajjam.transcription.whisperx.detect_reciter_breaths")
 @patch("munajjam.transcription.whisperx.whisperx")
-def test_whisperx_transcribe(mock_whisperx_module):
+def test_whisperx_transcribe(mock_whisperx_module, mock_detect_breaths):
+    from munajjam.transcription.silence import BreathBoundary
+
+    mock_detect_breaths.return_value = [
+        BreathBoundary(
+            start_sec=0.4, end_sec=1.0, duration_sec=0.6, is_breath_boundary=True
+        )
+    ]
     # Mock whisperx load_model and its returned model
     mock_model = MagicMock()
     mock_model.transcribe.return_value = {
-        "segments": [{"start": 0.0, "end": 1.5, "text": "hello"}]
+        "segments": [{"text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ"}]
     }
     mock_whisperx_module.load_model.return_value = mock_model
+    mock_whisperx_module.load_audio.return_value = "mock_audio_data"
     mock_whisperx_module.load_align_model.return_value = (MagicMock(), MagicMock())
     mock_whisperx_module.align.return_value = {
-        "segments": [{"start": 0.0, "end": 1.5, "text": "hello"}]
+        "segments": [
+            {
+                "start": 0.0,
+                "end": 1.5,
+                "text": "hello",
+                "words": [{"word": "hello", "start": 0.0, "end": 1.5, "score": 0.9}],
+            }
+        ]
     }
-    mock_whisperx_module.load_audio.return_value = "mock_audio_data"
 
     transcriber = Whisperx(model_name="base", device="cpu")
 
@@ -111,8 +126,14 @@ def test_whisperx_transcribe(mock_whisperx_module):
     segments = transcriber.transcribe("dummy_audio.wav", batch_size=8, surah_id=1)
 
     assert len(segments) == 7
+    assert segments[0].id == 1
     assert segments[0].surah_id == 1
     assert "بِسْمِ" in segments[0].text
+    assert segments[0].is_breath_boundary is True
+    assert segments[0].pause_duration == 0.6
+    mock_detect_breaths.assert_called_once_with(
+        "dummy_audio.wav", min_pause_duration_ms=300
+    )
 
     mock_whisperx_module.load_audio.assert_called_once_with("dummy_audio.wav")
     mock_model.transcribe.assert_called_once_with("mock_audio_data", batch_size=8)

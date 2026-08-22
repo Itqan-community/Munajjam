@@ -115,6 +115,13 @@ class MunajjamSettings(BaseSettings):
         le=2000,
     )
 
+    min_pause_duration_ms: int = Field(
+        default=300,
+        description="Minimum pause duration in milliseconds for reciter breath boundary detection",
+        ge=100,
+        le=3000,
+    )
+
     sample_rate: int = Field(
         default=16000,
         description="Audio sample rate for processing",

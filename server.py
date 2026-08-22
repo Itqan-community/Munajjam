@@ -1,6 +1,7 @@
 import gc
 import os
 import shutil
+import traceback
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from typing import cast
@@ -16,7 +17,7 @@ from munajjam.transcription.whisperx import Whisperx
 
 app = FastAPI(title="Munajjam API Server")
 
-# Enable CORS for external web clients and Google Colab / tunnel frontends
+# Allow connections from any frontend (supports Colab & Cloudflare tunnel)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,7 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Supported WhisperX model sizes
+# Valid model sizes supported by WhisperX
 VALID_MODEL_SIZES = {
     "tiny",
     "base",
@@ -41,9 +42,9 @@ VALID_MODEL_SIZES = {
 # FastConformer CTC pipeline.
 VALID_ALIGNMENT_MODES = {"whisperx", "ctc_segmentation"}
 
-# Dictionary for storing background job states
+# In-memory dictionary to store background job state
 jobs: dict = {}
-# Single-threaded ThreadPoolExecutor to prevent GPU memory race conditions
+# Single-thread executor to prevent concurrent GPU execution / VRAM thrashing
 _executor = ThreadPoolExecutor(max_workers=1)
 
 print(
@@ -103,13 +104,17 @@ def _run_job(
         segments = global_transcriber.transcribe(file_location, surah_id=surah_number)
 
         response_data = _build_response(segments)
+        # Preserve upstream breath-audio fields when present on segments.
+        for ayah_data, segment in zip(response_data, segments, strict=False):
+            if getattr(segment, "pause_duration", None) is not None:
+                ayah_data["pause_duration"] = segment.pause_duration
+            if getattr(segment, "is_breath_boundary", None) is not None:
+                ayah_data["is_breath_boundary"] = segment.is_breath_boundary
 
         jobs[job_id] = {"status": "success", "data": response_data, "error": None}
         print(f"[Job {job_id[:8]}] Completed successfully")
 
     except Exception as e:
-        import traceback
-
         traceback.print_exc()
         jobs[job_id] = {"status": "error", "data": None, "error": str(e)}
         print(f"[Job {job_id[:8]}] Error: {e!s}")
@@ -254,9 +259,15 @@ async def align_audio(
 
 
 @app.get("/align/status/{job_id}")
-async def get_job_status(job_id: str):
+async def get_job_status(job_id: str) -> JSONResponse:
     """
-    مسار للتحقق من حالة المهمة
+    Check the status and result of a background alignment job.
+
+    Args:
+        job_id: Unique job identifier returned by POST /align/{surah_number}.
+
+    Returns:
+        JSONResponse with job status (queued, processing, success, error) and data.
     """
     job = jobs.get(job_id)
     if not job:
@@ -277,5 +288,6 @@ async def get_job_status(job_id: str):
 
 
 @app.get("/health")
-async def health():
+async def health() -> dict[str, str]:
+    """Health check endpoint."""
     return {"status": "ok"}
