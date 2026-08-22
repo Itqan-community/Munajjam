@@ -426,7 +426,8 @@ def test_supported_length_input_dtypes():
     for descriptor, dtype in expected.items():
         session = FakeSession(length_input_type=descriptor)
         model = make_inference(session)
-        model.log_probs(np.zeros(8000, dtype=np.float32))
+        # Use 100 samples to stay within all dtype ranges (int8: -128..127).
+        model.log_probs(np.zeros(100, dtype=np.float32))
         assert session.calls[-1][1]["input_signal_length"].dtype == dtype
 
 
@@ -463,3 +464,46 @@ def test_stock_mel_input_export_rejected():
     )
     with pytest.raises(TranscriptionError, match="raw-audio"):
         model.load()
+
+
+def test_length_dtype_range_overflow_int8():
+    """int8 max is 127; 128 samples must raise."""
+    session = FakeSession(length_input_type="tensor(int8)")
+    model = make_inference(session)
+    with pytest.raises(TranscriptionError, match="does not fit"):
+        model.log_probs(np.zeros(128, dtype=np.float32))
+    # 127 samples is fine.
+    model2 = make_inference(FakeSession(length_input_type="tensor(int8)"))
+    result = model2.log_probs(np.zeros(127, dtype=np.float32))
+    assert result.ndim == 2
+
+
+def test_length_dtype_range_overflow_int16():
+    """int16 max is 32767; 32768 samples must raise."""
+    session = FakeSession(length_input_type="tensor(int16)")
+    model = make_inference(session)
+    with pytest.raises(TranscriptionError, match="does not fit"):
+        model.log_probs(np.zeros(32768, dtype=np.float32))
+
+
+def test_length_dtype_range_overflow_uint8():
+    """uint8 max is 255; 256 samples must raise."""
+    session = FakeSession(length_input_type="tensor(uint8)")
+    model = make_inference(session)
+    with pytest.raises(TranscriptionError, match="does not fit"):
+        model.log_probs(np.zeros(256, dtype=np.float32))
+    # 255 samples is fine.
+    model2 = make_inference(FakeSession(length_input_type="tensor(uint8)"))
+    result = model2.log_probs(np.zeros(255, dtype=np.float32))
+    assert result.ndim == 2
+
+
+def test_length_dtype_int32_int64_no_overflow_on_typical_audio():
+    """int32 and int64 handle realistic audio easily."""
+    for desc in ("tensor(int32)", "tensor(int64)"):
+        session = FakeSession(length_input_type=desc)
+        model = make_inference(session)
+        result = model.log_probs(np.zeros(16000, dtype=np.float32))
+        assert result.ndim == 2
+        expected_dtype = np.int32 if desc == "tensor(int32)" else np.int64
+        assert session.calls[-1][1]["input_signal_length"].dtype == expected_dtype

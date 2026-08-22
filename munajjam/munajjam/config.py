@@ -92,6 +92,13 @@ class MunajjamSettings(BaseSettings):
         "alignment of long audio (requires the optional silero-vad package).",
     )
 
+    fastconformer_blank_transition_cost_zero: bool = Field(
+        default=False,
+        description="When True, sets CtcSegmentationParameters."
+        "blank_transition_cost_zero = True, which can reduce blank-heavy "
+        "alignments. Default is False (conservative).",
+    )
+
     # ============ Audio Processing ============
 
     silence_threshold_db: int = Field(

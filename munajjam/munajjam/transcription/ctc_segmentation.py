@@ -201,6 +201,7 @@ def _ctc_parameters(
     blank_index: int,
     frame_duration: float,
     n_classes: int,
+    blank_transition_cost_zero: bool = False,
 ) -> Any:
     """Build ``ctc_segmentation`` parameters for this model.
 
@@ -220,6 +221,7 @@ def _ctc_parameters(
         blank=blank_index,
         index_duration=frame_duration,
         char_list=[str(i) for i in range(n_classes)],
+        blank_transition_cost_zero=blank_transition_cost_zero,
     )
 
 
@@ -231,6 +233,7 @@ def align_words_to_log_probs(
     blank_index: int,
     frame_duration: float = FRAME_DURATION_SECONDS,
     min_confidence: float | None = None,
+    blank_transition_cost_zero: bool = False,
 ) -> list[AlignedWord]:
     """
     Forced-align reference words to CTC log-probabilities.
@@ -306,6 +309,7 @@ def align_words_to_log_probs(
         blank_index=blank_index,
         frame_duration=frame_duration,
         n_classes=n_classes,
+        blank_transition_cost_zero=blank_transition_cost_zero,
     )
 
     try:
@@ -603,6 +607,7 @@ class FastConformerCTCTranscriber(BaseTranscriber):
         vocab_path: str | Path | None = None,
         tokenizer_model_path: str | Path | None = None,
         min_confidence: float | None = None,
+        blank_transition_cost_zero: bool = False,
     ) -> None:
         self._inference = inference
         self._tokenizer = tokenizer
@@ -612,6 +617,7 @@ class FastConformerCTCTranscriber(BaseTranscriber):
         self._vocab_path = Path(vocab_path) if vocab_path else None
         self._tokenizer_model_path = Path(tokenizer_model_path) if tokenizer_model_path else None
         self._min_confidence = min_confidence
+        self._blank_transition_cost_zero = blank_transition_cost_zero
 
     # ------------------------------------------------------------------ #
     # Lazy component access
@@ -741,23 +747,29 @@ class FastConformerCTCTranscriber(BaseTranscriber):
         """
         Align the reference across chunks with a progressing word cursor.
 
-        Every chunk is run through the acoustic layer independently, then the
-        next unaligned prefix of the reference that fits the chunk's frames is
-        aligned against it. Chunk-local CTC timestamps are shifted by the
-        chunk's global audio offset, so the returned timestamps are in global
-        wall-clock seconds. Words are never aligned twice (the cursor only
-        advances) and no word is dropped silently.
+        Every chunk is run through the acoustic layer independently. Short
+        chunks whose individual speech frames cannot fit a reference word are
+        deferred (buffered) until enough accumulated *speech* frames exist to
+        align the next reference prefix. Synthetic gap (silence) frames
+        inserted between deferred chunks preserve global wall-clock timing
+        but are excluded from capacity calculations so silence cannot falsely
+        inflate the reference-fitting estimate. When the buffer flushes,
+        alignment runs against the full pending timeline (speech + gaps) so
+        word timestamps correctly include real inter-chunk silence.
+
+        Chunk-local CTC timestamps are shifted by the buffer's first chunk
+        offset, yielding global wall-clock seconds. Words advance exactly once
+        (monotonically) and no word is dropped silently.
         """
         aligned_all: list[AlignedWord] = []
         cursor = 0
         last_end = 0.0
         pending_log_probs: np.ndarray | None = None
         pending_start = 0.0
+        pending_speech_frames = 0
         frame_duration = inference.frame_duration_seconds
 
         for chunk in chunks:
-            # Empty VAD results carry no acoustic evidence. Short non-empty
-            # chunks are retained and merged with later chunks instead.
             if chunk.waveform.size == 0:
                 continue
 
@@ -765,9 +777,12 @@ class FastConformerCTCTranscriber(BaseTranscriber):
             if log_probs.shape[0] == 0:
                 continue
 
+            chunk_speech_frames = int(log_probs.shape[0])
+
             if pending_log_probs is None:
                 pending_log_probs = log_probs
                 pending_start = chunk.start_seconds
+                pending_speech_frames = chunk_speech_frames
             else:
                 pending_end = pending_start + pending_log_probs.shape[0] * frame_duration
                 gap_frames = max(
@@ -790,32 +805,32 @@ class FastConformerCTCTranscriber(BaseTranscriber):
                     )
                 else:
                     pending_log_probs = np.concatenate((pending_log_probs, log_probs), axis=0)
+                # Gap frames are NOT added to pending_speech_frames — they
+                # are synthetic and must not inflate capacity estimates.
+                pending_speech_frames += chunk_speech_frames
 
-            remaining_words = words[cursor:]
+            remaining = words[cursor:]
             remaining_tokens = word_token_ids[cursor:]
-            current_chunk_can_fit = (
-                _fit_reference_prefix(remaining_words, remaining_tokens, int(log_probs.shape[0]))
-                > 0
-            )
-            if not current_chunk_can_fit:
-                # Defer this valid but short speech chunk. Gap frames in the
-                # pending timeline must not make silence look alignable; a
-                # later usable speech chunk flushes the accumulated buffer.
-                continue
 
-            n = _fit_reference_prefix(
-                remaining_words, remaining_tokens, int(pending_log_probs.shape[0])
-            )
+            # Capacity is measured in accumulated *speech* frames only;
+            # synthetic gap frames cannot represent reference tokens and must
+            # never make the buffer appear alignable before real evidence
+            # supports it.
+            n = _fit_reference_prefix(remaining, remaining_tokens, pending_speech_frames)
             if n == 0:
                 continue
 
+            # Flush: align the next reference prefix against the *full*
+            # pending buffer (speech + gaps) so word timestamps correctly
+            # include real inter-chunk silence.
             chunk_aligned = align_words_to_log_probs(
                 pending_log_probs,
-                remaining_words[:n],
+                remaining[:n],
                 remaining_tokens[:n],
                 blank_index=inference.blank_index,
                 frame_duration=frame_duration,
                 min_confidence=self._min_confidence,
+                blank_transition_cost_zero=self._blank_transition_cost_zero,
             )
 
             for word in chunk_aligned:
@@ -835,6 +850,7 @@ class FastConformerCTCTranscriber(BaseTranscriber):
 
             cursor += n
             pending_log_probs = None
+            pending_speech_frames = 0
             if cursor >= len(words):
                 break
 

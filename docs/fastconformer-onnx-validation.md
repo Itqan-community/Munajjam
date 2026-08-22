@@ -111,7 +111,7 @@ export is numerically faithful.
 
 ```bash
 python scripts/validate_fastconformer_onnx.py \
-  .model_validation/stt_ar_fastconformer_hybrid_large_pc_v1_ctc_rawaudio.onnx \
+  .model_validation/stt_ar_fastconformer_hybrid_large_pc_v1.0_ctc_rawaudio.onnx \
   <16kHz_mono_wav> \
   [.model_validation/stt_ar_fastconformer_hybrid_large_pc_v1.0.nemo]   # optional NeMo parity
 ```

@@ -64,6 +64,7 @@ def test_whisper_factory_ctc_segmentation(mock_cls, factory):
         s.fastconformer_vocab_path = "/models/vocab.txt"
         s.fastconformer_tokenizer_model_path = "/models/tokenizer.model"
         s.fastconformer_vad_enabled = False
+        s.fastconformer_blank_transition_cost_zero = False
         transcriber = factory.create_whisper(WhisperBackend.CTC_SEGMENTATION)
         assert transcriber is mock_cls.return_value
         mock_cls.assert_called_once_with(
@@ -71,6 +72,7 @@ def test_whisper_factory_ctc_segmentation(mock_cls, factory):
             vocab_path="/models/vocab.txt",
             tokenizer_model_path="/models/tokenizer.model",
             chunker=None,
+            blank_transition_cost_zero=False,
         )
 
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -663,3 +664,183 @@ def test_phonemizer_adapter_never_called_by_transcribe(tmp_path) -> None:
     # if any of its methods are invoked.
     segments = transcriber.transcribe(audio, surah_id=1)
     assert len(segments) == 7
+
+
+# --------------------------------------------------------------------------- #
+# Multi-chunk buffer accumulation (speech-only capacity)
+# --------------------------------------------------------------------------- #
+
+
+class _FixedFrameInference:
+    """Inference that returns lpz from ``_boosted_lpz`` with per-call specs."""
+
+    sample_rate = 16000
+    vocabulary_size = 1024
+    blank_index = 1024
+    frame_duration_seconds = 0.08
+
+    def __init__(self, lpzs: list[np.ndarray]) -> None:
+        self._lpzs = list(lpzs)
+        self._call = 0
+
+    def log_probs(self, waveform: np.ndarray) -> np.ndarray:
+        idx = min(self._call, len(self._lpzs) - 1)
+        result = self._lpzs[idx].copy()
+        self._call += 1
+        return result
+
+    def unload(self) -> None:
+        pass
+
+
+def test_two_individually_short_chunks_accumulate_and_align(tmp_path) -> None:
+    """Chunk 1 has 2 speech frames (fits 0 words), chunk 2 has 3 frames.
+    Individually neither fits a word (needs >=4 frames), but accumulated
+    speech frames (5) fit 1 word (cost 2+1+1=4)."""
+    audio = _make_wav(tmp_path)
+
+    class TwoShortChunks:
+        def chunk(self, waveform, sample_rate):
+            yield AudioChunk(waveform=waveform[:1000], start_seconds=0.0)
+            yield AudioChunk(waveform=waveform[1000:2000], start_seconds=1.5)
+
+    # ctc_segmentation needs a peak at frame 2 for token 1
+    lpz1 = _boosted_lpz([], n_frames=2)
+    lpz2 = _boosted_lpz([(2, 1)], n_frames=3)
+    inference = _FixedFrameInference([lpz1, lpz2])
+    tokenizer = FakeTokenizer({"word1": [1], "word2": [2]})
+    transcriber = FastConformerCTCTranscriber(
+        inference=inference, tokenizer=tokenizer, chunker=TwoShortChunks())
+
+    ref_words = ["word1", "word2"]
+    ref_tokens = [[1], [2]]
+    with patch.object(transcriber, "_build_reference", return_value=(ref_words, ref_tokens)):
+        with pytest.raises(TranscriptionError, match="not all reference words"):
+            transcriber.transcribe(audio, surah_id=1)
+
+
+def test_three_short_chunks_accumulate_to_align_one_word(tmp_path) -> None:
+    """Three 1-frame chunks: 3 accumulated speech frames < 4 needed => failure."""
+    audio = _make_wav(tmp_path)
+
+    class ThreeTinyChunks:
+        def chunk(self, waveform, sample_rate):
+            yield AudioChunk(waveform=waveform[:500], start_seconds=0.0)
+            yield AudioChunk(waveform=waveform[500:1000], start_seconds=1.0)
+            yield AudioChunk(waveform=waveform[1000:1500], start_seconds=2.0)
+
+    lpz = _boosted_lpz([], n_frames=1)
+    inference = _FixedFrameInference([lpz, lpz, lpz])
+    tokenizer = FakeTokenizer({"word1": [1]})
+    transcriber = FastConformerCTCTranscriber(
+        inference=inference, tokenizer=tokenizer, chunker=ThreeTinyChunks())
+
+    ref_words = ["word1"]
+    ref_tokens = [[1]]
+    with patch.object(transcriber, "_build_reference", return_value=(ref_words, ref_tokens)):
+        with pytest.raises(TranscriptionError, match="not all reference words"):
+            transcriber.transcribe(audio, surah_id=1)
+
+
+def test_gap_frames_do_not_increase_capacity(tmp_path) -> None:
+    """Two chunks with a large silence gap. The gap adds many synthetic blank
+    frames, but accumulated *speech* frames stay at 4 (=1+3). Capacity is
+    measured in speech frames only, so the buffer flushes correctly. Word
+    timestamps include the gap."""
+    audio = _make_wav(tmp_path)
+    gap_seconds = 5.0  # creates ~62 gap frames at 80ms
+
+    class TwoChunksWithGap:
+        def chunk(self, waveform, sample_rate):
+            yield AudioChunk(waveform=waveform[:500], start_seconds=0.0)
+            yield AudioChunk(waveform=waveform[500:1000], start_seconds=gap_seconds)
+
+    lpz1 = _boosted_lpz([], n_frames=1)
+    lpz2 = _boosted_lpz([(2, 1)], n_frames=3)
+    inference = _FixedFrameInference([lpz1, lpz2])
+    tokenizer = FakeTokenizer({"word1": [1]})
+    transcriber = FastConformerCTCTranscriber(
+        inference=inference, tokenizer=tokenizer, chunker=TwoChunksWithGap())
+
+    ref_words = ["word1"]
+    ref_tokens = [[1]]
+    with patch.object(transcriber, "_build_reference", return_value=(ref_words, ref_tokens)):
+        segments = transcriber.transcribe(audio, surah_id=1)
+
+    assert len(segments) == 1
+    wt = segments[0].words[0]  # type: ignore[index]
+    assert wt.end > gap_seconds
+
+
+def test_accumulated_chunks_preserve_monotonic_timestamps(tmp_path) -> None:
+    """Two short chunks accumulating to three words must produce monotonic
+    timestamps: no word starts before the previous word ends."""
+    audio = _make_wav(tmp_path)
+
+    class TwoShortChunks:
+        def chunk(self, waveform, sample_rate):
+            yield AudioChunk(waveform=waveform[:1000], start_seconds=0.0)
+            yield AudioChunk(waveform=waveform[1000:2000], start_seconds=2.0)
+
+    # Chunk 1: 2 frames (fits 0). Chunk 2: 12 frames peaks tokens 1,2,3.
+    lpz1 = _boosted_lpz([], n_frames=2)
+    lpz2 = _boosted_lpz([(2, 1), (4, 2), (6, 3)], n_frames=12)
+    inference = _FixedFrameInference([lpz1, lpz2])
+    tokenizer = FakeTokenizer({"w1": [1], "w2": [2], "w3": [3]})
+    transcriber = FastConformerCTCTranscriber(
+        inference=inference, tokenizer=tokenizer, chunker=TwoShortChunks())
+
+    ref_words = ["w1", "w2", "w3"]
+    ref_tokens = [[1], [2], [3]]
+    with patch.object(transcriber, "_build_reference", return_value=(ref_words, ref_tokens)):
+        segments = transcriber.transcribe(audio, surah_id=1)
+
+    words = [w for s in segments for w in s.words or []]
+    assert len(words) == 3
+    for prev, cur in zip(words, words[1:], strict=False):
+        assert cur.start >= prev.end - 1e-6
+
+
+def test_final_exhausted_buffer_with_unalignable_words_raises(tmp_path) -> None:
+    """After all chunks processed, if accumulated speech capacity never
+    reaches the first remaining word, raise cleanly."""
+    audio = _make_wav(tmp_path)
+
+    class OneShortChunk:
+        def chunk(self, waveform, sample_rate):
+            yield AudioChunk(waveform=waveform[:500], start_seconds=0.0)
+
+    lpz = _boosted_lpz([], n_frames=2)
+    inference = _FixedFrameInference([lpz])
+    tokenizer = FakeTokenizer({"word1": [1]})
+    transcriber = FastConformerCTCTranscriber(
+        inference=inference, tokenizer=tokenizer, chunker=OneShortChunk())
+
+    ref_words = ["word1"]
+    ref_tokens = [[1]]
+    with patch.object(transcriber, "_build_reference", return_value=(ref_words, ref_tokens)):
+        with pytest.raises(TranscriptionError, match="not all reference words"):
+            transcriber.transcribe(audio, surah_id=1)
+
+
+def test_blank_transition_cost_zero_flows_to_parameters() -> None:
+    """Ensure the transcriber passes blank_transition_cost_zero through to
+    _ctc_parameters and ultimately CtcSegmentationParameters."""
+    from munajjam.transcription.ctc_segmentation import _ctc_parameters
+
+    params_false = _ctc_parameters(blank_index=1024, frame_duration=0.08, n_classes=1025,
+                                   blank_transition_cost_zero=False)
+    assert params_false.blank_transition_cost_zero is False
+
+    params_true = _ctc_parameters(blank_index=1024, frame_duration=0.08, n_classes=1025,
+                                  blank_transition_cost_zero=True)
+    assert params_true.blank_transition_cost_zero is True
+
+
+def test_transcriber_default_blank_transition_cost_zero_is_false() -> None:
+    """Default constructor preserves False, keeping conservative alignment."""
+    t = FastConformerCTCTranscriber()
+    assert t._blank_transition_cost_zero is False  # type: ignore[attr-defined]
+
+    t2 = FastConformerCTCTranscriber(blank_transition_cost_zero=True)
+    assert t2._blank_transition_cost_zero is True  # type: ignore[attr-defined]

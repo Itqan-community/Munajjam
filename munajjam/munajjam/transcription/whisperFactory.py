@@ -44,6 +44,7 @@ class WhisperFactory:
                 vocab_path=settings.fastconformer_vocab_path,
                 tokenizer_model_path=settings.fastconformer_tokenizer_model_path,
                 chunker=chunker,
+                blank_transition_cost_zero=settings.fastconformer_blank_transition_cost_zero,
             )
         else:
             raise ValueError(f"Unsupported backend: {backend}")

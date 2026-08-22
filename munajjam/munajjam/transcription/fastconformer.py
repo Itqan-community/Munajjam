@@ -374,7 +374,23 @@ class FastConformerInference:
 
         audio = np.ascontiguousarray(waveform, dtype=np.float32)[np.newaxis, :]  # [1, T]
         length_dtype = self._input_length_dtype or np.dtype(np.int32)
-        length = np.array([audio.shape[1]], dtype=length_dtype)  # [1]
+        n_samples = audio.shape[1]
+        # Validate that the sample count fits in the ONNX length dtype.
+        try:
+            iinfo = np.iinfo(length_dtype)
+        except ValueError:
+            pass  # not an integer dtype (shouldn't happen for length inputs)
+        else:
+            if n_samples < iinfo.min or n_samples > iinfo.max:
+                raise TranscriptionError(
+                    "Audio sample count does not fit in the ONNX length input dtype",
+                    context={
+                        "samples": n_samples,
+                        "length_dtype": str(length_dtype),
+                        "range": (int(iinfo.min), int(iinfo.max)),
+                    },
+                )
+        length = np.array([n_samples], dtype=length_dtype)  # [1]
 
         input_feed = {
             self._input_signal_name: audio,
@@ -504,9 +520,10 @@ class FastConformerInference:
                 if len(shape) == 3 and isinstance(shape[2], int):
                     return shape[2]
                 break
-        # Fall back to a dry-run inference on a tiny silent input.
+        # Fall back to a dry-run inference on a tiny input that fits any
+        # supported length dtype (100 samples < int8_min).
         self._output_logprobs_name = name
-        probe = np.zeros(self.sample_rate, dtype=np.float32)
+        probe = np.zeros(min(100, self.sample_rate), dtype=np.float32)
         try:
             return int(self._raw_log_probs(probe).shape[1])
         except Exception as e:  # noqa: BLE001 - wrap probe failures
