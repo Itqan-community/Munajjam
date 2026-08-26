@@ -1,5 +1,4 @@
 import gc
-import re
 from pathlib import Path
 from typing import Any
 
@@ -84,10 +83,9 @@ class Whisperx(BaseTranscriber):
             self.model_name = model_name
 
     def _normalize_arabic(self, text: str) -> str:
-        text = re.sub(r"[\u064B-\u065F\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]", "", text)
-        text = re.sub(r"[أإآٱ]", "ا", text)
-        text = re.sub(r"[^\u0621-\u064A\s]", "", text)
-        return text.strip()
+        from ..core.arabic import normalize_arabic
+
+        return normalize_arabic(text)
 
     def transcribe(
         self,
@@ -142,7 +140,7 @@ class Whisperx(BaseTranscriber):
                     for j in range(1, m_tr + 1):
                         ew = self._normalize_arabic(str(transcribed_words[j - 1]["word"]))
                         match_score = fuzz.ratio(rw, ew) / 100.0
-                        if match_score < 0.6:
+                        if match_score < 0.5:
                             match_score = -1.0
                         dp_inj[i][j] = max(
                             dp_inj[i - 1][j], dp_inj[i][j - 1], dp_inj[i - 1][j - 1] + match_score
@@ -155,7 +153,7 @@ class Whisperx(BaseTranscriber):
                     ew = self._normalize_arabic(str(transcribed_words[j - 1]["word"]))
                     match_score = fuzz.ratio(rw, ew) / 100.0
 
-                    if match_score >= 0.6 and dp_inj[i][j] == dp_inj[i - 1][j - 1] + match_score:
+                    if match_score >= 0.5 and dp_inj[i][j] == dp_inj[i - 1][j - 1] + match_score:
                         mapped_seg_indices[i - 1] = int(transcribed_words[j - 1]["seg_idx"])
                         i -= 1
                         j -= 1
@@ -220,7 +218,7 @@ class Whisperx(BaseTranscriber):
             for j in range(1, m + 1):
                 ew = self._normalize_arabic(str(extracted_words[j - 1]["word"]))
                 match_score = fuzz.ratio(rw, ew) / 100.0
-                if match_score < 0.6:
+                if match_score < 0.5:
                     match_score = -1.0
                 dp[i][j] = max(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1] + match_score)
 
@@ -231,7 +229,7 @@ class Whisperx(BaseTranscriber):
             ew = self._normalize_arabic(str(extracted_words[j - 1]["word"]))
             match_score = fuzz.ratio(rw, ew) / 100.0
 
-            if match_score >= 0.6 and dp[i][j] == dp[i - 1][j - 1] + match_score:
+            if match_score >= 0.5 and dp[i][j] == dp[i - 1][j - 1] + match_score:
                 mapped_alignments[i - 1] = extracted_words[j - 1]
                 i -= 1
                 j -= 1
@@ -300,17 +298,16 @@ class Whisperx(BaseTranscriber):
 
                 if gap > 0:
                     if k in ayah_boundary_indices:
+                        # Clean ayah boundary transition: preserve natural end of ayah without stretching into silence
                         if gap <= 0.3:
                             start_buffer = min(gap, 0.1)
                             final_alignments[k + 1]["start"] = round(next_start - start_buffer, 3)
                             final_alignments[k]["end"] = round(next_start - start_buffer, 3)
-                        elif gap >= 0.4:
-                            final_alignments[k + 1]["start"] = round(next_start - 0.2, 3)
-                            final_alignments[k]["end"] = round(next_start - 0.2, 3)
                         else:
-                            mid = gap / 2.0
-                            final_alignments[k + 1]["start"] = round(next_start - mid, 3)
-                            final_alignments[k]["end"] = round(next_start - mid, 3)
+                            final_alignments[k]["end"] = round(current_end + min(gap * 0.1, 0.2), 3)
+                            final_alignments[k + 1]["start"] = round(
+                                max(current_end, next_start - min(gap * 0.1, 0.15)), 3
+                            )
                     else:
                         # Intra-ayah word gap: bridge small continuous speech gaps,
                         # but preserve natural breath pauses and reciter repetition gaps without stretching
@@ -321,7 +318,8 @@ class Whisperx(BaseTranscriber):
                                 current_end + min(gap * 0.15, 0.15), 3
                             )
             else:
-                final_alignments[k]["end"] = round(total_duration, 3)
+                # Clean end for the very last word of the surah
+                final_alignments[k]["end"] = round(min(total_duration, current_end + 0.3), 3)
 
             if final_alignments[k]["end"] <= final_alignments[k]["start"]:
                 final_alignments[k]["end"] = round(final_alignments[k]["start"] + 0.1, 3)
