@@ -312,8 +312,14 @@ class Whisperx(BaseTranscriber):
                             final_alignments[k + 1]["start"] = round(next_start - mid, 3)
                             final_alignments[k]["end"] = round(next_start - mid, 3)
                     else:
-                        if gap > 0.1:
-                            final_alignments[k]["end"] = round(next_start - 0.1, 3)
+                        # Intra-ayah word gap: bridge small continuous speech gaps,
+                        # but preserve natural breath pauses and reciter repetition gaps without stretching
+                        if gap <= 0.25:
+                            final_alignments[k]["end"] = round(next_start, 3)
+                        else:
+                            final_alignments[k]["end"] = round(
+                                current_end + min(gap * 0.15, 0.15), 3
+                            )
             else:
                 final_alignments[k]["end"] = round(total_duration, 3)
 
