@@ -468,6 +468,8 @@ def realign_unaligned_gap_acoustic(
     except ImportError:
         return None
 
+    from .arabic import normalize_arabic
+
     total_audio_sec = len(audio) / float(sample_rate)
 
     # 1. Resolve recovery interval boundaries from real audio bounds
@@ -486,7 +488,12 @@ def realign_unaligned_gap_acoustic(
     if slice_duration <= 0.05 or len(audio_slice) == 0:
         return None
 
-    gap_text = " ".join(gap.words)
+    # Normalize Arabic text for whisperx.align (wav2vec2 cannot tokenize Quranic diacritics/symbols)
+    normalized_gap_words = [normalize_arabic(w) for w in gap.words]
+    gap_text = " ".join([w for w in normalized_gap_words if w])
+    if not gap_text:
+        gap_text = " ".join(gap.words)
+
     segments_to_align = [
         {
             "text": gap_text,
@@ -508,7 +515,7 @@ def realign_unaligned_gap_acoustic(
         return None
 
     extracted_words: list[dict[str, Any]] = []
-    if "segments" in align_result:
+    if isinstance(align_result, dict) and "segments" in align_result:
         for seg in align_result["segments"]:
             if isinstance(seg, dict) and "words" in seg:
                 for w in seg["words"]:
@@ -522,22 +529,113 @@ def realign_unaligned_gap_acoustic(
                             }
                         )
 
-    if len(extracted_words) != len(gap.words):
+    if not extracted_words:
         return None
 
-    # 3. Validate chronological ordering and recovery interval bounds
-    prev_w_end: float = float(recovery_start)
-    for w in extracted_words:
-        w_start: float = float(w["start"]) if isinstance(w["start"], int | float) else 0.0
-        w_end: float = float(w["end"]) if isinstance(w["end"], int | float) else 0.0
+    n_gap = len(gap.words)
+    aligned_results: list[dict[str, Any]] = []
 
-        # Must have positive duration and satisfy recovery_start <= start < end <= recovery_end
-        if w_end <= w_start or w_start < prev_w_end or w_end > float(recovery_end + 0.001):
+    if len(extracted_words) == n_gap:
+        for k in range(n_gap):
+            aligned_results.append(
+                {
+                    "word": gap.words[k],
+                    "raw_start": extracted_words[k]["start"],
+                    "raw_end": extracted_words[k]["end"],
+                    "confidence": extracted_words[k]["confidence"],
+                }
+            )
+    else:
+        from rapidfuzz import fuzz
+
+        n_ext = len(extracted_words)
+        dp = np.zeros((n_gap + 1, n_ext + 1))
+        for i in range(1, n_gap + 1):
+            rw = normalized_gap_words[i - 1]
+            for j in range(1, n_ext + 1):
+                ew = normalize_arabic(extracted_words[j - 1]["word"])
+                score = fuzz.ratio(rw, ew) / 100.0
+                if score < 0.5:
+                    score = -1.0
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1] + score)
+
+        mapped: list[dict[str, Any] | None] = [None] * n_gap
+        i, j = n_gap, n_ext
+        while i > 0 and j > 0:
+            rw = normalized_gap_words[i - 1]
+            ew = normalize_arabic(extracted_words[j - 1]["word"])
+            score = fuzz.ratio(rw, ew) / 100.0
+            if score >= 0.5 and dp[i][j] == dp[i - 1][j - 1] + score:
+                mapped[i - 1] = extracted_words[j - 1]
+                i -= 1
+                j -= 1
+            elif dp[i][j] == dp[i - 1][j]:
+                i -= 1
+            else:
+                j -= 1
+
+        curr_start = float(recovery_start)
+        total_dur = float(recovery_end - recovery_start)
+        for k in range(n_gap):
+            item = mapped[k]
+            if item is not None:
+                aligned_results.append(
+                    {
+                        "word": gap.words[k],
+                        "raw_start": item["start"],
+                        "raw_end": item["end"],
+                        "confidence": item["confidence"],
+                    }
+                )
+            else:
+                aligned_results.append(
+                    {
+                        "word": gap.words[k],
+                        "raw_start": curr_start,
+                        "raw_end": curr_start + max(0.05, total_dur / n_gap),
+                        "confidence": 0.60,
+                    }
+                )
+
+    # Validate that acoustic alignment stays within reasonable recovery interval bounds
+    # (Reject if acoustic timestamps drift significantly into neighboring words)
+    tol = 0.05
+    for item in aligned_results:
+        r_start = float(item["raw_start"])
+        r_end = float(item["raw_end"])
+        if r_end <= r_start:
+            return None
+        if r_start < float(recovery_start) - tol:
+            return None
+        if r_end > float(recovery_end) + tol:
             return None
 
-        prev_w_end = w_end
+    # 3. Clamp timestamps to [recovery_start, recovery_end] and enforce monotonicity
+    final_words: list[dict[str, Any]] = []
+    prev_end = float(recovery_start)
+    max_end = float(recovery_end)
 
-    return extracted_words
+    for item in aligned_results:
+        r_start = float(item["raw_start"])
+        r_end = float(item["raw_end"])
+
+        c_start = max(prev_end, min(max_end, r_start))
+        c_end = max(c_start + 0.01, min(max_end, r_end))
+
+        if c_end <= c_start:
+            c_end = min(max_end, c_start + 0.05)
+
+        final_words.append(
+            {
+                "word": item["word"],
+                "start": round(c_start, 3),
+                "end": round(c_end, 3),
+                "confidence": item["confidence"],
+            }
+        )
+        prev_end = c_end
+
+    return final_words
 
 
 def recover_unaligned_word_gaps(

@@ -366,3 +366,51 @@ def test_realign_rejects_pre_start_timestamp():
         assert recovered[1]["confidence"] == 0.60
         assert recovered[1]["start"] >= 0.80
         assert recovered[1]["end"] <= 2.00
+
+
+def test_realign_normalizes_quranic_text_for_whisperx():
+    """Verify that un-normalized Quranic text with full diacritics is normalized before passing to whisperx.align."""
+    import sys
+    from unittest.mock import MagicMock, patch
+
+    words = [
+        {"word": "بِسْمِ", "start": 0.0, "end": 0.8, "confidence": 0.95},
+        {"word": "ٱللَّهِ", "start": 0.8, "end": 0.9, "confidence": 0.0},
+        {"word": "ٱلرَّحْمَـٰنِ", "start": 0.9, "end": 1.0, "confidence": 0.0},
+        {"word": "ٱلرَّحِيمِ", "start": 2.0, "end": 3.0, "confidence": 0.92},
+    ]
+    dummy_audio = np.zeros(16000 * 4, dtype=np.float32)
+    mock_align_model = MagicMock()
+    mock_align_metadata = {"language": "ar"}
+
+    mock_align_result = {
+        "segments": [
+            {
+                "text": "الله الرحمن",
+                "words": [
+                    {"word": "الله", "start": 0.25, "end": 0.70, "score": 0.90},
+                    {"word": "الرحمن", "start": 0.70, "end": 1.15, "score": 0.88},
+                ],
+            }
+        ]
+    }
+    mock_whisperx = MagicMock()
+    mock_whisperx.align.return_value = mock_align_result
+
+    with patch.dict(sys.modules, {"whisperx": mock_whisperx}):
+        recovered = recover_unaligned_word_gaps(
+            words,
+            audio=dummy_audio,
+            align_model=mock_align_model,
+            align_metadata=mock_align_metadata,
+        )
+        # Check that whisperx.align received normalized text without diacritics / Alif Wasla
+        args, _ = mock_whisperx.align.call_args
+        segments_passed = args[0]
+        assert segments_passed[0]["text"] == "الله الرحمن"
+
+        # Check canonical words with diacritics were preserved in output
+        assert recovered[1]["word"] == "ٱللَّهِ"
+        assert recovered[2]["word"] == "ٱلرَّحْمَـٰنِ"
+        assert recovered[1]["confidence"] == 0.90
+        assert recovered[2]["confidence"] == 0.88
