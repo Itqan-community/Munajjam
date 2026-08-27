@@ -123,11 +123,15 @@ class Whisperx(BaseTranscriber):
         )
         result = self.whisper_model.transcribe(audio, batch_size=batch_size)
 
-        # Normalize segment text for whisperx.align
-        if result.get("segments"):
-            for segment in result["segments"]:
-                if isinstance(segment, dict) and "text" in segment:
-                    segment["text"] = self._normalize_arabic(str(segment["text"]))
+        # Filter and normalize valid non-empty segments for whisperx.align
+        valid_segments: list[dict[str, Any]] = []
+        for segment in result.get("segments", []):
+            if isinstance(segment, dict):
+                norm_text = self._normalize_arabic(str(segment.get("text", "")))
+                if norm_text.strip():
+                    segment["text"] = norm_text.strip()
+                    valid_segments.append(segment)
+        result["segments"] = valid_segments
 
         if getattr(self, "align_model", None) is None:
             print("Loading WhisperX alignment model...")
@@ -164,6 +168,10 @@ class Whisperx(BaseTranscriber):
         m = len(extracted_words)
         dp = np.zeros((n + 1, m + 1))
 
+        # Base case penalty for deleting reference words
+        for i in range(1, n + 1):
+            dp[i][0] = dp[i - 1][0] - 0.5
+
         for i in range(1, n + 1):
             rw = self._normalize_arabic(ref_words[i - 1])
             for j in range(1, m + 1):
@@ -171,7 +179,7 @@ class Whisperx(BaseTranscriber):
                 match_score = fuzz.ratio(rw, ew) / 100.0
                 if match_score < 0.5:
                     match_score = -1.0
-                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1] + match_score)
+                dp[i][j] = max(dp[i - 1][j] - 0.5, dp[i][j - 1], dp[i - 1][j - 1] + match_score)
 
         mapped_alignments: list[dict[str, Any] | None] = [None] * n
         i, j = n, m
@@ -180,14 +188,16 @@ class Whisperx(BaseTranscriber):
             ew = self._normalize_arabic(str(extracted_words[j - 1]["word"]))
             match_score = fuzz.ratio(rw, ew) / 100.0
 
-            if match_score >= 0.5 and dp[i][j] == dp[i - 1][j - 1] + match_score:
+            if match_score >= 0.5 and abs(dp[i][j] - (dp[i - 1][j - 1] + match_score)) < 1e-5:
                 mapped_alignments[i - 1] = extracted_words[j - 1]
                 i -= 1
                 j -= 1
-            elif dp[i][j] == dp[i - 1][j]:
-                i -= 1
-            else:
+            elif abs(dp[i][j] - dp[i][j - 1]) < 1e-5:
+                # Extra audio word (e.g. repetition or cough) -> advance audio
                 j -= 1
+            else:
+                # Reference word truly missing from audio
+                i -= 1
 
         w_alignments: list[dict[str, Any]] = []
         for k in range(n):
