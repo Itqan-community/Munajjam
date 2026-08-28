@@ -95,12 +95,13 @@ class Whisperx(BaseTranscriber):
         batch_size: int = 16,
     ) -> list[Segment]:
         ayahs = load_surah_ayahs(surah_id)
-        if not ayahs:
-            return []
+
+        def _get_ayah_words(text: str) -> list[str]:
+            return [w for w in text.split() if self._normalize_arabic(w).strip()]
 
         ref_words = []
         for ayah in ayahs:
-            for w in ayah.text.split():
+            for w in _get_ayah_words(ayah.text):
                 ref_words.append(w)
 
         if whisperx is None:
@@ -244,7 +245,7 @@ class Whisperx(BaseTranscriber):
         ayah_boundary_indices = set()
         w_idx = 0
         for ayah in ayahs:
-            w_idx += len(ayah.text.split())
+            w_idx += len(_get_ayah_words(ayah.text))
             ayah_boundary_indices.add(w_idx - 1)
 
         for k in range(len(final_alignments)):
@@ -289,7 +290,7 @@ class Whisperx(BaseTranscriber):
         segments = []
 
         for ayah in ayahs:
-            ayah_words_count = len(ayah.text.split())
+            ayah_words_count = len(_get_ayah_words(ayah.text))
             ayah_alignments = final_alignments[word_idx : word_idx + ayah_words_count]
             word_idx += ayah_words_count
 
