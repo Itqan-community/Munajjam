@@ -4,15 +4,13 @@ Unit tests for DeepgramTranscriber.
 Tests use mocked HTTP responses to avoid requiring a real Deepgram API key.
 """
 
-import json
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
+from munajjam.exceptions import TranscriptionError
 from munajjam.models import Segment, SegmentType, WordTimestamp
 from munajjam.transcription.deepgram_transcriber import DeepgramTranscriber
-
 
 # ── Sample Deepgram API response ──────────────────────────────────────────
 
@@ -59,8 +57,6 @@ def mock_settings():
 @pytest.fixture
 def transcriber(mock_settings):
     """Create a DeepgramTranscriber with mocked settings."""
-    from munajjam.transcription.deepgram_transcriber import DeepgramTranscriber
-
     return DeepgramTranscriber()
 
 
@@ -72,18 +68,12 @@ class TestDeepgramTranscriberInit:
 
     def test_init_without_api_key_raises(self) -> None:
         """Must raise TranscriptionError when API key is not set."""
-        from munajjam.exceptions import TranscriptionError
-
         with patch("munajjam.transcription.deepgram_transcriber.get_settings") as mock:
             settings = MagicMock()
             settings.deepgram_api_key = None
             mock.return_value = settings
 
             with pytest.raises(TranscriptionError, match="API key is not configured"):
-                from munajjam.transcription.deepgram_transcriber import (
-                    DeepgramTranscriber,
-                )
-
                 DeepgramTranscriber()
 
     def test_init_with_api_key_succeeds(self, transcriber) -> None:
@@ -104,17 +94,13 @@ class TestDeepgramWordExtraction:
         assert words[0]["confidence"] == 0.97
 
     def test_extract_words_from_empty_response(self, transcriber) -> None:
-        """Must raise TranscriptionError for empty response."""
-        from munajjam.exceptions import TranscriptionError
-
+        """Must return empty list for empty response."""
         empty_response = {"results": {"channels": [{"alternatives": [{"words": []}]}]}}
         words = transcriber._extract_words(empty_response)
         assert words == []
 
     def test_extract_words_from_malformed_response(self, transcriber) -> None:
         """Must raise TranscriptionError for malformed response."""
-        from munajjam.exceptions import TranscriptionError
-
         with pytest.raises(TranscriptionError, match="Unexpected Deepgram response"):
             transcriber._extract_words({"bad": "data"})
 
@@ -124,8 +110,6 @@ class TestDeepgramAPICall:
 
     def test_api_error_raises_transcription_error(self, transcriber, tmp_path) -> None:
         """Must raise TranscriptionError on non-200 API response."""
-        from munajjam.exceptions import TranscriptionError
-
         audio_file = tmp_path / "test.mp3"
         audio_file.write_bytes(b"fake audio content")
 
@@ -133,9 +117,11 @@ class TestDeepgramAPICall:
         mock_response.status_code = 401
         mock_response.text = "Unauthorized"
 
-        with patch("httpx.post", return_value=mock_response):
-            with pytest.raises(TranscriptionError, match="HTTP 401"):
-                transcriber._call_deepgram(audio_file)
+        with (
+            patch("httpx.post", return_value=mock_response),
+            pytest.raises(TranscriptionError, match="HTTP 401"),
+        ):
+            transcriber._call_deepgram(audio_file)
 
     def test_successful_api_call(self, transcriber, tmp_path) -> None:
         """Must return parsed JSON from a successful API call."""

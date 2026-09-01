@@ -153,7 +153,7 @@ class DeepgramTranscriber(BaseTranscriber):
                 ref_words.append(w)
 
         # Call Deepgram API
-        print(f"[Deepgram] Sending audio to Deepgram API (nova-3, ar)...")
+        print("[Deepgram] Sending audio to Deepgram API (nova-3, ar)...")
         deepgram_response = self._call_deepgram(audio_path)
         extracted_words = self._extract_words(deepgram_response)
 
