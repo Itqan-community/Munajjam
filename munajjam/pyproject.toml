@@ -61,8 +61,11 @@ api = [
     "uvicorn>=0.23.0",
     "python-multipart>=0.0.6",
 ]
+deepgram = [
+    "httpx>=0.24.0",
+]
 all = [
-    "munajjam[dev,api]",
+    "munajjam[dev,api,deepgram]",
 ]
 
 [project.scripts]

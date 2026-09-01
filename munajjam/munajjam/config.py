@@ -8,7 +8,7 @@ All settings can be overridden via environment variables with the MUNAJJAM_ pref
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -63,6 +63,13 @@ class MunajjamSettings(BaseSettings):
     ] = Field(
         default="large-v2",
         description="WhisperX model size (tiny, base, small, medium, large-v1, large-v2, large-v3)",
+    )
+
+    # ============ Deepgram Settings (Experimental) ============
+
+    deepgram_api_key: SecretStr | None = Field(
+        default=None,
+        description="Deepgram API key for experimental cloud transcription",
     )
 
     # ============ Audio Processing ============
