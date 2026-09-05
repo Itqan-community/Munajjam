@@ -204,16 +204,19 @@ def test_whisperx_set_model_name_swapping():
 
 
 @patch("server.get_settings")
-@patch("server.global_transcriber")
+@patch("server._get_transcriber")
 @patch("server.os.path.exists", return_value=False)
 def test_server_run_job_model_size_resolution(
-    mock_exists, mock_transcriber, mock_get_settings
+    mock_exists, mock_get_transcriber, mock_get_settings
 ):
     from server import _run_job, jobs
 
-    mock_get_settings.return_value.whisperx_model_size = "large-v2"
+    mock_transcriber = MagicMock()
     mock_transcriber.transcribe.return_value = []
     mock_transcriber.model_name = "large-v2"
+    mock_get_transcriber.return_value = mock_transcriber
+
+    mock_get_settings.return_value.whisperx_model_size = "large-v2"
 
     # Explicit model size provided
     jobs["job_1"] = {"status": "queued"}
@@ -224,3 +227,4 @@ def test_server_run_job_model_size_resolution(
     jobs["job_2"] = {"status": "queued"}
     _run_job("job_2", "dummy.mp3", 1, model_size=None)
     mock_transcriber.set_model_name.assert_called_with("large-v2")
+

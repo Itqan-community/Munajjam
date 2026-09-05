@@ -8,7 +8,9 @@ from concurrent.futures import ThreadPoolExecutor
 from fastapi import BackgroundTasks, FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
 from munajjam.config import get_settings
+from munajjam.transcription.base import BaseTranscriber
 from munajjam.transcription.whisperFactory import WhisperBackend, WhisperFactory
 
 app = FastAPI(title="Munajjam API Server")
@@ -33,19 +35,42 @@ VALID_MODEL_SIZES = {
     "large-v3",
 }
 
+# Valid alignment modes
+VALID_ALIGNMENT_MODES = {"whisperx", "deepgram"}
+
+# Map alignment_mode string → WhisperBackend enum
+_ALIGNMENT_MODE_MAP: dict[str, WhisperBackend] = {
+    "whisperx": WhisperBackend.WHISPERX,
+    "deepgram": WhisperBackend.DEEPGRAM,
+}
+
 # In-memory dictionary to store background job state
 jobs: dict = {}
 # Single-thread executor to prevent concurrent GPU execution / VRAM thrashing
 _executor = ThreadPoolExecutor(max_workers=1)
 
+# Lazy transcriber cache — backends are loaded only on first use
+_transcribers: dict[WhisperBackend, BaseTranscriber] = {}
+
 print(
-    "Initializing global WhisperX transcriber (models will be loaded lazily on first request)..."
+    "Munajjam API ready. Transcriber backends will be loaded lazily on first request."
 )
-global_transcriber = WhisperFactory().create_whisper(backend=WhisperBackend.WHISPERX)
+
+
+def _get_transcriber(backend: WhisperBackend) -> BaseTranscriber:
+    """Return a cached transcriber for the given backend, creating it on first use."""
+    if backend not in _transcribers:
+        print(f"Loading transcriber backend: {backend.value}")
+        _transcribers[backend] = WhisperFactory().create_whisper(backend=backend)
+    return _transcribers[backend]
 
 
 def _run_job(
-    job_id: str, file_location: str, surah_number: int, model_size: str | None = None
+    job_id: str,
+    file_location: str,
+    surah_number: int,
+    model_size: str | None = None,
+    alignment_mode: str = "whisperx",
 ) -> None:
     """
     Background job function to execute audio transcription and ayah alignment.
@@ -55,24 +80,30 @@ def _run_job(
         file_location: Path to temporary audio file.
         surah_number: Surah number (1-114).
         model_size: Optional WhisperX model size requested by caller.
+        alignment_mode: Backend to use ("whisperx" or "deepgram").
     """
     try:
         jobs[job_id]["status"] = "processing"
 
-        # Resolve model size for every job (defaults to configuration setting)
-        target_model_size = model_size or get_settings().whisperx_model_size
-        if hasattr(global_transcriber, "set_model_name"):
-            print(
-                f"[Job {job_id[:8]}] Resolving WhisperX model size to: {target_model_size}"
-            )
-            global_transcriber.set_model_name(target_model_size)
+        backend = _ALIGNMENT_MODE_MAP[alignment_mode]
+        transcriber = _get_transcriber(backend)
+
+        # Resolve model size (only applicable to WhisperX backend)
+        if backend == WhisperBackend.WHISPERX:
+            target_model_size = model_size or get_settings().whisperx_model_size
+            if hasattr(transcriber, "set_model_name"):
+                print(
+                    f"[Job {job_id[:8]}] Resolving WhisperX model size to: {target_model_size}"
+                )
+                transcriber.set_model_name(target_model_size)
 
         print(
-            f"[Job {job_id[:8]}] Started processing Surah {surah_number} with WhisperX ({global_transcriber.model_name})"
+            f"[Job {job_id[:8]}] Started processing Surah {surah_number} "
+            f"with {alignment_mode} backend"
         )
 
         # Transcribe and align
-        segments = global_transcriber.transcribe(file_location, surah_id=surah_number)
+        segments = transcriber.transcribe(file_location, surah_id=surah_number)
 
         response_data = []
         for segment in segments:
@@ -113,6 +144,7 @@ async def align_audio(
     file: UploadFile = File(...),
     riwaya: str = Form("hafs"),
     model_size: str | None = Form(None),
+    alignment_mode: str = Form("whisperx"),
 ) -> JSONResponse:
     """
     Upload an audio file and initiate background audio-to-ayah alignment.
@@ -123,10 +155,20 @@ async def align_audio(
         file: Uploaded audio file (.mp3, .wav, etc.).
         riwaya: Quranic Riwaya ("hafs", "warsh").
         model_size: Optional WhisperX model size (tiny, base, small, medium, large-v1, large-v2, large-v3).
+        alignment_mode: Backend to use for alignment ("whisperx" or "deepgram").
 
     Returns:
         JSONResponse containing job status and job_id.
     """
+    if alignment_mode not in VALID_ALIGNMENT_MODES:
+        return JSONResponse(
+            {
+                "status": "error",
+                "message": f"Invalid alignment_mode: '{alignment_mode}'. Must be one of {sorted(VALID_ALIGNMENT_MODES)}",
+            },
+            status_code=400,
+        )
+
     if model_size and model_size not in VALID_MODEL_SIZES:
         return JSONResponse(
             {
@@ -147,7 +189,7 @@ async def align_audio(
 
     background_tasks.add_task(
         lambda: _executor.submit(
-            _run_job, job_id, file_location, surah_number, model_size
+            _run_job, job_id, file_location, surah_number, model_size, alignment_mode
         )
     )
 
