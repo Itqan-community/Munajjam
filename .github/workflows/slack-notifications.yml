@@ -12,4 +12,3 @@ jobs:
     if: github.repository == 'Itqan-community/Munajjam'
     uses: Itqan-community/.github/.github/workflows/slack-notifications.yml@main
     secrets: inherit
-    continue-on-error: true

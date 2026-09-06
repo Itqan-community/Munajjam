@@ -99,7 +99,7 @@ for result in results:
 
 ### 3. Output
 
-```
+```text
 Ayah 1: 5.62s - 9.57s
 Ayah 2: 10.51s - 14.72s
 Ayah 3: 15.45s - 18.53s
@@ -113,12 +113,25 @@ Ayah 7: 33.98s - 46.44s
 
 - **API Server** - Async FastAPI server for handling concurrent alignment jobs
 - **Whisper Transcription** - Uses faster-whisper as default backend with Quran-tuned models
+- **FastConformer CTC Alignment** - Optional FastConformer-based CTC alignment path for precise word-level timestamps, with ONNX Runtime inference and support for long-audio chunking
 - **Four Alignment Strategies** - Auto, Hybrid, DP, and Greedy
 - **Arabic Text Normalization** - Handles diacritics, hamzas, and character variations
 - **Automatic Drift Correction** - Multi-pass zone realignment for long recordings
 - **Quality Metrics** - Confidence scores for each aligned ayah
 - **Phonetic Similarity** - Arabic ASR confusion-aware similarity scoring
 - **Word-level Precision** - Uses per-word timestamps (when available) to improve drift recovery
+
+## FastConformer CTC Alignment
+
+Munajjam includes an optional FastConformer CTC alignment path while preserving the existing WhisperX transcription workflow.
+
+The FastConformer path uses CTC emissions for forced alignment and produces word-level timestamps compatible with the existing Munajjam transcription and alignment pipeline.
+
+The implementation supports ONNX Runtime inference and chunked processing for longer audio.
+
+For FastConformer ONNX export, validation, model setup, and troubleshooting, see:
+
+[FastConformer ONNX Validation Guide](./docs/fastconformer-onnx-validation.md)
 
 ## Alignment Strategies
 

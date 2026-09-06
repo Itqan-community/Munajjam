@@ -65,6 +65,62 @@ class MunajjamSettings(BaseSettings):
         description="WhisperX model size (tiny, base, small, medium, large-v1, large-v2, large-v3)",
     )
 
+    # ============ FastConformer (CTC Segmentation) Settings ============
+
+    fastconformer_model_path: str | None = Field(
+        default=None,
+        description="Path to the exported FastConformer CTC ONNX graph "
+        "(*_ctc_rawaudio.onnx). Required for alignment_mode=ctc_segmentation.",
+    )
+
+    fastconformer_vocab_path: str | None = Field(
+        default=None,
+        description="Optional vocabulary file (one token per line) for the "
+        "FastConformer CTC model.",
+    )
+
+    fastconformer_tokenizer_model_path: str | None = Field(
+        default=None,
+        description="Path to the model's SentencePiece tokenizer.model "
+        "(extracted from the .nemo checkpoint). Required for "
+        "alignment_mode=ctc_segmentation.",
+    )
+
+    fastconformer_vad_enabled: bool = Field(
+        default=False,
+        description="Whether to use silero-vad chunking for FastConformer CTC "
+        "alignment of long audio (requires the optional silero-vad package).",
+    )
+
+    fastconformer_blank_transition_cost_zero: bool = Field(
+        default=False,
+        description="When True, sets CtcSegmentationParameters."
+        "blank_transition_cost_zero = True, which can reduce blank-heavy "
+        "alignments. Default is False (conservative).",
+    )
+
+    fastconformer_cache_dir: str | None = Field(
+        default=None,
+        description="Directory where FastConformer CTC assets are "
+        "auto-provisioned. Defaults to ~/.cache/munajjam/fastconformer. "
+        "Cached files are reused without re-download.",
+    )
+
+    fastconformer_hf_repo_id: str | None = Field(
+        default=None,
+        description="Optional Hugging Face repo id hosting pre-exported "
+        "FastConformer CTC ONNX + SentencePiece assets. Only set this when "
+        "real assets exist in that repo (see "
+        "docs/fastconformer-onnx-validation.md); expected filenames: "
+        "stt_ar_fastconformer_hybrid_large_pc_v1.0_ctc_rawaudio.onnx and "
+        "tokenizer.model.",
+    )
+
+    fastconformer_hf_revision: str | None = Field(
+        default=None,
+        description="Optional revision/tag pin for fastconformer_hf_repo_id (defaults to 'main').",
+    )
+
     # ============ Audio Processing ============
 
     silence_threshold_db: int = Field(

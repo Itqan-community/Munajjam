@@ -129,4 +129,10 @@ batch_process.py
 
 # Local-only directories (not part of the library)
 v2/
-scripts/
+
+# Model export helper scripts live in scripts/ and ARE tracked (export script
+# was previously ignored here, which is why it never reached the repo).
+# Only the artifacts they produce are ignored, see .model_validation/ below.
+
+# Model validation artifacts (downloaded .nemo, extracted files, exported ONNX)
+.model_validation/
