@@ -450,10 +450,20 @@ def export_onnx_graphs(
             logprobs = self.ctc_decoder(encoder_output=encoded)
             return logprobs, encoded_length
 
+    try:
+        model = model.cpu()
+    except Exception:
+        pass
+
     wrapper = EncoderDecoderFastConformer(model)
+    try:
+        device = next(model.parameters()).device
+    except (StopIteration, AttributeError):
+        device = torch.device("cpu")
+
     # Dummy input: [B=1, n_mels=80, T_mel=100] (mel features, not raw audio)
-    dummy_signal = torch.randn(1, N_MELS, 100, dtype=torch.float32)
-    dummy_length = torch.tensor([100], dtype=torch.int32)
+    dummy_signal = torch.randn(1, N_MELS, 100, dtype=torch.float32, device=device)
+    dummy_length = torch.tensor([100], dtype=torch.int32, device=device)
     # dynamo=False forces the legacy TorchScript exporter, required for NeMo
     # models with LSTM/RNN layers and @typecheck() decorators.  The dynamo
     # parameter was introduced in PyTorch 2.4; omit it on older versions where
