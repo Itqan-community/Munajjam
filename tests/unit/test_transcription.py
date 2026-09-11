@@ -1,3 +1,4 @@
+import importlib.util
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -67,18 +68,24 @@ def test_whisperx_transcribe(mock_whisperx_module, mock_detect_breaths):
     # Mock whisperx load_model and its returned model
     mock_model = MagicMock()
     mock_model.transcribe.return_value = {
-        "segments": [{"text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ"}]
+        "segments": [{"start": 0.0, "end": 1.5, "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ"}]
     }
     mock_whisperx_module.load_model.return_value = mock_model
     mock_whisperx_module.load_audio.return_value = "mock_audio_data"
-    mock_whisperx_module.load_align_model.return_value = (MagicMock(), MagicMock())
+    mock_whisperx_module.load_align_model.return_value = (
+        MagicMock(),
+        {"language": "ar"},
+    )
     mock_whisperx_module.align.return_value = {
         "segments": [
             {
-                "start": 0.0,
-                "end": 1.5,
-                "text": "hello",
-                "words": [{"word": "hello", "start": 0.0, "end": 1.5, "score": 0.9}],
+                "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+                "words": [
+                    {"word": "بِسْمِ", "start": 0.0, "end": 0.3, "score": 0.95},
+                    {"word": "ٱللَّهِ", "start": 0.3, "end": 0.4, "score": 0.95},
+                    {"word": "ٱلرَّحْمَـٰنِ", "start": 0.7, "end": 1.1, "score": 0.95},
+                    {"word": "ٱلرَّحِيمِ", "start": 1.1, "end": 1.5, "score": 0.95},
+                ],
             }
         ]
     }
@@ -91,6 +98,7 @@ def test_whisperx_transcribe(mock_whisperx_module, mock_detect_breaths):
     assert len(segments) == 7
     assert segments[0].id == 1
     assert segments[0].surah_id == 1
+    assert segments[0].start == 0.0
     assert "بِسْمِ" in segments[0].text
     assert segments[0].is_breath_boundary is True
     assert segments[0].pause_duration == 0.6
@@ -102,6 +110,10 @@ def test_whisperx_transcribe(mock_whisperx_module, mock_detect_breaths):
     mock_model.transcribe.assert_called_once_with("mock_audio_data", batch_size=8)
 
 
+@pytest.mark.skipif(
+    importlib.util.find_spec("torch") is None,
+    reason="torch is not installed in lightweight test environment",
+)
 @patch("munajjam.transcription.whisper.Path.exists", return_value=True)
 @patch("munajjam.transcription.whisper.load_audio_waveform")
 @patch("munajjam.transcription.whisper.WhisperTranscriber._initialize_model")
@@ -203,6 +215,10 @@ def test_whisperx_set_model_name_swapping():
     assert transcriber.model_name == "large-v3"
 
 
+@pytest.mark.skipif(
+    importlib.util.find_spec("fastapi") is None,
+    reason="fastapi is not installed in lightweight test environment",
+)
 @patch("server.get_settings")
 @patch("server.global_transcriber")
 @patch("server.os.path.exists", return_value=False)

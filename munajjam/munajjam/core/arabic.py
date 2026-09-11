@@ -58,8 +58,15 @@ def normalize_arabic(text: str) -> str:
     text = re.sub(r"ؤ", "و", text)
     text = re.sub(r"ئ", "ي", text)
 
-    # Remove Arabic diacritics (tashkeel): U+064B-U+065F, U+0670
-    text = re.sub(r"[\u064B-\u065F\u0670]", "", text)
+    # Remove Arabic diacritics (tashkeel), tatweel/kashida, and Quranic annotation signs:
+    # U+064B-U+065F (tashkeel), U+0670 (dagger alif), U+0640 (tatweel),
+    # U+06D6-U+06ED (Quranic marks), U+08D3-U+08FF (extended marks),
+    # U+0610-U+061A (small signs), U+0653-U+0655 (maddah/hamza), U+06DF-U+06E8
+    text = re.sub(
+        r"[\u064B-\u065F\u0670\u0640\u06D6-\u06ED\u08D3-\u08FF\u0610-\u061A\u0653-\u0655\u06DF-\u06E8]",
+        "",
+        text,
+    )
 
     # Remove punctuation (keeping letters and spaces)
     text = re.sub(r"[^\w\s]", "", text)
