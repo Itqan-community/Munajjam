@@ -228,19 +228,20 @@ class Whisperx(BaseTranscriber):
 
         from ..core.cascade_recovery import recover_unaligned_word_gaps
 
+        try:
+            total_duration = sf.info(str(audio_path)).duration
+        except Exception:
+            total_duration = len(audio) / float(getattr(audio, "sampling_rate", 16000))
+
         w_alignments = recover_unaligned_word_gaps(
             w_alignments,
             audio=audio,
             align_model=self.align_model,
             align_metadata=self.align_metadata,
             device=self.device,
+            audio_duration=total_duration,
         )
         final_alignments = w_alignments
-
-        try:
-            total_duration = sf.info(str(audio_path)).duration
-        except Exception:
-            total_duration = final_alignments[-1]["end"] + 2.0
 
         ayah_boundary_indices = set()
         w_idx = 0
