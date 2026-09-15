@@ -43,9 +43,29 @@ print(
 )
 global_transcriber = WhisperFactory().create_whisper(backend=WhisperBackend.WHISPERX)
 
+# EXPERIMENTAL: Replicate-backed transcriber instance — not created until the first
+# request uses alignment_mode="replicate", so the server still starts fine (and
+# the local WhisperX path is completely unaffected) if REPLICATE_API_TOKEN isn't set.
+_replicate_transcriber = None
+
+
+def _get_replicate_transcriber():
+    """Lazily construct (and cache) the experimental Replicate transcriber."""
+    global _replicate_transcriber
+    if _replicate_transcriber is None:
+        print("Initializing experimental Replicate WhisperX transcriber...")
+        _replicate_transcriber = WhisperFactory().create_whisper(
+            backend=WhisperBackend.REPLICATE_API, model_name=""
+        )
+    return _replicate_transcriber
+
 
 def _run_job(
-    job_id: str, file_location: str, surah_number: int, model_size: str | None = None
+    job_id: str,
+    file_location: str,
+    surah_number: int,
+    model_size: str | None = None,
+    alignment_mode: str = "local",
 ) -> None:
     """
     Background job function to execute audio transcription and ayah alignment.
@@ -54,25 +74,35 @@ def _run_job(
         job_id: Unique identifier for the alignment job.
         file_location: Path to temporary audio file.
         surah_number: Surah number (1-114).
-        model_size: Optional WhisperX model size requested by caller.
+        model_size: Optional WhisperX model size requested by caller. Only used
+            when alignment_mode is "local".
+        alignment_mode: "local" (default) runs WhisperX on this server; "replicate"
+            (experimental) sends the audio to a WhisperX model hosted on Replicate.
     """
     try:
         jobs[job_id]["status"] = "processing"
 
-        # Resolve model size for every job (defaults to configuration setting)
-        target_model_size = model_size or get_settings().whisperx_model_size
-        if hasattr(global_transcriber, "set_model_name"):
+        if alignment_mode == "replicate":
             print(
-                f"[Job {job_id[:8]}] Resolving WhisperX model size to: {target_model_size}"
+                f"[Job {job_id[:8]}] Started processing Surah {surah_number} via experimental Replicate mode"
             )
-            global_transcriber.set_model_name(target_model_size)
+            transcriber = _get_replicate_transcriber()
+        else:
+            # Resolve model size for every job (defaults to configuration setting)
+            target_model_size = model_size or get_settings().whisperx_model_size
+            if hasattr(global_transcriber, "set_model_name"):
+                print(
+                    f"[Job {job_id[:8]}] Resolving WhisperX model size to: {target_model_size}"
+                )
+                global_transcriber.set_model_name(target_model_size)
 
-        print(
-            f"[Job {job_id[:8]}] Started processing Surah {surah_number} with WhisperX ({global_transcriber.model_name})"
-        )
+            print(
+                f"[Job {job_id[:8]}] Started processing Surah {surah_number} with WhisperX ({global_transcriber.model_name})"
+            )
+            transcriber = global_transcriber
 
-        # Transcribe and align
-        segments = global_transcriber.transcribe(file_location, surah_id=surah_number)
+        # Transcribe and align (locally or via Replicate)
+        segments = transcriber.transcribe(file_location, surah_id=surah_number)
 
         response_data = []
         for segment in segments:
@@ -113,6 +143,7 @@ async def align_audio(
     file: UploadFile = File(...),
     riwaya: str = Form("hafs"),
     model_size: str | None = Form(None),
+    alignment_mode: str = Form("local"),
 ) -> JSONResponse:
     """
     Upload an audio file and initiate background audio-to-ayah alignment.
@@ -122,7 +153,11 @@ async def align_audio(
         background_tasks: FastAPI background task manager.
         file: Uploaded audio file (.mp3, .wav, etc.).
         riwaya: Quranic Riwaya ("hafs", "warsh").
-        model_size: Optional WhisperX model size (tiny, base, small, medium, large-v1, large-v2, large-v3).
+        model_size: Optional WhisperX model size (tiny, base, small, medium,
+            large-v1, large-v2, large-v3). Only applies when alignment_mode="local".
+        alignment_mode: "local" (default) runs WhisperX on this server.
+            "replicate" (experimental) sends audio to a WhisperX model hosted
+            on Replicate instead — see docs/replicate-transcription.md.
 
     Returns:
         JSONResponse containing job status and job_id.
@@ -132,6 +167,15 @@ async def align_audio(
             {
                 "status": "error",
                 "message": f"Invalid model_size: '{model_size}'. Must be one of {sorted(VALID_MODEL_SIZES)}",
+            },
+            status_code=400,
+        )
+
+    if alignment_mode not in ("local", "replicate"):
+        return JSONResponse(
+            {
+                "status": "error",
+                "message": f"Unsupported alignment_mode: {alignment_mode}",
             },
             status_code=400,
         )
@@ -147,7 +191,7 @@ async def align_audio(
 
     background_tasks.add_task(
         lambda: _executor.submit(
-            _run_job, job_id, file_location, surah_number, model_size
+            _run_job, job_id, file_location, surah_number, model_size, alignment_mode
         )
     )
 

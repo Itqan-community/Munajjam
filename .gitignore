@@ -130,3 +130,6 @@ batch_process.py
 # Local-only directories (not part of the library)
 v2/
 scripts/
+
+#.env file (contains sensitive API tokens)
+.env 

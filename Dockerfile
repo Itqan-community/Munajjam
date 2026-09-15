@@ -27,15 +27,24 @@ COPY munajjam/README.md /app/munajjam/README.md
 COPY munajjam/munajjam /app/munajjam/munajjam/
 
 WORKDIR /app/munajjam
+
+# Larger timeout + retries: some dependencies (torch/CUDA wheels pulled in by
+# whisperx/faster-whisper) are 100MB-1GB+ and can hit pip's default read
+# timeout on slower connections.
+ENV PIP_DEFAULT_TIMEOUT=1000
+
 # Install munajjam with the api option
-RUN pip install --no-cache-dir ".[api]"
+RUN pip install --no-cache-dir --retries 10 ".[api]"
 # Install faster-whisper and whisperx explicitly
-RUN pip install --no-cache-dir git+https://github.com/m-bain/whisperx.git faster-whisper
+RUN pip install --no-cache-dir --retries 10 git+https://github.com/m-bain/whisperx.git faster-whisper
+RUN pip install --no-cache-dir --retries 10 replicate
 
 WORKDIR /app
 # Copy the server and entrypoint
 COPY server.py /app/server.py
 COPY entrypoint.sh /app/entrypoint.sh
+# Normalize line endings in case the file was checked out with CRLF (Windows) —
+# a CR before the shebang's newline breaks `env bash` ("bash\r": No such file).
 RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # Required directories
@@ -44,6 +53,7 @@ RUN mkdir -p /app/model_local/whisper \
              /app/temp_audio
 
 ENV HF_TOKEN=""
+ENV REPLICATE_API_TOKEN=""
 EXPOSE 8000
 
 ENTRYPOINT ["/app/entrypoint.sh"]
