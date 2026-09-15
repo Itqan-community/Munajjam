@@ -1,5 +1,4 @@
 import gc
-import re
 from pathlib import Path
 from typing import Any
 
@@ -19,8 +18,8 @@ try:
 
     import whisperx
 except ImportError:
-    torch = None
-    whisperx = None
+    torch = None  # type: ignore[assignment]
+    whisperx = None  # type: ignore[assignment]
 
 import numpy as np
 import soundfile as sf
@@ -84,10 +83,9 @@ class Whisperx(BaseTranscriber):
             self.model_name = model_name
 
     def _normalize_arabic(self, text: str) -> str:
-        text = re.sub(r"[\u064B-\u065F\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]", "", text)
-        text = re.sub(r"[أإآٱ]", "ا", text)
-        text = re.sub(r"[^\u0621-\u064A\s]", "", text)
-        return text.strip()
+        from ..core.arabic import normalize_arabic
+
+        return normalize_arabic(text)
 
     def transcribe(
         self,
@@ -97,12 +95,13 @@ class Whisperx(BaseTranscriber):
         batch_size: int = 16,
     ) -> list[Segment]:
         ayahs = load_surah_ayahs(surah_id)
-        if not ayahs:
-            return []
+
+        def _get_ayah_words(text: str) -> list[str]:
+            return [w for w in text.split() if self._normalize_arabic(w).strip()]
 
         ref_words = []
         for ayah in ayahs:
-            for w in ayah.text.split():
+            for w in _get_ayah_words(ayah.text):
                 ref_words.append(w)
 
         if whisperx is None:
@@ -125,60 +124,15 @@ class Whisperx(BaseTranscriber):
         )
         result = self.whisper_model.transcribe(audio, batch_size=batch_size)
 
-        # --- Reference Text Injection ---
-        if result["segments"] and ref_words:
-            transcribed_words: list[dict[str, Any]] = []
-            for seg_idx, segment in enumerate(result["segments"]):
-                for w in str(segment["text"]).split():
-                    transcribed_words.append({"word": w, "seg_idx": seg_idx})
-
-            n_ref = len(ref_words)
-            m_tr = len(transcribed_words)
-            if m_tr > 0:
-                dp_inj = np.zeros((n_ref + 1, m_tr + 1))
-
-                for i in range(1, n_ref + 1):
-                    rw = self._normalize_arabic(ref_words[i - 1])
-                    for j in range(1, m_tr + 1):
-                        ew = self._normalize_arabic(str(transcribed_words[j - 1]["word"]))
-                        match_score = fuzz.ratio(rw, ew) / 100.0
-                        if match_score < 0.6:
-                            match_score = -1.0
-                        dp_inj[i][j] = max(
-                            dp_inj[i - 1][j], dp_inj[i][j - 1], dp_inj[i - 1][j - 1] + match_score
-                        )
-
-                mapped_seg_indices: list[int | None] = [None] * n_ref
-                i, j = n_ref, m_tr
-                while i > 0 and j > 0:
-                    rw = self._normalize_arabic(ref_words[i - 1])
-                    ew = self._normalize_arabic(str(transcribed_words[j - 1]["word"]))
-                    match_score = fuzz.ratio(rw, ew) / 100.0
-
-                    if match_score >= 0.6 and dp_inj[i][j] == dp_inj[i - 1][j - 1] + match_score:
-                        mapped_seg_indices[i - 1] = int(transcribed_words[j - 1]["seg_idx"])
-                        i -= 1
-                        j -= 1
-                    elif dp_inj[i][j] == dp_inj[i - 1][j]:
-                        i -= 1
-                    else:
-                        j -= 1
-
-                seg_ref_texts: dict[int, list[str]] = {
-                    idx: [] for idx in range(len(result["segments"]))
-                }
-                last_seg_idx = 0
-                for k in range(n_ref):
-                    seg_idx_val = mapped_seg_indices[k]
-                    if seg_idx_val is not None:
-                        seg_ref_texts[seg_idx_val].append(ref_words[k])
-                        last_seg_idx = seg_idx_val
-                    else:
-                        seg_ref_texts[last_seg_idx].append(ref_words[k])
-
-                for idx, segment in enumerate(result["segments"]):
-                    segment["text"] = " ".join(seg_ref_texts[idx])
-        # --- End Injection ---
+        # Filter and normalize valid non-empty segments for whisperx.align
+        valid_segments: list[dict[str, Any]] = []
+        for segment in result.get("segments", []):
+            if isinstance(segment, dict):
+                norm_text = self._normalize_arabic(str(segment.get("text", "")))
+                if norm_text.strip():
+                    segment["text"] = norm_text.strip()
+                    valid_segments.append(segment)
+        result["segments"] = valid_segments
 
         if getattr(self, "align_model", None) is None:
             print("Loading WhisperX alignment model...")
@@ -215,14 +169,18 @@ class Whisperx(BaseTranscriber):
         m = len(extracted_words)
         dp = np.zeros((n + 1, m + 1))
 
+        # Base case penalty for deleting reference words
+        for i in range(1, n + 1):
+            dp[i][0] = dp[i - 1][0] - 0.5
+
         for i in range(1, n + 1):
             rw = self._normalize_arabic(ref_words[i - 1])
             for j in range(1, m + 1):
                 ew = self._normalize_arabic(str(extracted_words[j - 1]["word"]))
                 match_score = fuzz.ratio(rw, ew) / 100.0
-                if match_score < 0.6:
+                if match_score < 0.5:
                     match_score = -1.0
-                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1] + match_score)
+                dp[i][j] = max(dp[i - 1][j] - 0.5, dp[i][j - 1], dp[i - 1][j - 1] + match_score)
 
         mapped_alignments: list[dict[str, Any] | None] = [None] * n
         i, j = n, m
@@ -231,14 +189,16 @@ class Whisperx(BaseTranscriber):
             ew = self._normalize_arabic(str(extracted_words[j - 1]["word"]))
             match_score = fuzz.ratio(rw, ew) / 100.0
 
-            if match_score >= 0.6 and dp[i][j] == dp[i - 1][j - 1] + match_score:
+            if match_score >= 0.5 and abs(dp[i][j] - (dp[i - 1][j - 1] + match_score)) < 1e-5:
                 mapped_alignments[i - 1] = extracted_words[j - 1]
                 i -= 1
                 j -= 1
-            elif dp[i][j] == dp[i - 1][j]:
-                i -= 1
-            else:
+            elif abs(dp[i][j] - dp[i][j - 1]) < 1e-5:
+                # Extra audio word (e.g. repetition or cough) -> advance audio
                 j -= 1
+            else:
+                # Reference word truly missing from audio
+                i -= 1
 
         w_alignments: list[dict[str, Any]] = []
         for k in range(n):
@@ -266,17 +226,27 @@ class Whisperx(BaseTranscriber):
         # Memory cleanup for temp variables, but keep models loaded
         gc.collect()
 
-        final_alignments = w_alignments
+        from ..core.cascade_recovery import recover_unaligned_word_gaps
 
         try:
             total_duration = sf.info(str(audio_path)).duration
         except Exception:
-            total_duration = final_alignments[-1]["end"] + 2.0
+            total_duration = len(audio) / float(getattr(audio, "sampling_rate", 16000))
+
+        w_alignments = recover_unaligned_word_gaps(
+            w_alignments,
+            audio=audio,
+            align_model=self.align_model,
+            align_metadata=self.align_metadata,
+            device=self.device,
+            audio_duration=total_duration,
+        )
+        final_alignments = w_alignments
 
         ayah_boundary_indices = set()
         w_idx = 0
         for ayah in ayahs:
-            w_idx += len(ayah.text.split())
+            w_idx += len(_get_ayah_words(ayah.text))
             ayah_boundary_indices.add(w_idx - 1)
 
         for k in range(len(final_alignments)):
@@ -291,22 +261,28 @@ class Whisperx(BaseTranscriber):
 
                 if gap > 0:
                     if k in ayah_boundary_indices:
+                        # Clean ayah boundary transition: preserve natural end of ayah without stretching into silence
                         if gap <= 0.3:
                             start_buffer = min(gap, 0.1)
                             final_alignments[k + 1]["start"] = round(next_start - start_buffer, 3)
                             final_alignments[k]["end"] = round(next_start - start_buffer, 3)
-                        elif gap >= 0.4:
-                            final_alignments[k + 1]["start"] = round(next_start - 0.2, 3)
-                            final_alignments[k]["end"] = round(next_start - 0.2, 3)
                         else:
-                            mid = gap / 2.0
-                            final_alignments[k + 1]["start"] = round(next_start - mid, 3)
-                            final_alignments[k]["end"] = round(next_start - mid, 3)
+                            final_alignments[k]["end"] = round(current_end + min(gap * 0.1, 0.2), 3)
+                            final_alignments[k + 1]["start"] = round(
+                                max(current_end, next_start - min(gap * 0.1, 0.15)), 3
+                            )
                     else:
-                        if gap > 0.1:
-                            final_alignments[k]["end"] = round(next_start - 0.1, 3)
+                        # Intra-ayah word gap: bridge small continuous speech gaps,
+                        # but preserve natural breath pauses and reciter repetition gaps without stretching
+                        if gap <= 0.25:
+                            final_alignments[k]["end"] = round(next_start, 3)
+                        else:
+                            final_alignments[k]["end"] = round(
+                                current_end + min(gap * 0.15, 0.15), 3
+                            )
             else:
-                final_alignments[k]["end"] = round(total_duration, 3)
+                # Clean end for the very last word of the surah
+                final_alignments[k]["end"] = round(min(total_duration, current_end + 0.3), 3)
 
             if final_alignments[k]["end"] <= final_alignments[k]["start"]:
                 final_alignments[k]["end"] = round(final_alignments[k]["start"] + 0.1, 3)
@@ -315,7 +291,7 @@ class Whisperx(BaseTranscriber):
         segments = []
 
         for ayah in ayahs:
-            ayah_words_count = len(ayah.text.split())
+            ayah_words_count = len(_get_ayah_words(ayah.text))
             ayah_alignments = final_alignments[word_idx : word_idx + ayah_words_count]
             word_idx += ayah_words_count
 
