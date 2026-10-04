@@ -130,3 +130,4 @@ batch_process.py
 # Local-only directories (not part of the library)
 v2/
 scripts/
+munajjam/models/recitation-segmenter-v2/
