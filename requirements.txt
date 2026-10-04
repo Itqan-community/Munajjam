@@ -1,0 +1,22 @@
+# Core Web API
+fastapi>=0.100.0
+uvicorn>=0.22.0
+python-multipart>=0.0.6
+
+# ONNX Runtime & Acceleration (DirectML for Windows, standard for Linux/macOS)
+onnxruntime-directml>=1.15.0; sys_platform == 'win32'
+onnxruntime>=1.15.0; sys_platform != 'win32'
+sherpa-onnx>=1.10.0
+
+# Audio Processing & Data
+soundfile>=0.12.1
+librosa>=0.10.0
+numpy<2.0.0
+pydub>=0.25.1
+pandas>=2.0.0
+rapidfuzz>=3.0.0
+
+# Models & Hugging Face
+huggingface_hub>=0.20.0
+transformers>=4.30.0
+torch>=2.0.0

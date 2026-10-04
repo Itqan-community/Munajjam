@@ -127,7 +127,13 @@ cache/
 batch_process.py
 *.mp3
 
-# Local-only directories (not part of the library)
-v2/
-scripts/
-munajjam/models/recitation-segmenter-v2/
+# Local-only directories and models (not part of the library)
+/v2/
+/scripts/
+!munajjam/scripts/
+munajjam/models/
+model_segmenter/
+model_zipformer/
+model_vad/
+model_wav2vec2/
+temp_audio/
